@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=008d3c40", "./js/audio.js": "./js/audio.js?v=1d267f5c", "./js/bubblepop.js": "./js/bubblepop.js?v=3485dfff", "./js/bubbles.js": "./js/bubbles.js?v=73dfe530", "./js/fx.js": "./js/fx.js?v=c71b0f3b", "./js/main.js": "./js/main.js?v=dd9e16d6", "./js/observe.js": "./js/observe.js?v=29c87271", "./js/paint.js": "./js/paint.js?v=55ec27ef", "./js/panopticon.js": "./js/panopticon.js?v=554f4ca1", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=22c09fed"}}</script>
-<link rel="stylesheet" href="css/site.css?v=6f7f460f">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=78bbad13", "./js/bubblepop.js": "./js/bubblepop.js?v=3485dfff", "./js/bubbles.js": "./js/bubbles.js?v=73dfe530", "./js/fx.js": "./js/fx.js?v=f57c02f0", "./js/main.js": "./js/main.js?v=77949b45", "./js/observe.js": "./js/observe.js?v=f4d5aa11", "./js/paint.js": "./js/paint.js?v=55ec27ef", "./js/panopticon.js": "./js/panopticon.js?v=554f4ca1", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=67b5843d"}}</script>
+<link rel="stylesheet" href="css/site.css?v=de592d87">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
@@ -102,7 +102,7 @@
 <video id="sting" muted playsinline preload="none" aria-hidden="true" hidden></video>
 <canvas class="bubbles" id="bubbles" aria-hidden="true"></canvas>
 
-<a class="skip" href="#about">Skip to Tahsin's introduction</a>
+<a class="skip" href="#about" data-open="about">Skip to Tahsin's introduction</a>
 <button class="skip" id="skip-mute" type="button">Mute the music</button>
 
 <nav class="icons" id="icons" aria-label="Desktop icons">
@@ -139,6 +139,7 @@
         <a class="gel" href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noopener" data-conv="contact">LinkedIn</a>
         <button class="gel gel--rundown" type="button" data-rundown><svg aria-hidden="true"><use href="#u-play"/></svg>30-second rundown</button>
       </div>
+      <p class="subfiles"><a href="#portrait" data-open="portrait"><svg aria-hidden="true"><use href="#i-person"/></svg>TAHSIN.JPG</a></p>
       <p class="reach"><a href="mailto:tahsinanan6@gmail.com" data-conv="contact">tahsinanan6@gmail.com</a> <a href="tel:+19295579947" data-conv="contact">(929) 557-9947</a></p>
       <nav class="jump" aria-label="Jump to"><a href="#case" data-open="case">Case study</a><a href="#observe" data-open="observe">Live analytics</a><a href="#design" data-open="design">Design</a><a href="#art" data-open="art">Art</a><a href="#player" data-open="player">Music</a><a href="#bubblepop" data-open="bubblepop">Games</a></nav>
       <details class="story" id="story" open><summary><h2>How I got here</h2></summary>
@@ -532,6 +533,7 @@
     <ul>
       <li><button type="button" class="startmenu__btn" data-rundown><svg aria-hidden="true"><use href="#i-rundown"/></svg>30-second rundown</button></li>
       <li><a href="#about" data-open="about"><svg><use href="#i-person"/></svg>About me</a></li>
+      <li><a href="#portrait" data-open="portrait"><svg><use href="#i-person"/></svg>My photo</a></li>
       <li><a href="#case" data-open="case"><svg><use href="#i-chart"/></svg>Case study</a></li>
       <li><a href="#observe" data-open="observe"><svg><use href="#i-eye"/></svg>Live analytics</a></li>
       <li><a href="#design" data-open="design"><svg><use href="#i-folder-design"/></svg>Design work</a></li>
@@ -593,7 +595,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=dd9e16d6"></script>
+<script type="module" src="js/main.js?v=77949b45"></script>
 <script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
 </body>
 </html>

@@ -160,7 +160,7 @@ export function reactSite(beat, now = 0) {
   } else if (!warp.hidden) warp.hidden = true;
 
   const t = now / 1000;
-  px += (tx - px) * .05; py += (ty - py) * .05;
+  px += ((quake.on ? tx : 0) - px) * .05; py += ((quake.on ? ty : 0) - py) * .05;
   let scale = 1.035, rot = 0, ox = 0, oy = 0;
   if (live) {
     if (kind === 'baroque') { scale += .012 + Math.sin(t * .55) * .012 + beat.pulse * .004; rot = Math.sin(t * .31) * .18; }

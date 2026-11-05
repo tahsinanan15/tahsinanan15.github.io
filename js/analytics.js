@@ -68,7 +68,7 @@ export const countOnce = hit;
 // Seeing both headlines ends this browser's part in the test: its conversions no longer belong to either version.
 export const sawBothHeadlines = () => store.set('localStorage', 'tahsin.ab.seenboth', 1);
 // A headline counts as seen once its window is on screen. Someone who never saw one can't convert for it.
-export const sawHeadline = () => { store.set('localStorage', 'tahsin.ab.seen', 1); hit(variant === 'A' ? 'a_seen' : 'b_seen', true); };
+export const sawHeadline = () => { if (store.get('localStorage', 'tahsin.ab.seenboth')) return; store.set('localStorage', 'tahsin.ab.seen', 1); hit(variant === 'A' ? 'a_seen' : 'b_seen', true); };
 
 // A conversion is the same for both versions: this browser opened the resume or reached out.
 export function convert(kind) {

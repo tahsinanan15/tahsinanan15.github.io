@@ -17,6 +17,8 @@ const store = {
 };
 
 const TASKBAR = 48;
+// In Concrete Jungle the citizens walk along the bottom of the wall, so new windows open above them.
+const deskH = () => innerHeight - TASKBAR - (root.dataset.theme === 'metro' ? 72 : 0);
 const FIXED_SIZE = ['player', 'bubblepop', 'paint', 'panopticon'];   // their contents are a fixed shape, so they don't resize
 const START_OPEN = ['portrait', 'player'];   // the desktop stays clear so PLAY_ME.EXE is the first thing a new visitor notices
 const wins = new Map();
@@ -102,7 +104,7 @@ function animate(el, frames, ms) {
 const POP_IN = [{ opacity: 0, transform: 'translateY(16px) scale(.93)' }, { opacity: 1, transform: 'none' }];
 
 function sizeFor(el) {
-  const W = innerWidth, H = innerHeight - TASKBAR, left = $('icons').getBoundingClientRect().right + 12;
+  const W = innerWidth, H = deskH(), left = $('icons').getBoundingClientRect().right + 12;
   const room = W - left - 16;
   switch (el.dataset.size) {
     case 'wide': return [Math.min(940, room), Math.min(H - 28, 700)];
@@ -120,7 +122,7 @@ function sizeFor(el) {
 // New windows open centered in the open desktop, like a real OS: clear of the icons and of her photo and the player when they fit
 // beside them. Each one already open nudges the next down and right so every title bar stays reachable.
 function place(el) {
-  const [w, h] = sizeFor(el), H = innerHeight - TASKBAR;
+  const [w, h] = sizeFor(el), H = deskH();
   el.style.setProperty('--w', `${w}px`);
   el.style.setProperty('--h', h ? `${h}px` : 'auto');
   const left = $('icons').getBoundingClientRect().right + 12, realH = h || el.offsetHeight || 420;
@@ -144,7 +146,7 @@ function placeStart() {
   const mw = clamp(W * .25, 352, 380), mp = set('player', W - M - mw - spare, 0, mw);
   let mh = 0;
   wasHidden(mp, () => { mh = mp.offsetHeight; mp.style.top = `${H - M - mh}px`; });
-  const pw = clamp((H - M * 3 - mh - 44) / 1.165, 150, 250);
+  const pw = clamp((H - M * 3 - mh - 44) / 1.165, 118, 250);   // 118 still fits its title bar buttons
   set('portrait', W - M - pw - spare, M, pw);
 }
 function wasHidden(el, fn) { const h = el.hidden; el.hidden = false; fn(); el.hidden = h; }
@@ -170,7 +172,7 @@ function focus(id) {
 function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
   const w = wins.get(id);
   if (!w) return;
-  if (id === 'about') sawHeadline();
+  if (id === 'about' && !touring) sawHeadline();   // the tape shows both headlines, so tape watchers stay out of the test
   lazy(id, tab);
   if (!desktop()) {
     if (id === 'panopticon') { w.el.hidden = false; w.el.focus({ preventScroll: true }); return; }
@@ -219,7 +221,7 @@ async function close(id) {
   sfx.close();
   track('window_close', { window: id });
   await animate(w.el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px) scale(.95)' }], 170);
-  w.el.hidden = true; w.open = false; w.min = false; w.placed = false;
+  w.el.hidden = true; w.open = false; w.min = false; w.placed = START_OPEN.includes(id);   // her photo and the player come back where they were
   focusTop();
   if (id === 'viewer' && viewerOpener?.offsetParent) viewerOpener.focus({ preventScroll: true }); else handOffFocus(had);
 }
@@ -382,7 +384,7 @@ function wallSrc(name) {
 }
 function revealFrom(apply) {
   // The new look spreads out from the player, like the song is repainting the desktop.
-  if (!document.startViewTransition || still.matches) return apply();
+  if (!document.startViewTransition || still.matches || !quake.on) return apply();
   const button = $('mp-play').offsetParent ? $('mp-play') : $('tray-play');
   const r = button.getBoundingClientRect(), x = r.left + r.width / 2, y = r.top + r.height / 2;
   const reach = Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y));
@@ -399,6 +401,8 @@ function showLook(id, pick, next) {
     const photo = $('portrait').querySelector('img');
     photo.src = photoSrc(id);
     photo.alt = 'Portrait of Tahsin Anan in front of a dark floral wall, toned to match this song.';
+    $('about').querySelector('.about__face').style.backgroundImage = `url(${photoSrc(id)})`;
+    root.toggleAttribute('data-pick', !!pick);
     $('start-label').textContent = THEMES[id].start;
     tickClock();
     setFx(THEMES[id]);
@@ -406,7 +410,7 @@ function showLook(id, pick, next) {
     wallTop.classList.remove('is-on');
     [wallTop, wallBack] = [next, wallTop];
     $('mp-showing').textContent = `${THEMES[id].name}. ${pick ? 'Your pick' : THEMES[id].art}.`;
-    document.querySelector(`input[name=wall][value="${pick || `look:${id}`}"]`).checked = true;
+    fit(wins.get('player').el);   // a taller OS must not push it under the taskbar
   };
   if (id === lookShown || lookShown === null) return apply();
   osChime(id);
@@ -420,6 +424,7 @@ async function syncLook() {
   try {
     for (;;) {
       const id = songTheme, pick = wallPick, src = wallSrc(pick || THEMES[id].wall);
+      document.querySelector(`input[name=wall][value="${pick || `look:${id}`}"]`).checked = true;   // here, so a rapid change that collapses back to what's already up still resets it
       if (src === wallShown && id === lookShown) break;
       const next = wallBack;
       next.src = src;
@@ -488,7 +493,7 @@ balloon.addEventListener('focusin', () => clearTimeout(balloonTimer));
 $('balloon-x').addEventListener('click', hideBalloon);
 $('balloon-go').addEventListener('click', () => { balloon.hidden = true; open('observe'); });
 function inviteObserve() {
-  if (session.counted.balloon || wins.get('observe').open || touring || root.classList.contains('hook')) return;
+  if (session.counted.balloon || wins.get('observe').open || touring || (desktop() && hooked())) return;
   session.counted.balloon = 1;
   const n = session.events.length;
   $('balloon-text').textContent = `I've logged ${n} ${n === 1 ? 'thing' : 'things'} you did here. The log stays in your browser. Want to see what I noticed?`;
@@ -515,7 +520,8 @@ function startRundown(from) {
   balloon.hidden = true;
   closeStart();
   const burst = hooked();
-  if (burst) { root.classList.remove('hook'); store.set('tahsin.played', '1'); bubbles.release(true); }
+  store.set('tahsin.played', '1');
+  if (burst) { root.classList.remove('hook'); bubbles.release(true); }
   setTimeout(() => import('./tour.js').then((m) => (tourMod = m).start({
     wins, open, focus, desktop, refresh: refreshTasks, focused: () => focused,
     leftEdge: () => $('icons').getBoundingClientRect().right + 10,
@@ -545,6 +551,7 @@ const seen = new IntersectionObserver((entries) => {
 /* ---------- The hidden one. Stare back at the eye and hold still, or type its name. ---------- */
 function unlockPanopticon() {
   if (wins.get('panopticon').open || !$('panopticon').hidden === true && !desktop()) return;
+  tourMod?.stop('link');
   track('panopticon_found');
   closeStart();
   open('panopticon', { user: true });
@@ -578,6 +585,7 @@ function applyMode() {
     placeStart();
   } else {
     wins.forEach((w, id) => { w.el.hidden = id === 'viewer' || id === 'panopticon'; w.el.classList.remove('is-max'); });
+    sawHeadline();
   }
 }
 let wasOS = isOS();
@@ -589,7 +597,7 @@ addEventListener('resize', () => {
     wasOS = os;
     const firstDesktop = os && !wins.get('player').open;
     applyMode();
-    if (firstDesktop) { START_OPEN.forEach((id) => open(id, { user: false, quiet: true })); focus('player'); }
+    if (firstDesktop) { START_OPEN.forEach((id) => open(id, { user: false, quiet: true })); focus('player'); startHook(); }
     return;
   }
   if (os) wins.forEach((w) => { if (w.open && !w.min) fit(w.el); });

@@ -45,7 +45,7 @@ const STEPS = [
 
 const $ = (id) => document.getElementById(id);
 const still = matchMedia('(prefers-reduced-motion: reduce)');
-let api, opener = null, active = false, index = 0, timer = 0, typing = 0, stepEnd = 0, remaining = 0, paused = false, saved = [], opened = new Set();
+let api, opener = null, active = false, index = 0, timer = 0, running = false, hovering = false, typing = 0, stepEnd = 0, remaining = 0, paused = false, saved = [], opened = new Set();
 
 const dock = $('tour'), spot = $('tourspot');
 
@@ -97,23 +97,32 @@ function say(text) {
   }, 105);
 }
 
+// The one place that decides whether the step timer runs. Pause and a mouse over the dock hold it, and with reduced motion the tape moves only when asked.
+function hold() {
+  const held = paused || hovering, run = active && !held && !still.matches && index < STEPS.length - 1;
+  dock.classList.toggle('is-paused', held);
+  if (run === running) return;
+  running = run;
+  if (run) { stepEnd = performance.now() + remaining; timer = setTimeout(next, remaining); }
+  else { clearTimeout(timer); remaining = Math.max(800, stepEnd - performance.now()); }
+}
 function arm(ms) {
   clearTimeout(timer);
-  remaining = ms; stepEnd = performance.now() + ms;
+  running = false; remaining = ms;
   dock.style.setProperty('--step-ms', `${ms}ms`);
-  if (!paused && !still.matches) timer = setTimeout(next, ms);
+  hold();
 }
 function setPaused(on) {
   paused = on;
+  if (!on) hovering = false;   // Play means play, even with the mouse still on the button
   $('tour-pause').textContent = on ? 'Play' : 'Pause';
-  dock.classList.toggle('is-paused', on);
-  if (on) { clearTimeout(timer); remaining = Math.max(0, stepEnd - performance.now()); }
-  else if (index < STEPS.length - 1) { stepEnd = performance.now() + remaining; timer = setTimeout(next, remaining); }
+  hold();
 }
 
 const crt = $('crt');
-let clockTimer = 0, tapeStart = 0;
+let clockTimer = 0, tapeStart = 0, offTimer = 0;
 function powerOn() {
+  clearTimeout(offTimer);   // a quick replay must not lose the CRT to the last power-off
   crt.classList.remove('is-off', 'is-skip');
   crt.hidden = false;
   crt.classList.add('is-on');
@@ -128,7 +137,7 @@ function powerOff() {
   crt.classList.remove('is-on', 'is-skip');
   if (still.matches) { crt.hidden = true; return; }
   crt.classList.add('is-off');
-  setTimeout(() => { crt.hidden = true; crt.classList.remove('is-off'); }, 430);
+  offTimer = setTimeout(() => { crt.hidden = true; crt.classList.remove('is-off'); }, 430);
 }
 function tapeSkip() {
   crt.classList.remove('is-skip');
@@ -138,7 +147,7 @@ function tapeSkip() {
 }
 
 function show(i) {
-  const moved = active && i !== index && dock.dataset.started === '1';
+  const moved = active && i !== index && dock.dataset.started === '1', from = document.activeElement;
   if (moved) tapeSkip();
   dock.dataset.started = '1';
   index = Math.max(0, Math.min(STEPS.length - 1, i));
@@ -154,9 +163,10 @@ function show(i) {
   $('tour-pause').hidden = last;
   $('tour-end').hidden = !last;
   $('tour-stop').hidden = last;
+  if (dock.contains(from) && (from.disabled || from.closest('[hidden]'))) (last ? $('tour-play') : $('tour-next')).focus({ preventScroll: true });   // the keyboard stays in the dock when its button goes away
   track('rundown_step', { step: index + 1, window: s.win || 'end' });
   if (last) {
-    clearTimeout(timer);
+    hold();
     spot.hidden = true;
     restore();
     track('rundown_finish');
@@ -167,14 +177,14 @@ function show(i) {
   if (api.desktop()) { frame(s.win); s.after?.(api); }
   else { api.wins.get(s.win).el.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' }); }
   const words = s.caption.split(' ').length;
-  arm(Math.max(3800, 1000 + words * 230));
+  arm(Math.max(3800, 900 + words * 215));
 }
 function next() { show(index + 1); }
 
 export function stop(reason = 'stop') {
   if (!active) return;
   active = false;
-  clearTimeout(timer); clearInterval(typing);
+  clearTimeout(timer); clearInterval(typing); running = false;
   dock.hidden = true; spot.hidden = true;
   dock.dataset.started = '0';
   powerOff();
@@ -203,8 +213,8 @@ function wire() {
   $('tour-pause').addEventListener('click', () => setPaused(!paused));
   $('tour-stop').addEventListener('click', () => stop());
   $('tour-play').addEventListener('click', () => stop('done'));
-  dock.addEventListener('pointerenter', () => { if (!paused && index < STEPS.length - 1) { clearTimeout(timer); remaining = Math.max(800, stepEnd - performance.now()); dock.classList.add('is-paused'); } });
-  dock.addEventListener('pointerleave', () => { if (!paused && index < STEPS.length - 1) { dock.classList.remove('is-paused'); stepEnd = performance.now() + remaining; clearTimeout(timer); timer = setTimeout(next, remaining); } });
+  dock.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') { hovering = true; hold(); } });
+  dock.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') { hovering = false; hold(); } });
   addEventListener('click', (e) => { if (active && e.target.closest?.('[data-open], [data-conv], [data-view]')) stop('link'); }, true);
   // Reaching into a window means they want to read, so the tour waits for them.
   $('desk').addEventListener('pointerdown', () => { if (active && !paused && index < STEPS.length - 1) setPaused(true); });
@@ -217,9 +227,8 @@ export function start(a, from) {
   wire();
   snapshot();
   opened = new Set();
-  paused = false;
+  paused = hovering = false;
   $('tour-pause').textContent = 'Pause';
-  dock.classList.remove('is-paused');
   dock.hidden = false;
   document.documentElement.classList.add('is-rundown');
   dispatchEvent(new CustomEvent('tahsin:rundown', { detail: { active: true } }));

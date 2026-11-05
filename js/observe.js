@@ -138,7 +138,7 @@ async function renderAB() {
     <ul>
       <li><b>Hypothesis:</b> the headline changes whether a visitor takes the next step.</li>
       <li><b>Unit:</b> one browser, so a returning visitor keeps their version. A new device counts as new.</li>
-      <li><b>Conversion:</b> that browser opened the resume or clicked a contact link. I can't see whether an email got sent. Anyone who opens this tab has seen both headlines, so their conversions stop counting.</li>
+      <li><b>Conversion:</b> that browser opened the resume or clicked a contact link. I can't see whether an email got sent. Anyone who opens this tab or watches PLAY_ME.EXE has seen both headlines, so they don't count.</li>
       <li><b>Assignment:</b> random 50/50.${a.n + b.n >= 20 ? ` Split check: ${pct(a.n / (a.n + b.n))} to ${pct(b.n / (a.n + b.n))}, ${splitCheck(a.n, b.n) < .01 ? 'which is off, so I would check the setup before trusting this' : 'as expected'}.` : ''}</li>
       <li><b>Sample size:</b> ${REQUIRED} per version, enough to see a big lift: 10% (my assumption) to 20%, at 95% confidence and 80% power.</li>
       <li><b>Stopping:</b> I read it once, at ${REQUIRED} per version.</li>

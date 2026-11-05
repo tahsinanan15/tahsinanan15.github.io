@@ -44,7 +44,7 @@
   --ball-go: radial-gradient(circle at 50% 18%, #d8f6ff 0, #2fa4ee 46%, #0a56b4 72%, #2c8fe0 100%); --ball-go-edge: #073a7c;
   --beat-col: #9beeff;
   --file-size: 16px; --file-spacing: 0; --file-transform: none;
-  --ico-ink: #fff; --ico-shadow: 0 1px 1px rgba(0, 16, 50, 1), 0 0 5px rgba(0, 16, 50, .95), 0 0 12px rgba(0, 16, 50, .6); --ico-filter: drop-shadow(0 3px 3px rgba(0, 20, 60, .5));
+  --ico-ink: #fff; --ico-shadow: 0 0 1px #001032, 0 0 2px #001032, 0 0 2px #001032, 0 0 3px #001032, 0 1px 3px #001032, 0 0 8px rgba(0, 16, 50, .9); --ico-filter: drop-shadow(0 3px 3px rgba(0, 20, 60, .5));
   --cur-arrow: url(../assets/cursors/arrow.png) 0 0, default; --cur-hand: url(../assets/cursors/hand.png) 10 0, pointer;
 }
 :root[data-scene="sunset"] { --bar: rgba(64, 28, 66, .8); --bar-line: rgba(255, 200, 160, .55); --glass-a: rgba(24, 92, 186, .86); }
@@ -334,7 +334,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .clock span { display: block; font-weight: 500; font-size: 13px; opacity: .92; }
 
 .startmenu { position: fixed; bottom: calc(var(--taskbar) + 6px + env(safe-area-inset-bottom, 0px)); left: 6px; z-index: 9001; width: min(440px, calc(100vw - 12px)); max-height: calc(100dvh - var(--taskbar) - 16px); overflow: auto; color: var(--ink); background: linear-gradient(180deg, var(--glass-a), var(--glass-b)); border: 1px solid rgba(4, 34, 86, .85); border-radius: 12px 12px 8px 8px; box-shadow: 0 14px 40px rgba(0, 20, 60, .55), inset 0 1px rgba(255, 255, 255, .6); -webkit-backdrop-filter: blur(16px) saturate(170%); backdrop-filter: blur(16px) saturate(170%); }
-.startmenu__head { display: flex; align-items: center; gap: 10px; padding: 9px 14px; color: var(--bar-text); font: 700 21px/1 var(--display); text-shadow: 0 1px 2px rgba(0, 20, 60, .9); }
+.startmenu__head { display: flex; align-items: center; gap: 10px; padding: 9px 14px; color: var(--bar-text); font: 700 21px/1 var(--display); text-shadow: var(--bar-shadow); }
 .startmenu__head .eye { width: 34px; height: 34px; }
 .startmenu__cols { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); margin: 0 5px; overflow: hidden; border-radius: 5px; }
 .startmenu ul { margin: 0; padding: 6px; list-style: none; color: var(--ink); background: var(--sheet); }
@@ -456,7 +456,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @media (min-width: 620px) { .mason { columns: 3 150px; } .split--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .feature { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
 @media (max-width: 360px) { .counter { display: none; } }
 @media (max-width: 619px) { .js:not(.os) #obs-visit { min-height: 860px; } }
-@media (max-width: 460px) { .chart text { font-size: 20px; } .clock span { display: none; } .win__body { padding: 14px; } .barlist li { grid-template-columns: minmax(70px, 96px) minmax(0, 1fr) 54px; } }
+@media (max-width: 460px) { #obs-ab table { font-size: 12.5px; } #obs-ab th, #obs-ab td { padding: 4px 2px; } #obs-ab th { white-space: normal; line-height: 1.15; } [data-theme=vapor] .contact dd { font-size: min(14px, 3.5vw); } .chart text { font-size: 20px; } .clock span { display: none; } .win__body { padding: 14px; } .barlist li { grid-template-columns: minmax(70px, 96px) minmax(0, 1fr) 54px; } }
 
 /* ------- The desktop ------- */
 .os, .os body { height: 100%; overflow: hidden; cursor: var(--cur-arrow); }
@@ -474,7 +474,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .os .win.is-focus { box-shadow: var(--win-shadow-on); }
 .os .win.is-max { top: 8px !important; left: 8px !important; width: calc(100vw - 16px) !important; height: calc(100dvh - var(--taskbar) - 16px) !important; }
 .os .win--player .win__main { padding: 3px; }
-.os .mp__list { max-height: 214px; overflow: auto; }
+.os .mp__list { max-height: calc(100dvh - 400px); overflow: auto; }
 .os .mp__list:not(.is-open) { display: none; }
 .js:not(.os) #mp-listbtn { display: none; }
 .os .startmenu { left: 6px; }
@@ -530,9 +530,10 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @font-face { font-family: "VT323"; src: url(../assets/fonts/vt323-400-latin.woff2) format("woff2"); font-display: swap; }
 @font-face { font-family: "Courier Prime"; src: url(../assets/fonts/courier-prime-400-latin.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Courier Prime"; src: url(../assets/fonts/courier-prime-700-latin.woff2) format("woff2"); font-weight: 700; font-display: swap; }
-@font-face { font-family: "Dafont Baroque"; src: url(../assets/fonts/dafont-baroque.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+20-48, U+4A-7E; }
-@font-face { font-family: "IM Fell English"; src: url(../assets/fonts/im-fell-english-400-latin.woff2) format("woff2"); font-display: swap; }
-@font-face { font-family: "IM Fell English SC"; src: url(../assets/fonts/im-fell-english-sc-400-latin.woff2) format("woff2"); font-display: swap; }
+@font-face { font-family: "Dafont Baroque"; src: url(../assets/fonts/dafont-baroque.woff2) format("woff2"); font-weight: 100 900; font-display: swap; unicode-range: U+20-48, U+4A-53, U+55-7E; }
+/* IM Fell has only old-style figures, where 1200 reads I200, so Baroque Keep takes its digits from Tiro Bangla. */
+@font-face { font-family: "IM Fell English"; src: url(../assets/fonts/im-fell-english-400-latin.woff2) format("woff2"); font-display: swap; unicode-range: U+0-2F, U+3A-10FFFF; }
+@font-face { font-family: "IM Fell English SC"; src: url(../assets/fonts/im-fell-english-sc-400-latin.woff2) format("woff2"); font-display: swap; unicode-range: U+0-2F, U+3A-10FFFF; }
 @font-face { font-family: "Chakra Petch"; src: url(../assets/fonts/chakra-petch-400-latin.woff2) format("woff2"); font-weight: 400; font-display: swap; }
 @font-face { font-family: "Chakra Petch"; src: url(../assets/fonts/chakra-petch-600-latin.woff2) format("woff2"); font-weight: 600; font-display: swap; }
 @font-face { font-family: "Chakra Petch"; src: url(../assets/fonts/chakra-petch-700-latin.woff2) format("woff2"); font-weight: 700; font-display: swap; }
@@ -573,7 +574,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   --sel-bg: #01cdfe; --sel-fg: #2a1257; --accent: #ff71ce;
   --display: "Retro Stereo Wide", "Trebuchet MS", sans-serif; --body: "Courier Prime", "Courier New", monospace; --pixel: "VT323", "Courier New", monospace;
   --file-size: 22px; --file-spacing: .14em;
-  --glass-a: #ff71ce; --glass-b: #b967ff; --glass-off-a: #b9a4f2; --glass-off-b: #9a86d0; --bar-text: #fff; --bar-shadow: 2px 2px 0 #2a1257; --bar-edge: #2a1257;
+  --glass-a: #ff71ce; --glass-b: #b967ff; --glass-off-a: #b9a4f2; --glass-off-b: #9a86d0; --bar-text: #1a0640; --bar-shadow: none; --bar-edge: #2a1257;
   --gloss: linear-gradient(90deg, rgba(255, 113, 206, 1), rgba(185, 103, 255, 1) 55%, rgba(1, 205, 254, 1)); --gloss-off: linear-gradient(90deg, #cdb8f5, #9fd6ee);
   --win-top: 0; --win-bot: 0; --sheet-radius: 0;
   --putty-1: #e4d6ff; --putty-2: #c2aef5; --putty-3: #8a6fd6; --putty-4: #4a2f99;
@@ -611,7 +612,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 :root[data-theme=baroque] {
   --sheet: #140a0c; --ink: #efe3c8; --ink-2: #cdb98e; --heading: #e6c565; --subhead: #d9a84a; --link: #f0d98a; --link-hover: #fff; --tint: #2a1416; --rule: #4a2c1e;
   --sel-bg: #b8923a; --sel-fg: #140a0c; --accent: #b8923a;
-  --display: "Dafont Baroque", "IM Fell English", "Times New Roman", serif; --body: "IM Fell English", Georgia, serif; --pixel: "IM Fell English SC", Georgia, serif;
+  --display: "Dafont Baroque", "IM Fell English", "Times New Roman", serif; --body: "IM Fell English", "Tiro Bangla", Georgia, serif; --pixel: "IM Fell English SC", "Tiro Bangla", Georgia, serif;
   --file-size: 19px; --file-spacing: .04em;
   --glass-a: #6d0d1a; --glass-b: #2a0408; --glass-off-a: #3a1418; --glass-off-b: #1e0a0c; --bar-text: #f0d98a; --bar-shadow: 0 1px 2px #000; --bar-edge: #b8923a;
   --gloss: linear-gradient(180deg, rgba(255, 220, 160, .18), transparent 40%); --gloss-off: linear-gradient(180deg, rgba(255, 220, 160, .06), transparent 40%);
@@ -641,7 +642,8 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 [data-theme=baroque] .prose h1 { font-weight: 400; font-size: 40px; }
 [data-theme=baroque] .about h1 [lang=bn] { font-family: "Baloo Da 2", sans-serif; }
 [data-theme=baroque] .prose h2 { font-weight: 400; font-size: 29px; }
-[data-theme=baroque] .prose h3, [data-theme=baroque] .headline, [data-theme=baroque] .insight, [data-theme=baroque] .vs dd, [data-theme=baroque] .cells dd, [data-theme=baroque] .balloon b { font-family: "IM Fell English SC", serif; font-weight: 400; }
+[data-theme=baroque] .prose h3, [data-theme=baroque] .headline, [data-theme=baroque] .insight, [data-theme=baroque] .vs dd, [data-theme=baroque] .cells dd, [data-theme=baroque] .balloon b { font-family: "IM Fell English SC", "Tiro Bangla", serif; font-weight: 400; }
+[data-theme=baroque] .prose p, [data-theme=baroque] .prose ul { max-width: 59ch; }   /* the same line length: ch now measures Tiro's wider 0 */
 [data-theme=baroque] .win__btn { color: #f0d98a; background: #1a0d06; border-color: #b8923a; border-radius: 50%; width: 22px; box-shadow: none; }
 [data-theme=baroque] .win__btn svg { color: #f0d98a; filter: none; }
 [data-theme=baroque] .win__btn--close { width: 22px; background: #5a0a14; }
@@ -817,6 +819,11 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .is-resizing, .is-resizing * { user-select: none; }
 .os #portrait .photo img { height: 100%; }
 
+.subfiles { margin: 2px 0 6px; }
+.subfiles a { display: inline-flex; align-items: center; gap: 6px; min-height: 30px; padding: 2px 8px 2px 4px; color: var(--ink); font-weight: 600; text-decoration: none; border-radius: 4px; }
+.subfiles a:hover { background: color-mix(in srgb, var(--accent) 16%, transparent); }
+.subfiles svg { flex: none; width: 24px; height: 24px; }
+
 /* Her photo's frame follows the OS. */
 :root { --photo-gap: 3px; --photo-line: 1px solid #fff; --photo-glow: 0 0 0 2px #1f8fe8, 0 0 12px rgba(127, 208, 255, .9); }
 [data-theme=vapor] { --photo-gap: 5px 9px 9px 5px; --photo-border: 0; --photo-line: 3px solid #ff71ce; --photo-glow: 7px 7px 0 #01cdfe; }
@@ -833,6 +840,10 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @media (max-height: 760px) { .os:not([data-theme=aero]) .icons { grid-template-rows: repeat(auto-fill, 82px); } .os:not([data-theme=aero]) .ico svg { width: 42px; height: 42px; } }
 @media (max-height: 679px) { .os:not([data-theme=aero]) .icons { grid-template-rows: repeat(auto-fill, 72px); } .os:not([data-theme=aero]) .ico svg { width: 34px; height: 34px; } }
 .os[data-theme=vapor] .ico span { font-size: 17px; line-height: .95; }
+/* A short screen still fits every icon in two columns, so the note beside PLAY_ME.EXE stays clear. */
+@media (max-height: 581px) { .os .icons, .os:not([data-theme=aero]) .icons { grid-template-rows: repeat(auto-fill, 66px); } .os .ico svg, .os:not([data-theme=aero]) .ico svg { width: 28px; height: 28px; } .os.hook .ico[data-rundown] > svg { width: 34px; height: 34px; } }
+/* A picked painting can be bright anywhere, so labels get the chip Concrete Jungle always has. */
+.os[data-pick]:not([data-theme=metro]) .ico span { background: rgba(10, 8, 6, .62); box-shadow: 0 0 0 3px rgba(10, 8, 6, .62); }
 .mp__showing { order: 5; }
 
 /* Small text and bright fills, per OS. */
@@ -842,6 +853,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .os[data-theme=metro] .task[aria-pressed=true] { color: #0b0b0b; background: #f7b500; text-shadow: none; }
 .os[data-theme=metro] .task[aria-pressed=true] svg { color: inherit; }
 :root:not([data-theme=aero]) #bp-canvas { background: var(--lcd-bg); border-color: var(--mp-edge); }
+:root:not([data-theme=aero]) .mp__screen, :root:not([data-theme=aero]) .vs dt { background: var(--lcd-bg); }
+:root:not([data-theme=aero]) .vs dt { color: var(--lcd-fg); }
+:root:not([data-theme=aero]) .sysdlg, :root:not([data-theme=aero]) .startmenu { border-radius: var(--win-top) var(--win-top) var(--win-bot) var(--win-bot); }
 .mp__quake input { accent-color: var(--accent); }
 :root:not([data-theme=aero]) .tile__img em { color: var(--lcd-fg); background: var(--lcd-bg); }
 :root:not([data-theme=aero]):not([data-theme=ray]) .gel--go, [data-theme=ghost] .start, [data-theme=metro] .start { text-shadow: none; }

@@ -326,6 +326,7 @@ export function initAudio() {
     const list = $('mp-list'), open = list.classList.toggle('is-open');
     e.currentTarget.setAttribute('aria-expanded', String(open));
     dispatchEvent(new Event('tahsin:player-resize'));
+    if (open) list.querySelector('[aria-current=true]')?.scrollIntoView({ block: 'nearest' });
   });
   $('mp-list').addEventListener('click', (e) => { const b = e.target.closest('[data-track]'); if (b) go(+b.dataset.track); });
   if ('mediaSession' in navigator) {
