@@ -1,39 +1,45 @@
-// PLAY_ME.EXE: a 30-second guided tour for recruiters. A spotlight moves from window to window while the caption
-// reads like her voice note. Written, never spoken: there is no synthesized voice.
+// PLAY_ME.EXE: a 30-second guided tour for recruiters. It answers three things: who is she, what can she do, why hire her.
+// A spotlight moves from window to window. Written, never spoken: there is no synthesized voice.
 import { track } from './analytics.js';
 import { vhs } from './audio.js';
 
 const STEPS = [
  {
   "win": "about",
-  "heading": "Question one: who is Tahsin?",
-  "caption": "I studied marketing analytics. I paint. Same skill, observation."
+  "heading": "Who is Tahsin Anan?",
+  "caption": "I'm a marketing analytics graduate from Baruch, and I paint. Both take the same skill: noticing what stands out."
  },
  {
   "win": "case",
-  "heading": "Question two: Norwegian Cruise Line?",
-  "caption": "I led it. People weren't buying tickets. I made memes. 5 weeks, +25% online engagement, +20% followers."
+  "heading": "What can she do? Run a campaign.",
+  "caption": "People weren't buying cruise tickets. I led a 5-week campaign built on memes. Online engagement rose 25% and followers 20%."
+ },
+ {
+  "win": "observe",
+  "tab": "visit",
+  "heading": "What can she do? Read an audience.",
+  "caption": "This window is reading your visit right now: what you opened, and what kind of visitor that makes you. That's how I study any audience."
  },
  {
   "win": "observe",
   "tab": "ab",
-  "heading": "Question three: which headline?",
-  "caption": "I like both, so I'm A/B testing them on you. You've seen both now, so your conversions stop counting."
+  "heading": "What can she do? Test instead of guess.",
+  "caption": "I wrote two headlines and couldn't pick, so half of visitors see each. I count which gets more people to open my resume or email me."
  },
  {
   "win": "design",
-  "heading": "Question four: the design work?",
-  "caption": "I made these."
+  "heading": "What can she do? Design.",
+  "caption": "I make the work too: logos, flyers and campaign graphics. All of these are mine."
  },
  {
   "win": "art",
-  "heading": "Question five: your proudest work?",
-  "caption": "The baseball sketch is coffee and pen."
+  "heading": "And she paints.",
+  "caption": "These are my paintings. The baseball sketch is coffee and pen."
  },
  {
   "win": "end",
-  "heading": "That's the rundown.",
-  "caption": "I am looking for jobs, so resume, email, then go play. Change the song, the whole desktop follows. There are games."
+  "heading": "Why hire her?",
+  "caption": "I come up with the idea, I make it, and I check whether it worked. I'm looking for roles in marketing analytics, brand and insights. My resume and email are right here. Then go play: change the song and the whole desktop changes."
  }
 ];
 
@@ -147,6 +153,7 @@ function show(i) {
   $('tour-next').hidden = last;
   $('tour-pause').hidden = last;
   $('tour-end').hidden = !last;
+  $('tour-stop').hidden = last;
   track('rundown_step', { step: index + 1, window: s.win || 'end' });
   if (last) {
     clearTimeout(timer);

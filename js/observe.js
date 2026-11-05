@@ -126,6 +126,7 @@ async function renderAB() {
     : `No clear winner at the planned sample: p = ${test.p.toFixed(2)}. This test only sees big lifts, so a smaller one could still be real. I'd keep either and test something bolder.`;
   panel.innerHTML = `
     <h2>I couldn't pick a headline, so I'm testing both</h2>
+    <p>A headline is the first thing you read about me, and I'd rather measure what works than guess. Half of visitors see A and half see B, and I count which one gets more people to open my resume or reach out.</p>
     <dl class="vs">
       <div><dt><b>A</b></dt><dd>${esc(HEADLINES.A)}</dd></div>
       <div><dt><b>B</b></dt><dd>${esc(HEADLINES.B)}</dd></div>
