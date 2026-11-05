@@ -1,0 +1,225 @@
+// PLAY_ME.EXE: a 30-second guided tour for recruiters. A spotlight moves from window to window while the caption
+// reads like her voice note. Written, never spoken: there is no synthesized voice.
+import { track } from './analytics.js';
+import { vhs } from './audio.js';
+
+const STEPS = [
+ {
+  "win": "about",
+  "heading": "Question one: who is Tahsin?",
+  "caption": "I studied marketing analytics. I paint. Same skill, observation."
+ },
+ {
+  "win": "case",
+  "heading": "Question two: Norwegian Cruise Line?",
+  "caption": "I led it. People weren't buying tickets. I made memes. 5 weeks, +25% online engagement, +20% followers."
+ },
+ {
+  "win": "observe",
+  "tab": "ab",
+  "heading": "Question three: which headline?",
+  "caption": "I like both, so I'm A/B testing them on you. You've seen both now, so your conversions stop counting."
+ },
+ {
+  "win": "design",
+  "heading": "Question four: the design work?",
+  "caption": "I made these."
+ },
+ {
+  "win": "art",
+  "heading": "Question five: your proudest work?",
+  "caption": "The baseball sketch is coffee and pen."
+ },
+ {
+  "win": "end",
+  "heading": "That's the rundown.",
+  "caption": "I am looking for jobs, so resume, email, then go play. Change the song, the whole desktop follows. There are games."
+ }
+];
+
+const $ = (id) => document.getElementById(id);
+const still = matchMedia('(prefers-reduced-motion: reduce)');
+let api, opener = null, active = false, index = 0, timer = 0, typing = 0, stepEnd = 0, remaining = 0, paused = false, saved = [], opened = new Set();
+
+const dock = $('tour'), spot = $('tourspot');
+
+function snapshot() {
+  saved = [...api.wins].map(([id, w]) => ({ id, open: w.open, min: w.min, placed: w.placed, left: w.el.style.left, top: w.el.style.top, cw: w.el.style.getPropertyValue('--w'), ch: w.el.style.getPropertyValue('--h'), z: w.el.style.zIndex, max: w.el.classList.contains('is-max') }));
+  saved.focus = api.focused();
+}
+function restore() {
+  if (!api.desktop()) return;
+  for (const s of saved) {
+    const w = api.wins.get(s.id);
+    w.el.classList.remove('is-touring');
+    w.el.classList.toggle('is-max', s.max);
+    w.el.style.left = s.left; w.el.style.top = s.top; w.el.style.zIndex = s.z;
+    w.el.style.setProperty('--w', s.cw); w.el.style.setProperty('--h', s.ch);
+    w.open = s.open; w.min = s.min; w.placed = s.placed;
+    w.el.hidden = !s.open || s.min;
+  }
+  api.refresh();
+  if (saved.focus) api.focus(saved.focus);
+}
+
+// Every episode gets the same frame: the open space between the icons and the narration column, centered if there's extra room.
+function frame(id) {
+  const w = api.wins.get(id), left = api.leftEdge(), top = 14, room = dock.offsetLeft - left - 14;
+  const width = Math.min(1000, room), height = innerHeight - 48 - top * 2, x = left + (room - width) / 2;
+  w.el.classList.remove('is-max');
+  w.el.classList.add('is-touring');
+  w.el.style.left = `${x}px`; w.el.style.top = `${top}px`;
+  w.el.style.setProperty('--w', `${width}px`); w.el.style.setProperty('--h', `${height}px`);
+  api.focus(id);
+  spot.hidden = false;
+  spot.style.cssText = `left:${x - 6}px;top:${top - 6}px;width:${width + 12}px;height:${height + 12}px`;
+}
+
+function say(text) {
+  const p = $('tour-p');
+  $('tour-live').textContent = text;
+  clearInterval(typing);
+  if (still.matches) { p.textContent = text; return; }
+  const words = text.split(' ');
+  let n = 0;
+  dock.classList.add('is-talking');
+  p.textContent = '';
+  typing = setInterval(() => {
+    n++;
+    p.textContent = words.slice(0, n).join(' ');
+    if (n >= words.length) { clearInterval(typing); dock.classList.remove('is-talking'); }
+  }, 105);
+}
+
+function arm(ms) {
+  clearTimeout(timer);
+  remaining = ms; stepEnd = performance.now() + ms;
+  dock.style.setProperty('--step-ms', `${ms}ms`);
+  if (!paused && !still.matches) timer = setTimeout(next, ms);
+}
+function setPaused(on) {
+  paused = on;
+  $('tour-pause').textContent = on ? 'Play' : 'Pause';
+  dock.classList.toggle('is-paused', on);
+  if (on) { clearTimeout(timer); remaining = Math.max(0, stepEnd - performance.now()); }
+  else if (index < STEPS.length - 1) { stepEnd = performance.now() + remaining; timer = setTimeout(next, remaining); }
+}
+
+const crt = $('crt');
+let clockTimer = 0, tapeStart = 0;
+function powerOn() {
+  crt.classList.remove('is-off', 'is-skip');
+  crt.hidden = false;
+  crt.classList.add('is-on');
+  vhs.start();
+  tapeStart = performance.now();
+  clearInterval(clockTimer);
+  clockTimer = setInterval(() => { const s = Math.floor((performance.now() - tapeStart) / 1000); $('crt-time').textContent = `SP 0:${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 500);
+}
+function powerOff() {
+  clearInterval(clockTimer);
+  vhs.stop();
+  crt.classList.remove('is-on', 'is-skip');
+  if (still.matches) { crt.hidden = true; return; }
+  crt.classList.add('is-off');
+  setTimeout(() => { crt.hidden = true; crt.classList.remove('is-off'); }, 430);
+}
+function tapeSkip() {
+  crt.classList.remove('is-skip');
+  void crt.offsetWidth;   // restart the animation
+  crt.classList.add('is-skip');
+  vhs.skip();
+}
+
+function show(i) {
+  const moved = active && i !== index && dock.dataset.started === '1';
+  if (moved) tapeSkip();
+  dock.dataset.started = '1';
+  index = Math.max(0, Math.min(STEPS.length - 1, i));
+  const s = STEPS[index], last = index === STEPS.length - 1;
+  $('tour-h').textContent = s.heading;
+  say(s.caption);
+  $('tour-count').textContent = `Episode ${index + 1} of ${STEPS.length}`;
+  dock.querySelectorAll('.tour__seg i').forEach((seg, n) => {
+    seg.className = n < index ? 'is-done' : n === index ? 'is-now' : '';
+  });
+  $('tour-back').disabled = index === 0;
+  $('tour-next').hidden = last;
+  $('tour-pause').hidden = last;
+  $('tour-end').hidden = !last;
+  track('rundown_step', { step: index + 1, window: s.win || 'end' });
+  if (last) {
+    clearTimeout(timer);
+    spot.hidden = true;
+    restore();
+    track('rundown_finish');
+    return;
+  }
+  if (!api.wins.get(s.win).open || api.wins.get(s.win).min) opened.add(s.win);
+  api.open(s.win, { user: false, quiet: true, tab: s.tab });
+  if (api.desktop()) { frame(s.win); s.after?.(api); }
+  else { api.wins.get(s.win).el.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' }); }
+  const words = s.caption.split(' ').length;
+  arm(Math.max(3800, 1000 + words * 230));
+}
+function next() { show(index + 1); }
+
+export function stop(reason = 'stop') {
+  if (!active) return;
+  active = false;
+  clearTimeout(timer); clearInterval(typing);
+  dock.hidden = true; spot.hidden = true;
+  dock.dataset.started = '0';
+  powerOff();
+  removeEventListener('keydown', onKey, true);
+  if (index < STEPS.length - 1) restore();
+  document.documentElement.classList.remove('is-rundown');
+  dispatchEvent(new CustomEvent('tahsin:rundown', { detail: { active: false } }));
+  if (reason !== 'link') opener?.focus?.({ preventScroll: true });
+  if (reason === 'stop' && index < STEPS.length - 1) track('rundown_stop', { step: index + 1 });
+}
+
+function onKey(e) {
+  if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); stop(); }
+  else if (e.key === 'ArrowRight' && index < STEPS.length - 1 && !e.target.closest?.('input, textarea')) { e.preventDefault(); next(); }
+  else if (e.key === 'ArrowLeft' && index > 0 && !e.target.closest?.('input, textarea')) { e.preventDefault(); show(index - 1); }
+}
+
+let wired = false;
+function wire() {
+  if (wired) return;
+  wired = true;
+  const segs = dock.querySelector('.tour__seg');
+  segs.innerHTML = STEPS.map(() => '<i></i>').join('');
+  $('tour-next').addEventListener('click', next);
+  $('tour-back').addEventListener('click', () => show(index - 1));
+  $('tour-pause').addEventListener('click', () => setPaused(!paused));
+  $('tour-stop').addEventListener('click', () => stop());
+  $('tour-play').addEventListener('click', () => stop('done'));
+  dock.addEventListener('pointerenter', () => { if (!paused && index < STEPS.length - 1) { clearTimeout(timer); remaining = Math.max(800, stepEnd - performance.now()); dock.classList.add('is-paused'); } });
+  dock.addEventListener('pointerleave', () => { if (!paused && index < STEPS.length - 1) { dock.classList.remove('is-paused'); stepEnd = performance.now() + remaining; clearTimeout(timer); timer = setTimeout(next, remaining); } });
+  addEventListener('click', (e) => { if (active && e.target.closest?.('[data-open], [data-conv], [data-view]')) stop('link'); }, true);
+  // Reaching into a window means they want to read, so the tour waits for them.
+  $('desk').addEventListener('pointerdown', () => { if (active && !paused && index < STEPS.length - 1) setPaused(true); });
+}
+
+export function start(a, from) {
+  api = a; opener = from;
+  if (active) return;
+  active = true;
+  wire();
+  snapshot();
+  opened = new Set();
+  paused = false;
+  $('tour-pause').textContent = 'Pause';
+  dock.classList.remove('is-paused');
+  dock.hidden = false;
+  document.documentElement.classList.add('is-rundown');
+  dispatchEvent(new CustomEvent('tahsin:rundown', { detail: { active: true } }));
+  addEventListener('keydown', onKey, true);
+  track('rundown_start');
+  powerOn();
+  index = 0;
+  show(0);
+  $('tour-next').focus({ preventScroll: true });
+}

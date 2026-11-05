@@ -1,10 +1,11 @@
-# Tahsin Anan Portfolio
+# Tahsin Anan's portfolio
 
-GitHub Pages upload structure:
+Static site on GitHub Pages: https://tahsinanan15.github.io/Portfolio/ . Pushing to `main` publishes it. There is no build step.
 
-- index.html
-- styles.css
-- script.js
-- assets/
+- `index.html`: all the words and windows
+- `css/site.css`: the look
+- `js/`: `main.js` (windows, boot, looks), `themes.js` (the six song OSes), `fx.js` (their worlds and beat effects), `audio.js` (player, sounds), `tour.js` (RUNDOWN.EXE), `bubbles.js`, `analytics.js` and `observe.js` (OBSERVE.EXE), `stats.js`, `bubblepop.js`, `paint.js`, `panopticon.js`
+- `assets/`: art, design work, audio, wallpapers, per-OS icons, cursors, stings and chimes, fonts, the resume PDF
 
-In GitHub Pages settings, set Branch to main and folder to `/ (root)`.
+
+`DESIGN.md` holds the design system. In `_dev/`: `serve.py` is a local preview with caching off, `stamp.py` stamps cache-busting hashes into `index.html` (run it after editing css or js), `build_art.py` rebuilds the web images and the painting analysis, and `build_walls.py` rebuilds the wallpapers.

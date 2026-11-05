@@ -1,0 +1,75 @@
+Third-party fonts in this folder: name, author, source and license, as found when each font was added (November 2026).
+Basic Latin or smaller subsets of the original files. Copyright and license lines are also kept in each file's name table.
+
+DISPLAY FACES FROM DAFONT.COM, ONE PER OS
+
+Retro Stereo Wide (dafont-vapor.woff2, Vaporwave OS)
+  Author: Gus Thessalos, Thessalos Design
+  Source: https://www.dafont.com/retro-stereo-wide.font
+  License: the dafont page says "100% Free". The zip has no readme. The file's copyright field says
+  "Copyright (c) 2010 Thessalos Design, Ltd. . All Rights Reserved". Its embedding flag allows editable embedding (fsType 8).
+
+Dafont Baroque (dafont-baroque.woff2, Baroque Keep)
+  Subset of CAT Liebing Gotisch, renamed because the license reserves that name.
+  Author: Peter Wiegel, CAT-Fonts
+  Source: https://www.dafont.com/cat-liebing-gotisch.font
+  License: the dafont page says "Public domain / GPL / OFL". The zip's license file says "This Font Software is licensed
+  under the SIL Open Font License, Version 1.1". Copyright (c) 2016, CAT-Fonts, Peter Wiegel, with Reserved Font Name
+  "CAT Liebing Gotisch". https://scripts.sil.org/OFL
+
+Data Trash (dafont-ghost.woff2, Ghost Net)
+  Author: Dimitris Kolyris, pOPdOG fONTS
+  Source: https://www.dafont.com/data-trash.font
+  License: the dafont page says "100% Free". The file's copyright field says "pOPdOG fONTS 2001". The note in the zip reads:
+    http://popdog_fonts.tripod.com
+    This is a freeware font from pOPdOG fONTS
+    e-mail: kolyris@hotmail.com
+
+Dafont Ray (dafont-ray.woff2, Ray OS)
+  Subset of Indira K, renamed because the license reserves that name.
+  Author: Peter Wiegel, CAT Fonts
+  Source: https://www.dafont.com/indira-k.font
+  License: the dafont page says "100% Free". The zip's OFL.txt: SIL Open Font License, Version 1.1. Copyright (c) 2014,
+  Peter Wiegel, with Reserved Font Name "Indira K". The full license text is in the file's name table. https://scripts.sil.org/OFL
+
+Alte Haas Grotesk Bold (dafont-metro.woff2, Concrete Jungle)
+  Author: Yann Le Coroller
+  Source: https://www.dafont.com/alte-haas-grotesk.font
+  License: the dafont page says "100% Free". The author asks that this note travels with the font:
+    Alte Haas Grotesk is a typeface that look like an helvetica printed in an old Muller-Brockmann Book.
+
+    These fonts are freeware and can be distributed as long as they are
+    together with this text file.
+
+    I would appreciate very much to see what you have done with it anyway.
+
+    yann le coroller
+    www.yannlecoroller.com
+    yann@lecoroller.com
+
+EVERYTHING ELSE: SIL OPEN FONT LICENSE, VERSION 1.1 (https://scripts.sil.org/OFL)
+Author is the copyright line in each file. Source is the font's Google Fonts page.
+
+Archivo: Copyright 2020 The Archivo Project Authors (https://github.com/Omnibus-Type/Archivo)
+  https://fonts.google.com/specimen/Archivo
+Baloo Da 2: Copyright 2019 The Baloo 2 Project Authors (https://github.com/EkType/Baloo2)
+  https://fonts.google.com/specimen/Baloo+Da+2
+Caveat: Copyright 2014 The Caveat Project Authors (https://github.com/googlefonts/caveat)
+  https://fonts.google.com/specimen/Caveat
+Chakra Petch: Copyright 2018 The Chakra Petch Project Authors (https://github.com/m4rc1e/Chakra-Petch.git)
+  https://fonts.google.com/specimen/Chakra+Petch
+Courier Prime: Copyright 2015 The Courier Prime Project Authors (https://github.com/quoteunquoteapps/CourierPrime)
+  https://fonts.google.com/specimen/Courier+Prime
+Hind Siliguri: Copyright (c) 2015 Indian Type Foundry (info@indiantypefoundry.com)
+  https://fonts.google.com/specimen/Hind+Siliguri
+IM Fell English, IM Fell English SC: (c) 2007 Igino Marini (www.iginomarini.com), with Reserved Font Names IM FELL English Roman and IM FELL English SC
+  https://fonts.google.com/specimen/IM+Fell+English
+  https://fonts.google.com/specimen/IM+Fell+English+SC
+Share Tech Mono: Copyright (c) 2012, Carrois Type Design, Ralph du Carrois (post@carrois.com www.carrois.com), with Reserved Font Name 'Share'
+  https://fonts.google.com/specimen/Share+Tech+Mono
+Silkscreen: Copyright 2001 The Silkscreen Project Authors (https://github.com/googlefonts/silkscreen)
+  https://fonts.google.com/specimen/Silkscreen
+Tiro Bangla: Copyright 2020 The Indigo Project Authors (https://github.com/TiroTypeworks/Indigo)
+  https://fonts.google.com/specimen/Tiro+Bangla
+VT323: Copyright 2011, The VT323 Project Authors (peter.hull@oikoi.com)
+  https://fonts.google.com/specimen/VT323

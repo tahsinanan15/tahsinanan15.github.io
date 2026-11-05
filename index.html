@@ -1,235 +1,599 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Tahsin Anan | Marketing Analytics Portfolio</title>
-    <meta
-      name="description"
-      content="Retro desktop-inspired portfolio for Tahsin Anan, showcasing marketing analytics experience, creative campaign work, graphic design, and original artwork."
-    >
-    <link rel="stylesheet" href="styles.css">
-  </head>
-  <body>
-    <div class="noise" aria-hidden="true"></div>
+<html lang="en" class="no-js" data-theme="aero">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tahsin Anan, marketing analytics graduate and painter</title>
+<meta name="description" content="Tahsin Anan is a marketing analytics graduate from Baruch College and a painter. Her desktop holds a campaign case study, a live A/B test, her art and her design work.">
+<meta name="theme-color" content="#0a5cb8">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tahsin Anan, marketing analytics graduate and painter">
+<meta property="og:description" content="A Y2K desktop with a campaign case study, a live A/B test, paintings and games.">
+<meta property="og:url" content="https://tahsinanan15.github.io/Portfolio/">
+<meta property="og:image" content="https://tahsinanan15.github.io/Portfolio/assets/og.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/icons/eye.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icons/eye-180.png">
+<link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=008d3c40", "./js/audio.js": "./js/audio.js?v=1d267f5c", "./js/bubblepop.js": "./js/bubblepop.js?v=3485dfff", "./js/bubbles.js": "./js/bubbles.js?v=73dfe530", "./js/fx.js": "./js/fx.js?v=c71b0f3b", "./js/main.js": "./js/main.js?v=dd9e16d6", "./js/observe.js": "./js/observe.js?v=da1932df", "./js/paint.js": "./js/paint.js?v=55ec27ef", "./js/panopticon.js": "./js/panopticon.js?v=554f4ca1", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=c9b8fd8f"}}</script>
+<link rel="stylesheet" href="css/site.css?v=6f7f460f">
+<script>
+  // Decide before first paint, so the boot screen never flashes for returning visitors.
+  (function () {
+    var c = document.documentElement.classList; c.remove('no-js'); c.add('js');
+    var seen = false; try { seen = !!localStorage.getItem('tahsin.booted'); } catch (e) {}
+    if (!seen) c.add('booting');
+    var played = false; try { played = !!localStorage.getItem('tahsin.played'); } catch (e) {}
+    if (!played && !location.hash) c.add('hook');
+    if (innerWidth >= 980 && innerHeight >= 540) c.add('os');
+  })();
+</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Tahsin Anan","jobTitle":"Marketing analytics graduate","email":"mailto:tahsinanan6@gmail.com","url":"https://tahsinanan15.github.io/Portfolio/","sameAs":["https://www.linkedin.com/in/tahsinanan/"],"alumniOf":"Baruch College","address":{"@type":"PostalAddress","addressLocality":"New York","addressRegion":"NY"}}</script>
+</head>
+<body>
+<noscript><p class="noscript">Windows and sound need JavaScript. Everything to read is still here.</p></noscript>
 
-    <header class="topbar" aria-label="Desktop navigation">
-      <a class="start-button" href="#about">Start</a>
-      <nav class="tab-strip" aria-label="Portfolio sections">
-        <a href="#about">about me</a>
-        <a href="#work">projects</a>
-        <a href="#resume">resume</a>
-        <a href="#gallery">gallery</a>
-      </nav>
-      <a class="plus-button" href="#gallery" aria-label="Open gallery">+</a>
-      <time class="clock" id="clock" datetime="2026-05-11">05/11/2026 05:24 PM</time>
-    </header>
+<svg class="sprite" aria-hidden="true" focusable="false" width="0" height="0">
+  <defs>
+    <linearGradient id="g-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fe4ff"/><stop offset=".55" stop-color="#2b9bee"/><stop offset="1" stop-color="#0a56b4"/></linearGradient>
+    <linearGradient id="g-green" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c8f277"/><stop offset=".55" stop-color="#57bd3a"/><stop offset="1" stop-color="#1c7f26"/></linearGradient>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff0a0"/><stop offset=".6" stop-color="#ffc83a"/><stop offset="1" stop-color="#e2930f"/></linearGradient>
+    <linearGradient id="g-gold-back" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0b93a"/><stop offset="1" stop-color="#c47f0c"/></linearGradient>
+    <linearGradient id="g-page" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#d4e0ee"/></linearGradient>
+    <linearGradient id="g-chrome" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".42" stop-color="#aeb6c4"/><stop offset=".5" stop-color="#5d6676"/><stop offset=".62" stop-color="#e7ebf2"/><stop offset="1" stop-color="#8a93a4"/></linearGradient>
+    <linearGradient id="g-red" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9a84"/><stop offset=".55" stop-color="#e2452f"/><stop offset="1" stop-color="#ad1f12"/></linearGradient>
+    <linearGradient id="g-pink" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff8fdb"/><stop offset="1" stop-color="#c7118c"/></linearGradient>
+    <linearGradient id="g-wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f3d7a6"/><stop offset="1" stop-color="#c58c4e"/></linearGradient>
+    <radialGradient id="g-iris" cx=".5" cy=".42" r=".6"><stop offset="0" stop-color="#7ff1ff"/><stop offset=".6" stop-color="#1890d8"/><stop offset="1" stop-color="#07366f"/></radialGradient>
+    <radialGradient id="g-bubble" cx=".35" cy=".3" r=".75"><stop offset="0" stop-color="#fff" stop-opacity=".95"/><stop offset=".45" stop-color="#bff1ff" stop-opacity=".5"/><stop offset="1" stop-color="#1b9ae6" stop-opacity=".85"/></radialGradient>
+  </defs>
 
-    <main class="desktop">
-      <section class="hero-desktop" id="about" aria-labelledby="about-title">
-        <article class="window about-window" data-window>
-          <div class="titlebar">
-            <span>ABOUT_ME.EXE</span>
-            <button type="button" aria-label="Close visual only">×</button>
-          </div>
-          <div class="about-grid">
-            <div class="about-copy">
-              <p class="kicker">Marketing Analytics Student / Creative Strategy</p>
-              <h1 id="about-title">about<br><span>me!</span></h1>
-              <h2>Tahsin Anan</h2>
-              <p>
-                I am a Baruch College marketing analytics student with a creative portfolio that blends
-                data-minded strategy, campaign design, student engagement, and original artwork.
-              </p>
-              <div class="desktop-actions">
-                <a href="assets/resume-tahsin-anan.pdf" target="_blank" rel="noreferrer">open resume</a>
-                <a href="mailto:tahsinanan6@gmail.com">email me</a>
-                <a href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noreferrer">linkedin</a>
-              </div>
-            </div>
+  <symbol id="i-person" viewBox="0 0 48 48"><circle cx="24" cy="13.5" r="9.5" fill="url(#g-sky)" stroke="#07417f"/><path d="M7 42c0-11 7.5-18 17-18s17 7 17 18c0 2.200-1.800 3.500-4 3.500H11c-2.200 0-4-1.300-4-3.500z" fill="url(#g-sky)" stroke="#07417f"/><ellipse cx="21" cy="9.500" rx="5" ry="3" fill="#fff" opacity=".65"/><path d="M12 36c1-5.500 5-8.500 12-8.500 6 0 10 2 11.500 5.500C29 30.500 19 31 12 36z" fill="#fff" opacity=".42"/></symbol>
 
-            <aside class="window portrait-window" data-window>
-              <div class="titlebar">
-                <span>MEET_TAHSIN.JPG</span>
-                <button type="button" aria-label="Close visual only">×</button>
-              </div>
-              <img src="assets/profile/tahsin-portrait.jpg" alt="Portrait of Tahsin Anan">
-            </aside>
+  <symbol id="i-chart" viewBox="0 0 48 48"><path d="M9 3.500h21l10 10v29a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-37a2 2 0 0 1 2-2z" fill="url(#g-page)" stroke="#5f7894"/><path d="M30 3.500v8a2 2 0 0 0 2 2h8z" fill="#b8cde2" stroke="#5f7894"/><rect x="12" y="29" width="5.500" height="10" rx="1" fill="url(#g-sky)"/><rect x="20" y="23" width="5.500" height="16" rx="1" fill="url(#g-green)"/><rect x="28" y="17" width="5.500" height="22" rx="1" fill="url(#g-pink)"/><path d="M11 40.500h24" stroke="#5f7894" stroke-width="1.200"/></symbol>
 
-            <aside class="window socials-window" data-window>
-              <div class="titlebar">
-                <span>SOCIALS.TXT</span>
-                <button type="button" aria-label="Close visual only">×</button>
-              </div>
-              <ul>
-                <li><span>@</span> tahsinanan6@gmail.com</li>
-                <li><span>in</span> linkedin.com/in/tahsinanan</li>
-                <li><span>NY</span> New York, NY</li>
-              </ul>
-            </aside>
-          </div>
-        </article>
+  <symbol id="i-pdf" viewBox="0 0 48 48"><path d="M9 3.500h21l10 10v29a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-37a2 2 0 0 1 2-2z" fill="url(#g-page)" stroke="#5f7894"/><path d="M30 3.500v8a2 2 0 0 0 2 2h8z" fill="#b8cde2" stroke="#5f7894"/><path d="M13 19h22M13 24h22M13 29h14" stroke="#7d93ac" stroke-width="2" stroke-linecap="round"/><rect x="4" y="32" width="26" height="11" rx="3" fill="url(#g-red)" stroke="#8d1a10"/><path d="M9 35v5m0-5h2.500a1.500 1.500 0 0 1 0 3H9m6.500-3v5h1.500a2.500 2.500 0 0 0 0-5h-1.500m7 0v5m0-5h3.500m-3.500 2.500h2.500" fill="none" stroke="#fff" stroke-width="1.300"/></symbol>
 
-        <div class="side-stack">
-          <article class="window skills-window" data-window>
-            <div class="titlebar">
-              <span>SKILLS.ICONS</span>
-              <button type="button" aria-label="Close visual only">×</button>
-            </div>
-            <div class="skill-icons" aria-label="Skills">
-              <span>GA</span>
-              <span>CV</span>
-              <span>KT</span>
-              <span>AD</span>
-              <span>QL</span>
-              <span>RS</span>
-              <span>SV</span>
-              <span>SB</span>
-            </div>
-            <p>Google Analytics, Canva, Kittl, Adobe Creative Suite, Qualtrics, R Studio, SAS Viya, SocialBu.</p>
-          </article>
+  <symbol id="i-folder" viewBox="0 0 48 48"><path d="M4 12a3 3 0 0 1 3-3h11l4 5h19a3 3 0 0 1 3 3v22a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="url(#g-gold-back)" stroke="#94610a"/><path d="M4 19.500a3 3 0 0 1 3-3h34a3 3 0 0 1 3 3V39a3 3 0 0 1-3 3H7a3 3 0 0 1-3-3z" fill="url(#g-gold)" stroke="#94610a"/><path d="M6 19.500c0-.8.700-1.500 1.500-1.500h33c.8 0 1.500.700 1.500 1.500v6C30 22 18 22 6 28z" fill="#fff" opacity=".5"/></symbol>
+  <symbol id="i-folder-design" viewBox="0 0 48 48"><use href="#i-folder"/><path d="M34 22l8 8-11 11-9 1 1-9z" fill="url(#g-sky)" stroke="#07417f"/><circle cx="29" cy="35" r="1.800" fill="#fff"/></symbol>
+  <symbol id="i-folder-art" viewBox="0 0 48 48"><use href="#i-folder"/><path d="M42 21c-4 2-9 7-11 11l3.500 3.500c4-2 9-7 11-11z" fill="url(#g-wood)" stroke="#7a4f1f"/><path d="M30 33c-3 0-5 2-5 5 0 2-1 3-3 4 5 1 11 0 12-4.500z" fill="url(#g-pink)" stroke="#8d1167"/></symbol>
+  <symbol id="i-folder-love" viewBox="0 0 48 48"><use href="#i-folder"/><path d="M33.500 42s-10-6-10-13a5.500 5.500 0 0 1 10-3 5.500 5.500 0 0 1 10 3c0 7-10 13-10 13z" fill="url(#g-pink)" stroke="#8d1167"/><ellipse cx="28.500" cy="28" rx="2.500" ry="1.500" fill="#fff" opacity=".7"/></symbol>
 
-          <article class="window education-window" data-window>
-            <div class="titlebar">
-              <span>EDUCATION.DOC</span>
-              <button type="button" aria-label="Close visual only">×</button>
-            </div>
-            <h3>Baruch College / Zicklin School of Business</h3>
-            <p>BBA in Marketing Analytics, Psychology minor. Expected June 2026.</p>
-          </article>
-        </div>
-      </section>
+  <symbol id="i-eye" viewBox="0 0 48 48"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="url(#g-page)" stroke="#07417f" stroke-width="1.500"/><circle cx="24" cy="24" r="12" fill="url(#g-iris)" stroke="#07366f"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="19.500" cy="18.500" rx="4" ry="2.800" fill="#fff" opacity=".92"/><path d="M4 22C10 12 17 9 24 9s14 3 20 13C36 15 12 15 4 22z" fill="#fff" opacity=".35"/></symbol>
 
-      <section class="marquee-band" aria-label="Portfolio focus">
-        <div>
-          <span>audience insight</span>
-          <span>campaign graphics</span>
-          <span>student engagement</span>
-          <span>creative analytics</span>
-          <span>brand storytelling</span>
-        </div>
-      </section>
+  <symbol id="i-cd" viewBox="0 0 48 48"><circle cx="24" cy="24" r="21" fill="url(#g-chrome)" stroke="#5d6676"/><path d="M24 24L24 3A21 21 0 0 1 42 13z" fill="#ff5fc8" opacity=".62"/><path d="M24 24L42 13A21 21 0 0 1 45 24z" fill="#ffe14d" opacity=".72"/><path d="M24 24L45 24A21 21 0 0 1 38 40z" fill="#74e86a" opacity=".62"/><path d="M24 24L10 40A21 21 0 0 0 24 45z" fill="#44d6f2" opacity=".72"/><path d="M24 24L3 24A21 21 0 0 1 10 8z" fill="#a78bff" opacity=".65"/><circle cx="24" cy="24" r="8" fill="#eef2f7" stroke="#5d6676"/><circle cx="24" cy="24" r="3.200" fill="#fff" stroke="#5d6676"/><path d="M34 3.500v21a4.500 3.800 0 1 1-2.500-3.400V8.500l-9 2V6z" transform="translate(4 8) scale(.68)" fill="url(#g-sky)" stroke="#07417f"/></symbol>
 
-      <section class="work-section" id="work" aria-labelledby="work-title">
-        <div class="section-window-title">
-          <p>open projects</p>
-          <h2 id="work-title">featured windows</h2>
-        </div>
+  <symbol id="i-bubbles" viewBox="0 0 48 48"><circle cx="20" cy="27" r="16" fill="url(#g-bubble)" stroke="#0a6fc4"/><circle cx="37" cy="13" r="8.500" fill="url(#g-bubble)" stroke="#0a6fc4"/><circle cx="39" cy="35" r="5.500" fill="url(#g-bubble)" stroke="#0a6fc4"/><ellipse cx="14" cy="19" rx="5" ry="3.200" fill="#fff" opacity=".95" transform="rotate(-30 14 19)"/><ellipse cx="34" cy="9.500" rx="2.500" ry="1.600" fill="#fff" opacity=".95" transform="rotate(-30 34 9.500)"/></symbol>
 
-        <div class="project-grid">
-          <article class="window project-window project-large" data-window>
-            <div class="titlebar">
-              <span>SUCCESS_AMPLIFIED.CAMPAIGN</span>
-              <button type="button" aria-label="Close visual only">×</button>
-            </div>
-            <div class="project-content">
-              <img src="assets/graphics/explore-kickoff-flyer.jpg" alt="Success Amplified Explore campaign flyer">
-              <div>
-                <p class="kicker">Visual identity / student program</p>
-                <h3>Success Amplified Explore</h3>
-                <p>
-                  Full launch identity work including logos, flyers, branded assets, and promotional graphics
-                  for a student exploration program.
-                </p>
-                <button type="button" class="text-link" data-gallery-target="explore-kickoff">open preview</button>
-              </div>
-            </div>
-          </article>
+  <symbol id="i-paint" viewBox="0 0 48 48"><path d="M24 7C12 7 3 15 3 25c0 9 8 16 17 16 3 0 4-2 3.500-4-.6-2.500 1-5 4-5h6.500C39 32 45 28 45 22 45 13 35 7 24 7z" fill="url(#g-wood)" stroke="#7a4f1f"/><circle cx="14" cy="20" r="4" fill="url(#g-sky)"/><circle cx="24" cy="14.500" r="4" fill="url(#g-gold)"/><circle cx="35" cy="18.500" r="4" fill="url(#g-pink)"/><circle cx="12" cy="30" r="4" fill="url(#g-green)"/><path d="M8 13c6-4 14-5 22-3-7 0-16 2-22 8z" fill="#fff" opacity=".45"/></symbol>
 
-          <article class="window project-window" data-window>
-            <div class="titlebar">
-              <span>DNRCAST.MP4</span>
-              <button type="button" aria-label="Close visual only">×</button>
-            </div>
-            <img src="assets/previews/dnrcast-preview.png" alt="DNRcast app preview">
-            <div class="project-body">
-              <p class="kicker">Digital product promotion</p>
-              <h3>DNRcast App Preview</h3>
-              <p>A mobile-first promo piece informed by entertainment positioning and audience curiosity.</p>
-              <button type="button" class="text-link" data-gallery-target="dnrcast">play video</button>
-            </div>
-          </article>
+  <symbol id="i-wall" viewBox="0 0 48 48"><rect x="3.500" y="7" width="41" height="34" rx="3" fill="url(#g-chrome)" stroke="#5d6676"/><rect x="7" y="10.500" width="34" height="27" fill="url(#g-sky)"/><path d="M7 30c7-7 13-7 19-3s10 4 15-1v11.500H7z" fill="url(#g-green)"/><circle cx="33" cy="16.500" r="3.500" fill="#fff6c2"/><path d="M12 19c1-2 3-2.500 4.500-1.500 1.500-1 4-.5 4.500 1.500z" fill="#fff"/></symbol>
 
-          <article class="window project-window" data-window>
-            <div class="titlebar">
-              <span>PROGOTI.POST</span>
-              <button type="button" aria-label="Close visual only">×</button>
-            </div>
-            <img src="assets/graphics/project-progoti-campaign.jpg" alt="Project Progoti campaign visual">
-            <div class="project-body">
-              <p class="kicker">Community fundraising</p>
-              <h3>Project Progoti</h3>
-              <p>Social impact graphics balancing clarity, warmth, and donor-facing call to action.</p>
-              <button type="button" class="text-link" data-gallery-target="project-progoti">open preview</button>
-            </div>
-          </article>
-        </div>
-      </section>
+  <symbol id="i-mail" viewBox="0 0 48 48"><rect x="3.500" y="10" width="41" height="29" rx="3.500" fill="url(#g-page)" stroke="#5f7894"/><path d="M4.500 13l19.500 15 19.500-15" fill="none" stroke="#5f7894" stroke-width="1.500"/><path d="M5 37l13-12M43 37L30 25" stroke="#9fb4ca" stroke-width="1.300"/><circle cx="38" cy="12" r="7" fill="url(#g-green)" stroke="#176f22"/><path d="M34.500 12l2.500 2.500 4-4.500" fill="none" stroke="#fff" stroke-width="1.800" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 
-      <section class="resume-section" id="resume" aria-labelledby="resume-title">
-        <article class="window resume-window" data-window>
-          <div class="titlebar">
-            <span>RESUME_SUMMARY.TXT</span>
-            <button type="button" aria-label="Close visual only">×</button>
-          </div>
-          <div class="resume-grid">
-            <div>
-              <p class="kicker">Relevant info pulled from resume</p>
-              <h2 id="resume-title">experience with proof points</h2>
-              <div class="resume-lines">
-                <p><strong>DNR Events LLC</strong> - Marketing Intern, March 2025 to May 2025.</p>
-                <p>Led a 5-week strategic campaign for a Norwegian Cruise Line launch; increased online engagement by 25%.</p>
-                <p>Scheduled 15+ posts using SocialBu and helped drive 20% follower growth.</p>
-                <p><strong>STARR Career Development Center</strong> - Project Assistant and Peer for Career.</p>
-                <p>Supports career resources for 200+ students and program materials for 1200+ incoming transfer students.</p>
-                <p><strong>Success Amplified Explore</strong> - Graphic Designer, January 2026 to present.</p>
-                <p>Creates logos, flyers, branded assets, and 10+ promotional graphics across digital platforms.</p>
-              </div>
-              <a class="download-button" href="assets/resume-tahsin-anan.pdf" target="_blank" rel="noreferrer">download full resume</a>
-            </div>
-            <button class="resume-preview" type="button" data-gallery-target="resume">
-              <img src="assets/previews/resume-preview.png" alt="Preview of Tahsin Anan resume">
-              <span>click to enlarge</span>
-            </button>
-          </div>
-        </article>
-      </section>
+  <symbol id="i-bin" viewBox="0 0 48 48"><path d="M10 14h28l-3 28a3 3 0 0 1-3 2.500H16a3 3 0 0 1-3-2.500z" fill="url(#g-sky)" fill-opacity=".75" stroke="#07417f"/><rect x="6" y="9" width="36" height="6" rx="2.500" fill="url(#g-chrome)" stroke="#5d6676"/><path d="M19 19l1 21M24 19v21M29 19l-1 21" stroke="#fff" stroke-width="1.600" opacity=".7"/><path d="M15 16c1 8 1 16 2.500 26" stroke="#fff" stroke-width="2.500" opacity=".35"/></symbol>
 
-      <section class="gallery-section" id="gallery" aria-labelledby="gallery-title">
-        <div class="window gallery-window" data-window>
-          <div class="titlebar gallery-titlebar">
-            <span id="gallery-title">PORTFOLIO_GALLERY</span>
-            <div class="filter-group" aria-label="Filter gallery">
-              <button class="filter-button active" type="button" data-filter="all">all</button>
-              <button class="filter-button" type="button" data-filter="graphics">graphics</button>
-              <button class="filter-button" type="button" data-filter="artwork">art</button>
-              <button class="filter-button" type="button" data-filter="media">media</button>
-            </div>
-          </div>
-          <div class="gallery-grid" id="gallery-grid"></div>
-        </div>
-      </section>
-    </main>
+  <symbol id="i-txt" viewBox="0 0 48 48"><path d="M9 3.500h21l10 10v29a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-37a2 2 0 0 1 2-2z" fill="url(#g-page)" stroke="#5f7894"/><path d="M30 3.500v8a2 2 0 0 0 2 2h8z" fill="#b8cde2" stroke="#5f7894"/><path d="M13 20h22M13 26h22M13 32h22M13 38h12" stroke="#2b9bee" stroke-width="2" stroke-linecap="round"/></symbol>
 
-    <footer class="footer-bar">
-      <span>Tahsin Anan Portfolio OS</span>
-      <a href="#about">back to desktop</a>
-    </footer>
+  <symbol id="i-bowl" viewBox="0 0 48 48"><path d="M5 22h38c0 11-8 20-19 20S5 33 5 22z" fill="url(#g-page)" stroke="#5f7894"/><path d="M8 22c2-7 9-12 16-12s14 5 16 12z" fill="url(#g-wood)" stroke="#7a4f1f"/><circle cx="17" cy="18" r="2" fill="#57bd3a"/><circle cx="26" cy="15" r="2" fill="#e2452f"/><circle cx="32" cy="19" r="2" fill="#fff"/></symbol>
 
-    <dialog class="lightbox" id="lightbox" aria-label="Project preview">
-      <div class="titlebar">
-        <span id="lightbox-window-title">PREVIEW</span>
-        <button class="close-button" type="button" aria-label="Close preview">×</button>
+  <symbol id="i-star" viewBox="0 0 64 64"><path d="M32 3c2.500 0 4 2 5.500 6l5 12 12.500 1.500c4.500.5 7 2 7 4.500s-2 4-5 6.500l-9.500 8 3 13c1 4 .5 7-1.500 8s-4.500 0-8-2.300L32 53.500l-9.500 6.200c-3.500 2.300-6 3.300-8 2.300s-2.500-4-1.500-8l3-13-9.500-8C3.500 30.500 1.500 29 1.500 26.500S4.500 22.500 9 22l12.500-1.500 5-12C28 5 29.500 3 32 3z" fill="url(#g-chrome)" stroke="#5d6676"/><path d="M32 7c-2 0-3 2-4 5l-5 11.500-13 1.500c-3 .3-4.500 1-5 2 8-2 18-3 27-3s19 1 27 3c-.5-1-2-1.700-5-2l-13-1.500L36 12c-1-3-2-5-4-5z" fill="#fff" opacity=".75"/></symbol>
+
+  <symbol id="i-pixstar" viewBox="0 0 11 11"><path d="M5 0h1v2h1v2h4v1h-1v1H9v1h1v3H9V9H8V8H6v1H5V8H3v1H2v1H1V7h1V6H1V5H0V4h4V2h1z" fill="currentColor"/></symbol>
+
+  <symbol id="i-rundown" viewBox="0 0 48 48"><rect x="3" y="27" width="42" height="17" rx="2.500" fill="url(#g-chrome)" stroke="#3a4250"/><rect x="8" y="31" width="32" height="4" rx="1" fill="#10141c"/><circle cx="38.500" cy="39.500" r="1.800" fill="#57e04a"/><rect x="8" y="38.300" width="14" height="2.200" fill="#5d6676"/><path d="M9 3h30a2 2 0 0 1 2 2v28H7V5a2 2 0 0 1 2-2z" fill="#171a22" stroke="#000"/><rect x="12" y="6" width="24" height="9" fill="#f4efe3"/><rect x="12" y="11" width="24" height="1.700" fill="#e2452f"/><rect x="12" y="12.700" width="24" height="1.700" fill="#2b9bee"/><rect x="14" y="17.500" width="20" height="9" rx="4.500" fill="#3a4250"/><circle cx="19" cy="22" r="3.300" fill="#f4efe3"/><circle cx="29" cy="22" r="3.300" fill="#f4efe3"/><circle cx="19" cy="22" r="1.200" fill="#171a22"/><circle cx="29" cy="22" r="1.200" fill="#171a22"/><path d="M9 4.500h14L9 16z" fill="#fff" opacity=".14"/></symbol>
+
+  <!-- One-color glyphs. Every launcher theme redraws the icons from these, inside its own tile shape. -->
+
+  <symbol id="u-play" viewBox="0 0 24 24"><path d="M7 4.500v15a1 1 0 0 0 1.500.860l12-7.500a1 1 0 0 0 0-1.720l-12-7.500A1 1 0 0 0 7 4.500z"/></symbol>
+  <symbol id="u-pause" viewBox="0 0 24 24"><rect x="5.500" y="4" width="4.500" height="16" rx="1.200"/><rect x="14" y="4" width="4.500" height="16" rx="1.200"/></symbol>
+  <symbol id="u-prev" viewBox="0 0 24 24"><path d="M21 5v14l-9.500-7zM11 5v14L1.500 12z"/></symbol>
+  <symbol id="u-next" viewBox="0 0 24 24"><path d="M3 5v14l9.500-7zM13 5v14l9.500-7z"/></symbol>
+  <symbol id="u-vol" viewBox="0 0 24 24"><path d="M3 9.500v5h4l5.500 4.500v-14L7 9.500z"/><path d="M15.500 8.500a5 5 0 0 1 0 7M18 6a8.500 8.500 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="u-mute" viewBox="0 0 24 24"><path d="M3 9.500v5h4l5.500 4.500v-14L7 9.500z"/><path d="M16 9.500l5 5m0-5l-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="u-min" viewBox="0 0 16 16"><rect x="3" y="11" width="10" height="2.500" rx=".6"/></symbol>
+  <symbol id="u-max" viewBox="0 0 16 16"><path d="M3 3h10v10H3zM4.800 6v5.200h6.400V6z" fill-rule="evenodd"/></symbol>
+  <symbol id="u-close" viewBox="0 0 16 16"><path d="M3.500 3.500l9 9m0-9l-9 9" fill="none" stroke="currentColor" stroke-width="2.600" stroke-linecap="round"/></symbol>
+</svg>
+
+<div class="wall" id="wall" aria-hidden="true"><img id="wall-a" alt=""><img id="wall-b" alt=""><canvas id="warp" hidden></canvas></div>
+<div class="os-overlay" aria-hidden="true"></div>
+<video id="sting" muted playsinline preload="none" aria-hidden="true" hidden></video>
+<canvas class="bubbles" id="bubbles" aria-hidden="true"></canvas>
+
+<a class="skip" href="#about">Skip to Tahsin's introduction</a>
+<button class="skip" id="skip-mute" type="button">Mute the music</button>
+
+<nav class="icons" id="icons" aria-label="Desktop icons">
+  <a class="ico" href="#about" data-open="about"><svg><use href="#i-person"/></svg><span>ABOUT_<wbr>ME.EXE</span></a>
+  <button class="ico" type="button" data-rundown aria-label="PLAY_ME.EXE, a 30-second tour"><svg aria-hidden="true"><use href="#i-rundown"/></svg><span>PLAY_<wbr>ME.EXE</span><i class="pss" id="pss"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M60 31C45 9 25 8 7 19M7 19l11-8M7 19l12 6"/></svg><b>psst... start here</b><small>30 seconds, then go play</small></i></button>
+  <a class="ico" href="#case" data-open="case"><svg><use href="#i-chart"/></svg><span>NCL_<wbr>CASE.DOC</span></a>
+  <a class="ico" href="#observe" data-open="observe"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="url(#g-page)" stroke="#07417f" stroke-width="1.500"/><g class="eye__iris"><circle cx="24" cy="24" r="12" fill="url(#g-iris)" stroke="#07366f"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="19.500" cy="18.500" rx="4" ry="2.800" fill="#fff" opacity=".92"/></g></svg><svg class="ico__os" aria-hidden="true"><use href="#i-eye"/></svg><span>OBSERVE.EXE</span></a>
+  <a class="ico" href="#resume" data-open="resume"><svg><use href="#i-pdf"/></svg><span>RESUME.PDF</span></a>
+  <a class="ico" href="#design" data-open="design"><svg><use href="#i-folder-design"/></svg><span>DESIGN_<wbr>WORK</span></a>
+  <a class="ico" href="#art" data-open="art"><svg><use href="#i-folder-art"/></svg><span>MY_ART</span></a>
+  <a class="ico" href="#player" data-open="player"><svg><use href="#i-cd"/></svg><span>MEDIA_<wbr>PLAYER<wbr>.EXE</span></a>
+  <a class="ico" href="#bubblepop" data-open="bubblepop"><svg><use href="#i-bubbles"/></svg><span>BUBBLE_<wbr>POP.EXE</span></a>
+  <a class="ico" href="#paint" data-open="paint"><svg><use href="#i-paint"/></svg><span>PAINT.EXE</span></a>
+  <a class="ico" href="#wallpaper" data-open="wallpaper"><svg><use href="#i-wall"/></svg><span>WALLPAPER<wbr>.CFG</span></a>
+  <a class="ico" href="#things" data-open="things"><svg><use href="#i-folder-love"/></svg><span>THINGS_<wbr>I_LOVE</span></a>
+  <a class="ico" href="#contact" data-open="contact"><svg><use href="#i-mail"/></svg><span>CONTACT<wbr>.TXT</span></a>
+  <a class="ico ico--bin" href="#bin" data-open="bin"><svg><use href="#i-bin"/></svg><span>RECYCLE_<wbr>BIN</span></a>
+</nav>
+
+<main class="desk" id="desk">
+
+  <section class="win" id="about" data-file="ABOUT_ME.EXE" data-icon="i-person" data-size="doc" aria-labelledby="about-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-person"/></svg><span class="win__file">ABOUT_ME.EXE</span></div>
+    <div class="win__main"><div class="win__body prose about">
+      <span class="about__face" aria-hidden="true"></span>
+      <h1 id="about-h"><span lang="bn">স্বাগতম!</span> I'm Tahsin Anan</h1>
+      <p class="headline" id="headline">Creative marketer who reads the data</p>
+      <p class="abnote" id="abnote" hidden>I couldn't pick between two headlines, so I'm A/B testing them on you. <a href="#observe" data-open="observe" data-tab="ab">See the results</a></p>
+      <p>Marketing analytics graduate from Baruch College, June 2026, with a psychology minor. I'm looking for roles in marketing analytics, brand marketing, consumer insights and research, in consumer goods, beauty, travel or airlines. I lean most toward advertising. I'm in New York and open to moving.</p>
+      <p>The skill I use most is observation. I notice what stands out and I focus on that, in a painting, in a data set, in how people behave.</p>
+      <div class="actions">
+        <a class="gel gel--go" href="#resume" data-open="resume" data-conv="resume">Open resume</a>
+        <a class="gel" href="mailto:tahsinanan6@gmail.com" data-conv="contact">Email me</a>
+        <a class="gel" href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noopener" data-conv="contact">LinkedIn</a>
+        <button class="gel gel--rundown" type="button" data-rundown><svg aria-hidden="true"><use href="#u-play"/></svg>30-second rundown</button>
       </div>
-      <div class="lightbox-media" id="lightbox-media"></div>
-      <div class="lightbox-details">
-        <p class="kicker" id="lightbox-type"></p>
-        <h2 id="lightbox-title"></h2>
-        <p id="lightbox-description"></p>
-        <a id="lightbox-link" href="#" target="_blank" rel="noreferrer">open original</a>
-      </div>
-    </dialog>
+      <p class="reach"><a href="mailto:tahsinanan6@gmail.com" data-conv="contact">tahsinanan6@gmail.com</a> <a href="tel:+19295579947" data-conv="contact">(929) 557-9947</a></p>
+      <nav class="jump" aria-label="Jump to"><a href="#case" data-open="case">Case study</a><a href="#observe" data-open="observe">Live analytics</a><a href="#design" data-open="design">Design</a><a href="#art" data-open="art">Art</a><a href="#player" data-open="player">Music</a><a href="#bubblepop" data-open="bubblepop">Games</a></nav>
+      <details class="story" id="story" open><summary><h2>How I got here</h2></summary>
+      <p>I grew up in Dhaka, Bangladesh, drawing on walls. At two I drew a cockroach, because why was it there? At ten, an art school told me I wouldn't start at level one. They put me at level three, with the older kids. Eyes became my favorite thing to draw. I came to New York to study at Baruch.</p>
+      <p>People open up to me. Friends, coworkers and the students I've mentored come to me for advice, and I listen.</p>
+      </details>
+    </div></div>
+  </section>
 
-    <script src="script.js"></script>
-  </body>
+  <section class="win" id="case" data-file="NCL_CASE.DOC" data-icon="i-chart" data-size="doc" aria-labelledby="case-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-chart"/></svg><span class="win__file">NCL_CASE.DOC</span></div>
+    <div class="win__main"><div class="win__body prose">
+      <h2 id="case-h">People weren't buying tickets</h2>
+      <p class="meta">Norwegian Cruise Line × DNR Events. 5-week campaign. Marketing intern, March to May 2025.</p>
+      <ul class="lcds" aria-label="Campaign results">
+        <li><b>+25%</b><span>online engagement</span></li>
+        <li><b>+20%</b><span>followers</span></li>
+      </ul>
+      <ul class="lcds lcds--sm" aria-label="Results from Baruch College">
+        <li><b>200+</b><span>Baruch students, Resume Guide</span></li>
+        <li><b>1200+</b><span>transfer students supported</span></li>
+        <li><b>30+</b><span>Baruch students mentored</span></li>
+      </ul>
+      <p>DNR Events is a podcast company that runs cruise trips around the world. Its listeners are mostly the LGBTQ community. It partnered with Norwegian Cruise Line, and the tickets weren't selling.</p>
+      <h3>What I noticed</h3>
+      <p>Most of the audience was in their mid-thirties, so I used humor.</p>
+      <h3>What I did</h3>
+      <p>I led the marketing and set the strategy. I made memes. The campaign ran across targeted email, social media and influencers. I scheduled 15+ posts in SocialBu and used the performance analytics to adjust the content as we went.</p>
+      <h3>At Baruch</h3>
+      <ul>
+        <li>Rebuilt Baruch's Resume Guide with the Bridge to Baruch team, for 200+ students.</li>
+        <li>Made program materials easier to use for 1200+ incoming transfer students.</li>
+        <li>Mentored 30+ new students through bi-weekly sessions.</li>
+      </ul>
+      <div class="actions">
+        <a class="gel gel--go" href="#observe" data-open="observe">See how I read this site's data</a>
+        <a class="gel" href="#design" data-open="design">See the design work</a>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="win win--photo" id="portrait" data-file="TAHSIN.JPG" data-icon="i-person" aria-label="Portrait of Tahsin Anan">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-person"/></svg><span class="win__file">TAHSIN.JPG</span></div>
+    <div class="win__main"><div class="win__body photo">
+      <img src="assets/profile/tahsin-portrait.webp" width="944" height="1100" alt="Portrait of Tahsin Anan in front of a dark floral wall, toned to match this song.">
+          </div></div>
+  </section>
+
+  <div class="prints" aria-label="Three pieces from my art">
+    <a href="#art" data-open="art" style="--r:-5deg"><img src="assets/art/thumb/baseball-glove-and-bat.webp" width="520" height="356" alt="Baseball Glove and Bat" loading="lazy"></a>
+    <a href="#art" data-open="art" style="--r:3deg"><img src="assets/art/thumb/eye-with-a-tear.webp" width="520" height="515" alt="Eye with a Tear" loading="lazy"></a>
+    <a href="#art" data-open="art" style="--r:-2deg"><img src="assets/art/thumb/sunflowers.webp" width="520" height="392" alt="Sunflowers" loading="lazy"></a>
+  </div>
+
+  <section class="win" id="observe" data-file="OBSERVE.EXE" data-icon="i-eye" data-size="wide" aria-labelledby="obs-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-eye"/></svg><span class="win__file">OBSERVE.EXE</span></div>
+    <div class="win__main">
+      <div class="tabs" role="tablist" aria-label="Analytics views">
+        <button role="tab" id="tab-visit" aria-controls="obs-visit" aria-selected="true">This visit</button>
+        <button role="tab" id="tab-ab" aria-controls="obs-ab" aria-selected="false" tabindex="-1">Headline test</button>
+        <button role="tab" id="tab-art" aria-controls="obs-art" aria-selected="false" tabindex="-1">My paintings</button>
+      </div>
+      <div class="win__body prose observe" id="obs-root">
+        <div role="tabpanel" id="obs-visit" aria-labelledby="tab-visit">
+          <h2 id="obs-h">What I've noticed about you</h2>
+          <p>This window analyzes your visit live. It needs JavaScript.</p>
+        </div>
+        <div role="tabpanel" id="obs-ab" aria-labelledby="tab-ab" tabindex="0" hidden></div>
+        <div role="tabpanel" id="obs-art" aria-labelledby="tab-art" tabindex="0" hidden></div>
+      </div>
+      <div class="win__status">Your event log stays in this browser. Only anonymous totals are counted.</div>
+    </div>
+  </section>
+
+  <section class="win" id="resume" data-file="RESUME.PDF" data-icon="i-pdf" data-size="doc" aria-labelledby="res-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-pdf"/></svg><span class="win__file">RESUME.PDF</span></div>
+    <div class="win__main"><div class="win__body prose resume">
+      <div class="actions"><a class="gel gel--go" href="assets/resume-tahsin-anan.pdf" target="_blank" rel="noopener" data-conv="resume">Download the PDF</a></div>
+      <h2 id="res-h">Tahsin Anan</h2>
+      <p class="meta">New York, NY. <a href="tel:+19295579947" data-conv="contact">(929) 557-9947</a>. <a href="mailto:tahsinanan6@gmail.com" data-conv="contact">tahsinanan6@gmail.com</a>. <a href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noopener" data-conv="contact">linkedin.com/in/tahsinanan</a></p>
+      <h3>Education</h3>
+      <p><b>Baruch College, CUNY, Zicklin School of Business.</b> BBA, graduated June 2026. Major in Marketing Analytics, minor in Psychology.</p>
+      <p>Coursework: Marketing Analytics with Big Data, Digital Transformation of Marketing, Consumer Behavior, Social Psychology, Text Analytics for Marketing, Marketing Strategy, Advanced Digital Marketing.</p>
+      <h3>Marketing experience</h3>
+      <p><b>DNR Events LLC.</b> Marketing Intern, March to May 2025.</p>
+      <ul>
+        <li>Led a 5-week campaign for the Norwegian Cruise Line launch across email, social media and influencers. Online engagement rose 25%.</li>
+        <li>Scheduled 15+ social posts in SocialBu and used performance analytics to optimize content. Followers grew 20% during the campaign.</li>
+      </ul>
+      <h3>Work experience</h3>
+      <p><b>Baruch College, STARR Career Development Center.</b> Project Assistant (Bridge to Baruch), May 2025 to May 2026.</p>
+      <ul>
+        <li>Renewed the office's Resume Guide with the Bridge to Baruch team, for 200+ students.</li>
+        <li>Supported workshops and employer sessions, and streamlined program materials in Adobe Acrobat and Excel for 1200+ incoming transfer students.</li>
+      </ul>
+      <p><b>Peer for Career.</b> September 2024 to May 2026.</p>
+      <ul><li>Reviewed 10+ student resumes a week and ran mock interviews.</li></ul>
+      <p><b>Baruch College, New Student &amp; Family Program.</b> Peer Mentor, September 2023 to December 2025.</p>
+      <ul>
+        <li>Mentored 30+ new students through bi-weekly sessions.</li>
+        <li>Led workshops on time management and study strategies, with 80% mentee participation.</li>
+      </ul>
+      <h3>Leadership</h3>
+      <p><b>Success Amplified, EXPLORE.</b> Graphic Designer, January to June 2026.</p>
+      <ul>
+        <li>Designed the full visual identity for the program's launch: logos, flyers and branded assets, in Canva and Kittl.</li>
+        <li>Created 10+ promotional graphics across digital platforms.</li>
+      </ul>
+      <h3>Skills</h3>
+      <p><b>Technical:</b> Google Analytics, SAS Viya, RapidMiner, R Studio (beginner), Qualtrics, SocialBu, Microsoft Office, Google Suite, Adobe Creative Suite, Canva, Kittl.</p>
+      <p><b>AI:</b> Codex, Claude Code, Kimi, GLM, DeepSeek, Qwen, Gemini.</p>
+      <p><b>Languages:</b> Bengali (native), Hindi (fluent).</p>
+      <p><b>Certificates:</b> SEO Certified (LinkedIn Learning).</p>
+    </div></div>
+  </section>
+
+  <section class="win" id="design" data-file="DESIGN_WORK" data-icon="i-folder-design" data-size="wide" aria-labelledby="des-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-folder-design"/></svg><span class="win__file">DESIGN_WORK</span></div>
+    <div class="win__main">
+      <div class="win__body prose folder">
+        <h2 id="des-h">Design and campaign work</h2>
+        <h3>Success Amplified Explore</h3>
+        <ul class="tiles">
+          <li><a class="tile" href="assets/graphics/success-amplified-logo.png" target="_blank" rel="noopener" data-view data-src="assets/design/success-logo.webp" data-kind="image" data-title="Success Amplified Explore Logo" data-type="Logo" data-desc="The badge for the Explore program. I put it on every piece in this set."><span class="tile__img"><img src="assets/design/thumb/success-logo.webp" width="480" height="480" alt="Success Amplified Explore Logo" loading="lazy"></span><b>Success Amplified Explore Logo</b><span>Logo</span></a></li>
+          <li><a class="tile" href="assets/graphics/explore-kickoff-flyer.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/explore-kickoff.webp" data-kind="image" data-title="Success Amplified Explore Kickoff" data-type="Student program flyer" data-desc="Asks the question students are stuck on, then gives the details."><span class="tile__img"><img src="assets/design/thumb/explore-kickoff.webp" width="360" height="480" alt="Success Amplified Explore Kickoff" loading="lazy"></span><b>Success Amplified Explore Kickoff</b><span>Student program flyer</span></a></li>
+          <li><a class="tile" href="assets/graphics/major-direction-flyer.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/major-direction.webp" data-kind="image" data-title="Your Major. Your Direction." data-type="Campaign flyer" data-desc="A campus flyer for students choosing a major."><span class="tile__img"><img src="assets/design/thumb/major-direction.webp" width="384" height="480" alt="Your Major. Your Direction." loading="lazy"></span><b>Your Major. Your Direction.</b><span>Campaign flyer</span></a></li>
+          <li><a class="tile" href="assets/graphics/success-passport.pdf" target="_blank" rel="noopener" data-view data-src="assets/design/success-passport.webp" data-kind="pdf" data-title="Success Amplified Passport" data-type="PDF program handout" data-desc="A checklist students fill out to earn the program's stipend."><span class="tile__img"><img src="assets/design/thumb/success-passport.webp" width="256" height="339" alt="Success Amplified Passport" loading="lazy"><em>PDF</em></span><b>Success Amplified Passport</b><span>PDF program handout</span></a></li>
+          <li><a class="tile" href="assets/graphics/labor-market-trends.pdf" target="_blank" rel="noopener" data-view data-src="assets/design/labor-market.webp" data-kind="pdf" data-title="Labor Market Trends" data-type="PDF event flyer" data-desc="A flyer for a talk on NYC careers that actually pay the bills."><span class="tile__img"><img src="assets/design/thumb/labor-market.webp" width="360" height="480" alt="Labor Market Trends" loading="lazy"><em>PDF</em></span><b>Labor Market Trends</b><span>PDF event flyer</span></a></li>
+        </ul>
+<h3>Marketing and brand</h3>
+        <ul class="tiles">
+          <li><a class="tile" href="assets/graphics/dnrcast-app-preview.mp4" target="_blank" rel="noopener" data-view data-src="assets/design/dnrcast.webp" data-video="assets/graphics/dnrcast-app-preview.mp4" data-kind="video" data-title="DNRcast App Preview" data-type="Motion, app promotion" data-desc="A promo for the DNRcast podcast app."><span class="tile__img"><img src="assets/design/thumb/dnrcast.webp" width="270" height="480" alt="DNRcast App Preview" loading="lazy"><em>MP4</em></span><b>DNRcast App Preview</b><span>Motion, app promotion</span></a></li>
+          <li><a class="tile" href="assets/graphics/calx-brand-intro.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/calx.webp" data-kind="image" data-title="CALX Brand Intro" data-type="Concept brand identity" data-desc="My concept brand. Half an eye, half wood grain, with the name across it."><span class="tile__img"><img src="assets/design/thumb/calx.webp" width="480" height="480" alt="CALX Brand Intro" loading="lazy"></span><b>CALX Brand Intro</b><span>Concept brand identity</span></a></li>
+          <li><a class="tile" href="assets/graphics/project-progoti-campaign.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/project-progoti.webp" data-kind="image" data-title="Project Progoti" data-type="Community campaign, 2022" data-desc="A partnership post for Project Kritoggo's food bank and Progoti Foundation."><span class="tile__img"><img src="assets/design/thumb/project-progoti.webp" width="480" height="480" alt="Project Progoti" loading="lazy"></span><b>Project Progoti</b><span>Community campaign, 2022</span></a></li>
+        </ul>
+<h3>Campus events</h3>
+        <ul class="tiles">
+          <li><a class="tile" href="assets/graphics/gratitude-games-flyer.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/gratitude-games.webp" data-kind="image" data-title="Gratitude &amp; Games" data-type="Event flyer" data-desc="A fall event flyer for the Social Committee."><span class="tile__img"><img src="assets/design/thumb/gratitude-games.webp" width="371" height="480" alt="Gratitude &amp; Games" loading="lazy"></span><b>Gratitude &amp; Games</b><span>Event flyer</span></a></li>
+          <li><a class="tile" href="assets/graphics/blooming-together-flyer.jpg" target="_blank" rel="noopener" data-view data-src="assets/design/blooming-together.webp" data-kind="image" data-title="Blooming Together" data-type="Event flyer" data-desc="A spring event flyer for the Social Committee."><span class="tile__img"><img src="assets/design/thumb/blooming-together.webp" width="343" height="480" alt="Blooming Together" loading="lazy"></span><b>Blooming Together</b><span>Event flyer</span></a></li>
+        </ul>
+      </div>
+      <div class="win__status">10 objects</div>
+    </div>
+  </section>
+
+  <section class="win" id="art" data-file="MY_ART" data-icon="i-folder-art" data-size="wide" aria-labelledby="art-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-folder-art"/></svg><span class="win__file">MY_ART</span></div>
+    <div class="win__main">
+      <div class="win__body prose folder">
+        <h2 id="art-h">My art</h2>
+        <div class="feature">
+          <a class="tile" href="assets/artworks/IMG_0710.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/baseball-glove-and-bat.webp" data-title="Baseball Glove and Bat" data-type="Original artwork" data-desc="My proudest piece. I did the background and the shadows in coffee. Then something was missing, so I sketched over it in pen."><span class="tile__img"><img src="assets/art/thumb/baseball-glove-and-bat.webp" width="520" height="356" alt="Pen sketch of a baseball glove, ball and bat over a coffee wash." loading="lazy" id="art-baseball-glove-and-bat"></span><b>Baseball Glove and Bat</b></a>
+          <div><h3>Baseball Glove and Bat</h3><p>My proudest piece. I did the background and the shadows in coffee. Then something was missing, so I sketched over it in pen.</p></div>
+        </div>
+<ul class="mason">
+          <li><a class="tile" href="assets/artworks/IMG_0720.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/eye-with-a-tear.webp" data-title="Eye with a Tear" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/eye-with-a-tear.webp" width="520" height="515" alt="Black and white drawing of an eye with a tear." loading="lazy" id="art-eye-with-a-tear"></span><b>Eye with a Tear</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0726.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/skyscrapers-at-night.webp" data-title="Skyscrapers at Night" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/skyscrapers-at-night.webp" width="390" height="520" alt="Painting of skyscrapers at night above a crowd and glowing street lights." loading="lazy" id="art-skyscrapers-at-night"></span><b>Skyscrapers at Night</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0709.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/the-tailor.webp" data-title="The Tailor" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/the-tailor.webp" width="382" height="520" alt="Ink and wash drawing of a tailor at a sewing machine." loading="lazy" id="art-the-tailor"></span><b>The Tailor</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0704.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/sunset-landscape.webp" data-title="Sunset Landscape" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/sunset-landscape.webp" width="504" height="520" alt="Painting of a sunset behind a mountain, a tree in silhouette and pink clouds." loading="lazy" id="art-sunset-landscape"></span><b>Sunset Landscape</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0705.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/gold-earrings.webp" data-title="Gold Earrings" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/gold-earrings.webp" width="519" height="520" alt="Painting of a woman in profile with closed eyes and gold jewelry." loading="lazy" id="art-gold-earrings"></span><b>Gold Earrings</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0724.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/night-street.webp" data-title="Night Street" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/night-street.webp" width="394" height="520" alt="Painting of a night street with a woman walking a bicycle past an auto rickshaw." loading="lazy" id="art-night-street"></span><b>Night Street</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0708.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/sunflowers.webp" data-title="Sunflowers" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/sunflowers.webp" width="520" height="392" alt="Painting of yellow sunflowers." loading="lazy" id="art-sunflowers"></span><b>Sunflowers</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0711.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/street-crowd.webp" data-title="Street Crowd" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/street-crowd.webp" width="393" height="520" alt="Ink and wash drawing of a busy street with a child in a yellow shirt." loading="lazy" id="art-street-crowd"></span><b>Street Crowd</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0721.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/hay-cart.webp" data-title="Hay Cart" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/hay-cart.webp" width="520" height="390" alt="Drawing of two farmers loading a hay cart." loading="lazy" id="art-hay-cart"></span><b>Hay Cart</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0725.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/city-signs-in-the-rain.webp" data-title="City Signs in the Rain" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/city-signs-in-the-rain.webp" width="392" height="520" alt="Drawing of a person with an umbrella on a rainy street under lit signs." loading="lazy" id="art-city-signs-in-the-rain"></span><b>City Signs in the Rain</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0715.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/jersey-19.webp" data-title="Jersey 19" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/jersey-19.webp" width="390" height="520" alt="Painting of a red number 19 jersey, a basketball and sneakers." loading="lazy" id="art-jersey-19"></span><b>Jersey 19</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0718.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/flower-basket.webp" data-title="Flower Basket" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/flower-basket.webp" width="520" height="390" alt="Painting of a flower basket on an orange cloth." loading="lazy" id="art-flower-basket"></span><b>Flower Basket</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0707.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/clay-vase-and-apple.webp" data-title="Clay Vase and Apple" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/clay-vase-and-apple.webp" width="520" height="516" alt="Still life of a clay vase, an apple and grapes on a dark background." loading="lazy" id="art-clay-vase-and-apple"></span><b>Clay Vase and Apple</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0717.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/cattle-road.webp" data-title="Cattle Road" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/cattle-road.webp" width="390" height="520" alt="Painting of a person herding cattle down a dirt road." loading="lazy" id="art-cattle-road"></span><b>Cattle Road</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0719.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/sneakers.webp" data-title="Sneakers" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/sneakers.webp" width="520" height="390" alt="Drawing of blue sneakers on a striped cloth." loading="lazy" id="art-sneakers"></span><b>Sneakers</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0722.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/flowers-and-gloves.webp" data-title="Flowers and Gloves" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/flowers-and-gloves.webp" width="520" height="390" alt="Still life of flowers, a basket, gardening gloves and shears." loading="lazy" id="art-flowers-and-gloves"></span><b>Flowers and Gloves</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0716.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/badminton-gear.webp" data-title="Badminton Gear" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/badminton-gear.webp" width="390" height="520" alt="Still life of a racket, shuttlecock, towel and yellow tube." loading="lazy" id="art-badminton-gear"></span><b>Badminton Gear</b></a></li>
+          <li><a class="tile" href="assets/artworks/IMG_0723.jpg" target="_blank" rel="noopener" data-view data-kind="image" data-src="assets/art/flowers-by-the-window.webp" data-title="Flowers by the Window" data-type="Original artwork"><span class="tile__img"><img src="assets/art/thumb/flowers-by-the-window.webp" width="390" height="520" alt="Still life of flowers in a glass jar by a window, with books." loading="lazy" id="art-flowers-by-the-window"></span><b>Flowers by the Window</b></a></li>
+        </ul>
+      </div>
+      <div class="win__status"><span>19 objects</span><a href="mailto:tahsinanan6@gmail.com?subject=Commission%20inquiry" data-conv="commission">Ask me about commissions</a></div>
+    </div>
+  </section>
+
+  <section class="win win--player" id="player" data-file="MEDIA_PLAYER.EXE" data-icon="i-cd" aria-label="Media player">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-cd"/></svg><span class="win__file">MEDIA_PLAYER.EXE</span></div>
+    <div class="win__main"><div class="mp" id="mp">
+      <div class="mp__screen">
+        <canvas id="mp-viz" width="600" height="120" aria-hidden="true"></canvas>
+        <div class="mp__lcd">
+          <svg class="mp__star" aria-hidden="true"><use href="#i-pixstar"/></svg>
+          <div class="mp__title" aria-live="polite"><span id="mp-title">ONLINE OFFICE V4.20</span></div>
+          <span class="mp__time" id="mp-time">0:00</span>
+        </div>
+      </div>
+      <label class="mp__seek"><span class="vh">Seek</span><input type="range" id="mp-seek" min="0" max="1000" value="0"></label>
+      <div class="mp__ctl">
+        <button class="ball" id="mp-prev" aria-label="Previous song"><svg><use href="#u-prev"/></svg></button>
+        <button class="ball ball--big" id="mp-play" aria-label="Play"><svg><use id="mp-play-ico" href="#u-play"/></svg></button>
+        <button class="ball" id="mp-next" aria-label="Next song"><svg><use href="#u-next"/></svg></button>
+        <button class="ball ball--small" id="mp-mute" aria-label="Mute"><svg><use id="mp-mute-ico" href="#u-vol"/></svg></button>
+        <label class="mp__vol"><span class="vh">Volume</span><input type="range" id="mp-vol" min="0" max="100" value="55"></label>
+        <button class="pill" id="mp-listbtn" aria-expanded="false" aria-controls="mp-list">Playlist</button>
+        <label class="mp__quake"><input type="checkbox" id="mp-quake" checked> Screen effects</label>
+      </div>
+      <p class="mp__showing" id="mp-showing">Frutiger Aero. Green Hills.</p>
+      <ol class="mp__list" id="mp-list">
+        <li><button data-track="0">Online Office V4.20</button></li>
+        <li><button data-track="1">Glowing Eyes <i>telepath</i></button></li>
+        <li><button data-track="2">Musette and Drums <i>Cocteau Twins</i></button></li>
+        <li><button data-track="3">U Weren't Here I Really Miss You <i>Cult Member</i></button></li>
+        <li><button data-track="4"><span lang="bn">একটা মেয়ে</span> Ekta Meye <i><span lang="bn">অর্ণব</span> Arnob</i></button></li>
+        <li><button data-track="5">Cities in Dust <i>Siouxsie and the Banshees</i></button></li>
+      </ol>
+    </div></div>
+  </section>
+
+  <section class="win" id="bubblepop" data-file="BUBBLE_POP.EXE" data-icon="i-bubbles" data-lazy="bubblepop" aria-labelledby="bp-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-bubbles"/></svg><span class="win__file">BUBBLE_POP.EXE</span></div>
+    <div class="win__main"><div class="game" id="bp-root">
+      <h2 class="vh" id="bp-h">Bubble Pop</h2>
+      <div class="game__hud"><div class="lcd"><span>SCORE</span><b id="bp-score">0</b></div><div class="lcd"><span>THIS MOVE</span><b id="bp-move">0</b></div><div class="lcd"><span><svg class="pixstar" aria-hidden="true"><use href="#i-pixstar"/></svg>BEST</span><b id="bp-best">0</b></div><button class="pill" id="bp-new">New game</button></div>
+      <canvas id="bp-canvas" role="application" tabindex="0" aria-label="Bubble Pop board. Use the arrow keys to move and Enter to pop a group of matching bubbles." width="360" height="400"></canvas>
+      <p class="game__msg" id="bp-msg" role="status">Pop groups of two or more. Bigger groups score more.</p>
+    </div></div>
+  </section>
+
+  <section class="win" id="paint" data-file="PAINT.EXE" data-icon="i-paint" data-size="paint" data-lazy="paint" aria-labelledby="pt-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-paint"/></svg><span class="win__file">PAINT.EXE</span></div>
+    <div class="win__main"><div class="paint" id="pt-root">
+      <h2 class="vh" id="pt-h">Paint</h2>
+      <div class="paint__tools" role="group" aria-label="Tools">
+        <button class="tool" data-tool="pen" aria-pressed="true">Pen</button>
+        <button class="tool" data-tool="brush" aria-pressed="false">Brush</button>
+        <button class="tool" data-tool="coffee" aria-pressed="false">Coffee</button>
+        <button class="tool" data-tool="erase" aria-pressed="false">Eraser</button>
+        <span class="paint__sep"></span>
+        <button class="tool" id="pt-undo">Undo</button>
+        <button class="tool" id="pt-clear">Clear</button>
+        <button class="tool" id="pt-save">Save PNG</button>
+      </div>
+      <div class="paint__canvas"><canvas id="pt-canvas" aria-label="Drawing canvas"></canvas></div>
+      <div class="paint__colors" id="pt-colors" role="radiogroup" aria-label="Colors from my art"></div>
+      <p class="paint__hint">Coffee first, pen after. That's how I made my proudest piece.</p>
+    </div></div>
+  </section>
+
+  <section class="win" id="wallpaper" data-file="WALLPAPER.CFG" data-icon="i-wall" aria-labelledby="wp-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-wall"/></svg><span class="win__file">WALLPAPER.CFG</span></div>
+    <div class="win__main"><div class="win__body prose">
+      <h2 id="wp-h">Wallpaper</h2>
+      <p id="wp-now">Every song brings its own OS. Pick an OS and its song plays. Pick a painting and it stays until the next song.</p>
+      <div class="walls" role="radiogroup" aria-label="Wallpaper and look" id="wp-list">
+        <label class="wall-pick"><input type="radio" name="wall" value="look:aero" checked><img src="assets/wall/hills-1000.webp" alt="" loading="lazy"><span>Frutiger Aero</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="look:vapor"><img src="assets/wall/eye-vapor-1000.webp" alt="" loading="lazy"><span>Vaporwave OS</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="look:baroque"><img src="assets/wall/clay-1000.webp" alt="" loading="lazy"><span>Baroque Keep</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="look:ghost"><img src="assets/wall/ghost-1000.webp" alt="" loading="lazy"><span>Ghost Net</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="look:ray"><img src="assets/wall/gold-ray-1000.webp" alt="" loading="lazy"><span>Ray OS</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="look:metro"><img src="assets/wall/metro-1000.webp" alt="" loading="lazy"><span>Concrete Jungle</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="sunset"><img src="assets/wall/sunset-1000.webp" alt="" loading="lazy"><span>Sunset Landscape</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="night-street"><img src="assets/wall/night-street-1000.webp" alt="" loading="lazy"><span>Night Street</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="sunflowers"><img src="assets/wall/sunflowers-1000.webp" alt="" loading="lazy"><span>Sunflowers</span></label>
+        <label class="wall-pick"><input type="radio" name="wall" value="hay-cart"><img src="assets/wall/hay-cart-1000.webp" alt="" loading="lazy"><span>Hay Cart</span></label>
+      </div>
+    </div></div>
+  </section>
+
+  <section class="win" id="things" data-file="THINGS_I_LOVE" data-icon="i-folder-love" aria-labelledby="th-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-folder-love"/></svg><span class="win__file">THINGS_I_LOVE</span></div>
+    <div class="win__main">
+      <div class="win__body prose">
+        <h2 id="th-h">Things I love</h2>
+        <ul class="files">
+          <li><svg><use href="#i-paint"/></svg><b>ART.TXT</b><span>Watching it. Doing it.</span></li>
+          <li><svg><use href="#i-cd"/></svg><b>MUSIC.TXT</b><span>Dream pop, dark wave, the niche of the niche. <a href="#player" data-open="player">Hear it.</a></span></li>
+          <li><svg><use href="#i-txt"/></svg><b>TRAVEL.TXT</b><span>I love traveling.</span></li>
+          <li><svg><use href="#i-bowl"/></svg><b>FOOD.TXT</b><span>I'm an adventurous eater. Food really tells you about a place.</span></li>
+          <li><svg><use href="#i-txt"/></svg><b>BEAUTY.TXT</b><span>Makeup. I'd love to work at a beauty company.</span></li>
+          <li><svg><use href="#i-txt"/></svg><b>FILMS.TXT</b><span>I do enjoy a weird movie.</span></li>
+          <li><svg><use href="#i-txt"/></svg><b>AIRPORTS.TXT</b><span>I love airports.</span></li>
+        </ul>
+      </div>
+      <div class="win__status">7 objects</div>
+    </div>
+  </section>
+
+  <section class="win" id="contact" data-file="CONTACT.TXT" data-icon="i-mail" aria-labelledby="ct-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-mail"/></svg><span class="win__file">CONTACT.TXT</span></div>
+    <div class="win__main">
+      <div class="win__body prose">
+        <h2 id="ct-h">Talk to me</h2>
+        <dl class="contact">
+          <dt>Email</dt><dd><a href="mailto:tahsinanan6@gmail.com" data-conv="contact">tahsinanan6@gmail.com</a> <button class="pill" id="copy-mail" data-copy="tahsinanan6@gmail.com">Copy</button></dd>
+          <dt>Phone</dt><dd><a href="tel:+19295579947" data-conv="contact">(929) 557-9947</a></dd>
+          <dt>LinkedIn</dt><dd><a href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noopener" data-conv="contact">linkedin.com/in/tahsinanan</a></dd>
+          <dt>Location</dt><dd>New York, NY. Open to moving.</dd>
+          <dt>Art</dt><dd><a href="mailto:tahsinanan6@gmail.com?subject=Commission%20inquiry" data-conv="commission">Ask me about commissions</a></dd>
+        </dl>
+      </div>
+      <div class="win__status">Art and design by Tahsin. Songs belong to their artists. Day sky: CC0 photo, WordPress Photo Directory.</div>
+    </div>
+  </section>
+
+  <section class="win" id="bin" data-file="RECYCLE_BIN" data-icon="i-bin" aria-labelledby="bin-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-bin"/></svg><span class="win__file">RECYCLE_BIN</span></div>
+    <div class="win__main">
+      <div class="win__body prose">
+        <h2 id="bin-h" class="vh">Recycle Bin</h2>
+        <ul class="files">
+          <li><svg><use href="#i-bowl"/></svg><b>CHIPOTLE.BOWL</b><span id="bin-msg" role="status">Deleted. It tastes bad and it's overrated.</span></li>
+        </ul>
+        <div class="actions"><button class="gel" id="bin-restore">Restore</button></div>
+      </div>
+      <div class="win__status">1 object. Unpopular opinion.</div>
+    </div>
+  </section>
+
+  <section class="win" id="panopticon" hidden data-file="PANOPTICON.EXE" data-icon="i-eye" data-size="panopticon" aria-labelledby="pan-h">
+    <div class="win__bar"><svg class="win__ico" aria-hidden="true"><use href="#i-eye"/></svg><span class="win__file">PANOPTICON.EXE</span></div>
+    <div class="win__main"><div class="game" id="pan-root">
+      <h2 class="vh" id="pan-h">Panopticon</h2>
+      <div class="game__hud"><div class="lcd"><span>CAUGHT</span><b id="pan-caught">0</b></div><div class="lcd"><span>GOT OUT</span><b id="pan-out">0 / 3</b></div></div>
+      <div class="pan__stage"><canvas id="pan-canvas" role="application" tabindex="0" aria-label="Panopticon. You are in the tower. Left and right arrow keys turn your gaze. Space catches anyone acting up in your gaze." width="520" height="520"></canvas>
+        <div class="pan__plate" id="pan-plate"><img src="assets/craft/panopticon.webp" alt="Cutaway drawing of a circular panopticon: tiers of cells around a central tower with a slit-windowed drum." width="720" height="720"><p>You found it. A ring of cells, one tower. They can't tell when you're looking.</p><button class="gel gel--go" id="pan-climb" type="button">Climb the tower</button></div></div>
+      <p class="game__msg" id="pan-msg" role="status"></p>
+      <div class="actions pan__end" id="pan-end" hidden><button class="gel gel--go" id="pan-file" type="button">See your file</button><button class="gel" id="pan-again" type="button">Again</button></div>
+    </div></div>
+  </section>
+
+  <section class="win" id="viewer" hidden data-file="PREVIEW.EXE" data-icon="i-wall" data-size="viewer" aria-label="Preview">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-wall"/></svg><span class="win__file" id="vw-file">PREVIEW.EXE</span></div>
+    <div class="win__main">
+      <div class="viewer">
+        <div class="viewer__stage" id="vw-stage"></div>
+        <div class="viewer__info">
+          <h2 id="vw-title" aria-live="polite">Preview</h2>
+          <p id="vw-desc" aria-live="polite"></p>
+          <div class="actions">
+            <button class="gel" id="vw-prev" aria-label="Previous piece">Previous</button>
+            <button class="gel" id="vw-next" aria-label="Next piece">Next</button>
+            <a class="gel" id="vw-open" href="#" target="_blank" rel="noopener">Open original</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="crt" id="crt" hidden aria-hidden="true">
+  <div class="crt__blue"></div>
+  <div class="crt__band"></div>
+  <div class="crt__tear"><i></i><i></i><i></i></div>
+  <div class="crt__shutter"></div>
+  <div class="crt__osd"><span class="crt__play">PLAY</span><span id="crt-time">SP 0:00:00</span></div>
+  <div class="crt__track">TRACKING</div>
+</div>
+<div class="tourspot" id="tourspot" hidden></div>
+<section class="tour" id="tour" aria-label="30-second rundown" hidden>
+  <div class="win__bar"><svg class="win__ico" aria-hidden="true"><use href="#i-rundown"/></svg><span class="win__file">PLAY_ME.EXE</span><span class="tour__count" id="tour-count"></span></div>
+  <div class="tour__main">
+    <div class="tour__voice" aria-hidden="true">
+      <svg class="tour__eye" viewBox="0 0 48 48"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="url(#g-page)" stroke="#07417f" stroke-width="1.500"/><g class="eye__iris"><circle cx="24" cy="24" r="12" fill="url(#g-iris)" stroke="#07366f"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="19.500" cy="18.500" rx="4" ry="2.800" fill="#fff" opacity=".92"/></g></svg>
+      <div class="tour__wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="tour__text">
+      <h2 id="tour-h"></h2>
+      <p id="tour-p" aria-hidden="true"></p>
+      <p class="vh" id="tour-live" role="status"></p>
+      <div class="tour__seg" aria-hidden="true"></div>
+    </div>
+    <div class="tour__ctl">
+      <button class="pill" id="tour-back" type="button">Back</button>
+      <button class="pill" id="tour-pause" type="button">Pause</button>
+      <button class="gel gel--go" id="tour-next" type="button">Next</button>
+      <div class="tour__end" id="tour-end" hidden>
+        <a class="gel gel--go" href="#resume" data-open="resume" data-conv="resume">Open resume</a>
+        <a class="gel" href="mailto:tahsinanan6@gmail.com" data-conv="contact">Email me</a>
+        <button class="gel" id="tour-play" type="button">Go play</button>
+      </div>
+      <button class="pill" id="tour-stop" type="button">Stop</button>
+    </div>
+  </div>
+</section>
+
+<div class="balloon" id="balloon" role="status" hidden>
+  <button class="balloon__x" id="balloon-x" aria-label="Dismiss"><svg><use href="#u-close"/></svg></button>
+  <b>I've been observing you</b>
+  <p id="balloon-text">The log stays in your browser. Want to see what I noticed?</p>
+  <button class="gel gel--go" id="balloon-go">Show me</button>
+</div>
+
+<div class="startmenu" id="startmenu" hidden>
+  <div class="startmenu__head"><svg class="eye"><use href="#i-eye"/></svg><span>Tahsin Anan</span></div>
+  <div class="startmenu__cols">
+    <ul>
+      <li><button type="button" class="startmenu__btn" data-rundown><svg aria-hidden="true"><use href="#i-rundown"/></svg>30-second rundown</button></li>
+      <li><a href="#about" data-open="about"><svg><use href="#i-person"/></svg>About me</a></li>
+      <li><a href="#case" data-open="case"><svg><use href="#i-chart"/></svg>Case study</a></li>
+      <li><a href="#observe" data-open="observe"><svg><use href="#i-eye"/></svg>Live analytics</a></li>
+      <li><a href="#design" data-open="design"><svg><use href="#i-folder-design"/></svg>Design work</a></li>
+      <li><a href="#art" data-open="art"><svg><use href="#i-folder-art"/></svg>My art</a></li>
+      <li><a href="#player" data-open="player"><svg><use href="#i-cd"/></svg>Music</a></li>
+      <li><a href="#bubblepop" data-open="bubblepop"><svg><use href="#i-bubbles"/></svg>Bubble Pop</a></li>
+      <li><a href="#paint" data-open="paint"><svg><use href="#i-paint"/></svg>Paint</a></li>
+    </ul>
+    <ul class="startmenu__side">
+      <li><a href="#resume" data-open="resume" data-conv="resume">Resume</a></li>
+      <li><a href="mailto:tahsinanan6@gmail.com" data-conv="contact">Email me</a></li>
+      <li><a href="https://www.linkedin.com/in/tahsinanan/" target="_blank" rel="noopener" data-conv="contact">LinkedIn</a></li>
+      <li><a href="#wallpaper" data-open="wallpaper">Wallpaper</a></li>
+      <li><a href="#things" data-open="things">Things I love</a></li>
+      <li><a href="#contact" data-open="contact">Contact</a></li>
+    </ul>
+  </div>
+  <div class="startmenu__foot"><button class="pill" id="shutdown-btn">Shut down</button></div>
+</div>
+
+<footer class="taskbar" id="taskbar" aria-label="Taskbar">
+  <button class="start" id="start" aria-expanded="false" aria-controls="startmenu"><span class="orb" title="Observation"><svg class="eye" viewBox="0 0 48 48" aria-hidden="true"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="#fff"/><g class="eye__iris"><circle cx="24" cy="24" r="12" fill="url(#g-iris)"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="20" cy="19" rx="3.500" ry="2.500" fill="#fff"/></g></svg></span><span id="start-label">start</span></button>
+  <div class="tasks" id="tasks" role="group" aria-label="Open windows"></div>
+  <div class="tray">
+    <div class="counter" id="counter" title="Visits to this site" hidden><span class="vh">Visits to this site:</span><span id="counter-n">000000</span></div>
+    <button class="tray__btn" id="tray-play" aria-label="Play music"><svg><use id="tray-play-ico" href="#u-play"/></svg></button>
+    <button class="tray__btn" id="tray-mute" aria-label="Mute"><svg><use id="tray-mute-ico" href="#u-vol"/></svg></button>
+    <time class="clock" id="clock"></time>
+  </div>
+</footer>
+
+<dialog class="sysdlg" id="shutdown" aria-labelledby="sd-h">
+  <div class="win__bar"><svg class="win__ico"><use href="#i-eye"/></svg><span class="win__file">SHUT_DOWN.EXE</span></div>
+  <div class="sysdlg__body">
+    <h2 id="sd-h">Before you go</h2>
+    <p>I'm looking for jobs.</p>
+    <div class="actions">
+      <a class="gel gel--go" href="mailto:tahsinanan6@gmail.com" data-conv="contact">Email Tahsin</a>
+      <button class="gel" id="shutdown-yes">Shut down anyway</button>
+      <button class="gel" id="shutdown-no">Keep looking</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="off" id="off" hidden>
+  <p>It's now safe to close this tab.</p>
+  <button class="gel" id="off-restart">Restart</button>
+</div>
+
+<div class="boot" id="boot" role="status">
+  <svg class="boot__lids" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><path id="boot-lids" fill="#040b1c" fill-rule="evenodd" d="M-5-5H105V105H-5Z"/><path id="boot-rim" fill="none" stroke="#7fd0ff" stroke-width="1.500" vector-effect="non-scaling-stroke"/></svg>
+  <div class="boot__core">
+    <svg class="boot__star" aria-hidden="true"><use href="#i-star"/></svg>
+    <p class="boot__name">Tahsin OS</p>
+    <p class="boot__hello" lang="bn">স্বাগতম</p>
+    <div class="boot__bar" aria-hidden="true"><i></i></div>
+    <button class="gel gel--go" id="boot-start">Start with sound</button>
+    <button class="boot__skip" id="boot-skip">Skip</button>
+  </div>
+</div>
+
+<script type="module" src="js/main.js?v=dd9e16d6"></script>
+<script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
+</body>
 </html>

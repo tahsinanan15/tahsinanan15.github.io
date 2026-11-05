@@ -1,0 +1,3 @@
+# GitHub Pages runs Jekyll here. Keep development notes out of the published site.
+exclude: [README.md, PRODUCT.md, DESIGN.md, _dev]
+include: []
