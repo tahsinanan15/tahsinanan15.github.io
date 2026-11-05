@@ -1,6 +1,6 @@
 # Tahsin Anan's portfolio
 
-Static site on GitHub Pages: https://tahsinanan15.github.io/Portfolio/ . Pushing to `main` publishes it. There is no build step.
+Static site on GitHub Pages: https://tahsinanan15.github.io/ . Pushing to `main` publishes it. There is no build step.
 
 - `index.html`: all the words and windows
 - `css/site.css`: the look
