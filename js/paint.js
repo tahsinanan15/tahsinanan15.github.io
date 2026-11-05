@@ -4,7 +4,10 @@ import { track } from './analytics.js';
 // Sampled from her paintings, not chosen from a palette.
 const COLORS = [["#1c1c18", "Eye ink"], ["#e0c669", "Sunset gold"], ["#d09573", "Sunset coral"], ["#3c6db7", "Sunset sky"], ["#dbc148", "Sunflower"], ["#97a960", "Sunflower leaf"], ["#c44641", "Jersey red"], ["#345b8f", "Sneaker blue"], ["#cc6784", "Lily pink"], ["#c97347", "Cloth orange"], ["#323757", "Night indigo"], ["#816c8e", "Rain violet"], ["#d0aa78", "City fire"], ["#d1b578", "Field straw"], ["#734e86", "Basket purple"], ["#8f463e", "Apple red"]];
 const PAPER = '#fbf8f1';
-const W = 1280, H = 800;
+// A phone gets its own paper. Upright, it's as tall as the sheet has room for, so the spare height goes to the drawing. It keeps that shape if the phone turns.
+// ponytail: chosen once per load, so widening a narrow window past the phone line stretches the paper until a reload. Resize the bitmap if anyone ever does that.
+const W = document.documentElement.classList.contains('phone') ? 900 : 1280;
+const H = Math.round(W * Math.max(.625, innerWidth < 620 ? (innerHeight - 444) / (innerWidth - 42) : 0));
 const $ = (id) => document.getElementById(id);
 let canvas, g, tool = 'pen', color = '#17151a', drawing = false, last = null, mid = null, undo = [], ready = false, layer, layerG, grain, wash = [], started = false;
 

@@ -3,7 +3,7 @@ import { sfx, beat } from './audio.js';
 import { drawFx, bubbleAlpha, reactSite, spritesFor, bubbleKind } from './fx.js';
 import { track } from './analytics.js';
 
-const R = 128, SWARM = 24;   // extra bubbles while they're falling into the icon
+const R = 128;
 function sprite() {
   const c = document.createElement('canvas'); c.width = c.height = R * 2;
   const g = c.getContext('2d');
@@ -33,11 +33,12 @@ export function initBubbles() {
   const img = sprite();
   let W = 0, H = 0, dpr = 1, list = [], sparks = [], raf = 0, last = 0, dtNow = 0, well = null, joinIn = 0;
 
+  const small = () => document.documentElement.classList.contains('phone');   // fewer, smaller, and a tighter orbit
   const spawn = (fresh) => {
-    const r = 14 + Math.random() * Math.random() * 46, left = W < 980 ? 0 : 250;   // clear of the desktop icons
+    const r = (14 + Math.random() * Math.random() * 46) * (small() ? .7 : 1), left = W < 980 ? 0 : 250;   // clear of the desktop icons
     return { slot: null, pull: 0, pick: Math.floor(Math.random() * 60), r, x: left + Math.random() * (W - left), y: fresh ? H + r + Math.random() * H * .5 : Math.random() * H, v: 7 + Math.random() * 11 + (60 - r) * .08, sway: 10 + Math.random() * 22, ph: Math.random() * 7, f: .2 + Math.random() * .35 };
   };
-  const count = () => (W < 700 ? 7 : Math.round(Math.min(18, W * H / 90000))) + (well ? SWARM : 0);
+  const count = () => (small() ? 7 : Math.round(Math.min(18, W * H / 90000))) + (well ? (small() ? 12 : 24) : 0);   // extra bubbles while they're falling into the icon
   const recycle = (b) => { if (list.length > count()) list.splice(list.indexOf(b), 1); else Object.assign(b, spawn(true)); };
   const resize = () => {
     dpr = Math.min(devicePixelRatio || 1, 1.5);
@@ -70,6 +71,7 @@ export function initBubbles() {
     raf = requestAnimationFrame(tick);
     if (document.hidden) { last = now; return; }
     reactSite(beat, now);
+    if (document.documentElement.classList.contains('has-sheet')) { last = now; return; }   // a sheet covers all of this
     if (now - last < 30) return;   // about 30 fps for the canvas: slow bubbles need no more, and laptops stay cool
     const dt = Math.min(.08, (now - last) / 1000 || 0); last = now; dtNow = dt;
     const box = well?.getBoundingClientRect();
@@ -90,7 +92,7 @@ export function initBubbles() {
         b.y += (dy * .92 + dx * .38) / d * speed * dt;
         if (d < 420) b.r += (18 - b.r) * Math.min(1, dt * 1.5);
         if (d >= 64) continue;
-        if (held < cap) { b.slot = { a: .6 + (held * 1.3) % 3.9, d: 44 + 13 * Math.sqrt(held + 1), r: 15 + (held * 7 % 5) * 3.5 }; held++; }
+        if (held < cap) { const k = small() ? .72 : 1; b.slot = { a: .6 + (held * 1.3) % 3.9, d: (44 + 13 * Math.sqrt(held + 1)) * k, r: (15 + (held * 7 % 5) * 3.5) * k }; held++; }
         else { sparks.push({ ring: 1, x: b.cx ?? b.x, y: b.y, r: b.r, life: .7 }); recycle(b); const side = Math.random() < .5; b.x = side ? W + b.r + Math.random() * 60 : Math.random() * W; b.y = side ? Math.random() * H : H + b.r + Math.random() * 60; }
       }
     } else for (const b of list) {
@@ -110,7 +112,7 @@ export function initBubbles() {
   // Windows and icons sit above this layer, so a hit test only runs on the open desktop.
   const hitAt = (x, y) => list.find((b) => Math.hypot((b.cx ?? b.x) - x, b.y - y) < b.r + 5);
   addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.win, .taskbar, .startmenu, .ico, .balloon, .boot, dialog, .off, .prints, .tour')) return;
+    if (e.target.closest('.win, .taskbar, .startmenu, .ico, .balloon, .boot, dialog, .off, .tour')) return;
     const b = hitAt(e.clientX, e.clientY);
     if (!b) return;
     pop(b);

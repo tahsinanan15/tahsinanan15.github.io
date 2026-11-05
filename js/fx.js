@@ -153,7 +153,7 @@ function drawWarp(now, beat) {
 
 export function reactSite(beat, now = 0) {
   const live = quake.on && beat.playing;
-  const useWarp = live && WARPED.has(kind) && innerHeight <= innerWidth * 1.1;
+  const useWarp = live && WARPED.has(kind) && innerHeight <= innerWidth * 1.1 && !document.documentElement.classList.contains('phone');
   if (useWarp) {
     if (now - lastWarp > 33) { drawWarp(now, beat); lastWarp = now; }
     if (warp.hidden) warp.hidden = false;
@@ -166,8 +166,7 @@ export function reactSite(beat, now = 0) {
     if (kind === 'baroque') { scale += .012 + Math.sin(t * .55) * .012 + beat.pulse * .004; rot = Math.sin(t * .31) * .18; }
     if (kind === 'ray') { const k = .5 + beat.pulse * 1.5; ox = Math.sin(t * 2.1) * k; oy = Math.sin(t * 2.9 + 1) * k * 1.4; }
   }
-  if (document.documentElement.classList.contains('os')) wall.style.transform = `translate3d(${(px + ox).toFixed(2)}px, ${(py + oy).toFixed(2)}px, 0) rotate(${rot.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
-  else if (wall.style.transform) wall.style.transform = '';
+  wall.style.transform = `translate3d(${(px + ox).toFixed(2)}px, ${(py + oy).toFixed(2)}px, 0) rotate(${rot.toFixed(3)}deg) scale(${scale.toFixed(4)})`;
 
   const lvl = live ? beat.pulse : 0;
   if (Math.abs(lvl - lastLvl) < .01) return;

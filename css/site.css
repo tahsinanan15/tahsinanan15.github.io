@@ -1,5 +1,5 @@
 /* Tahsin OS. A 1995 skeleton (putty bevels, file names, status bars) in a 2007 skin (Aero glass, gel, sky).
-   The base styles are the simple scrolling layout for phones and no-JS. `.os` adds the real desktop. */
+   The base styles are the simple scrolling layout for no-JS. `.os` adds the real desktop, and `.phone` turns it into a phone OS. */
 
 @font-face { font-family: "Baloo Da 2"; src: url(../assets/fonts/baloo-da-2-var-latin.woff2) format("woff2"); font-weight: 400 800; font-display: swap; }
 @font-face { font-family: "Baloo Da 2"; src: url(../assets/fonts/baloo-da-2-bn.woff2) format("woff2"); font-weight: 400 800; font-display: swap; unicode-range: U+0980-09FF, U+200C-200D; }
@@ -51,7 +51,7 @@
 :root[data-scene="night"] { --bar: rgba(5, 10, 28, .82); --bar-line: rgba(120, 170, 255, .4); --glass-a: rgba(12, 60, 142, .9); --glass-b: rgba(5, 30, 88, .95); --glass-off-a: rgba(60, 86, 130, .82); --glass-off-b: rgba(36, 56, 96, .9); }
 
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-bottom: calc(var(--taskbar) + 12px); }
+html { -webkit-text-size-adjust: 100%; }
 @supports not selector(::-webkit-scrollbar) { html { scrollbar-color: var(--accent) var(--putty-2); } }
 body { margin: 0; color: var(--ink); background: #4aa3ee url(../assets/wall/hills-1000.webp) center/cover fixed; font: 400 16px/1.55 var(--body); }
 .js body { background: #2f8fe0; }
@@ -87,7 +87,7 @@ html, body { transition: none; }
 .no-js .bubbles { display: none; }
 
 /* ------- Windows, base (scrolling) layout ------- */
-.desk { position: relative; z-index: 2; display: grid; gap: 18px; width: min(100%, 680px); margin: 0 auto; padding: 16px max(14px, env(safe-area-inset-left, 0px)) calc(var(--taskbar) + 26px + env(safe-area-inset-bottom, 0px)); }
+.desk { position: relative; z-index: 2; display: grid; gap: 18px; width: min(100%, 680px); margin: 0 auto; padding: 16px max(14px, env(safe-area-inset-left, 0px)) calc(26px + env(safe-area-inset-bottom, 0px)); }
 .win { position: relative; min-width: 0; border-radius: var(--win-top) var(--win-top) var(--win-bot) var(--win-bot); box-shadow: var(--win-shadow); }
 .win__bar { position: relative; display: flex; align-items: center; gap: 7px; height: 34px; padding: 0 5px 0 9px; overflow: hidden; color: var(--bar-text); border: 1px solid var(--bar-edge); border-bottom: 0; border-radius: var(--win-top) var(--win-top) 0 0; background: var(--gloss), linear-gradient(180deg, var(--glass-a), var(--glass-b)); -webkit-backdrop-filter: blur(12px) saturate(170%); backdrop-filter: blur(12px) saturate(170%); box-shadow: inset 0 1px rgba(255, 255, 255, .6); user-select: none; }
 .win__bar::after { content: ""; position: absolute; top: -20%; bottom: -20%; left: 0; width: 90px; background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .55) 45%, rgba(255, 255, 255, .15) 60%, transparent); transform: translateX(-140px) skewX(-18deg); pointer-events: none; }
@@ -120,7 +120,6 @@ html, body { transition: none; }
 .abnote { padding: 7px 10px; font-size: 14.5px; background: var(--tint); border-radius: 5px; }
 
 .actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 6px; }
-.js:not(.os) .actions .gel { flex: 1 1 auto; }
 .gel { position: relative; display: inline-flex; min-height: 38px; align-items: center; justify-content: center; padding: 4px 16px; overflow: hidden; color: var(--gel-ink); font: 600 15px/1.2 var(--body); text-align: center; text-decoration: none; cursor: inherit; background: var(--gel-bg); border: 1px solid var(--gel-edge); border-radius: var(--gel-radius); box-shadow: var(--gel-shadow); transition: box-shadow .2s, transform .1s; }
 .gel:hover { color: var(--gel-ink); box-shadow: var(--gel-shadow), 0 0 0 1px var(--gel-glow), 0 2px 8px color-mix(in srgb, var(--gel-glow) 60%, transparent); }
 .gel:active { transform: translateY(1px); }
@@ -144,17 +143,12 @@ html, body { transition: none; }
 .lcds--sm b { font-size: 16px; }
 .lcds--sm span { font-size: 13px; }
 .reach { display: flex; flex-wrap: wrap; gap: 2px 14px; margin: 2px 0 8px !important; font-size: 14.5px; }
-.jump { display: none; }
 .about__face { display: none; }
 .about h1 [lang=bn] { display: block; margin-bottom: 2px; color: var(--subhead); font-size: .5em; font-weight: 600; line-height: 1.2; }
 .story summary { margin: 20px 0 8px; cursor: inherit; }
 .story h2 { display: inline; margin: 0 !important; }
 .os .story summary { list-style: none; pointer-events: none; }
 .os .story summary::-webkit-details-marker { display: none; }
-.prints { display: flex; justify-content: center; align-items: flex-end; }
-.prints a { display: block; width: 36%; margin: 0 -2%; padding: 5px; background: #fff; box-shadow: 0 6px 16px rgba(4, 28, 70, .45); rotate: var(--r); transition: rotate .3s var(--ease-out); }
-.prints a:hover { rotate: 0deg; }
-.os .prints { display: none; }
 
 /* ------- Folders ------- */
 .tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(146px, 1fr)); gap: 14px; margin: 8px 0 18px !important; padding: 0 !important; list-style: none; }
@@ -242,8 +236,6 @@ html, body { transition: none; }
 .lcd b { font: 400 16px/1.2 var(--pixel); font-variant-numeric: tabular-nums; }
 #pan-canvas { display: block; width: 100%; aspect-ratio: 1; background: #05070c; border-radius: 6px; touch-action: none; }
 .os #pan-canvas { width: min(100%, calc(100vh - 340px)); margin-inline: auto; }
-.js:not(.os) #panopticon:not([hidden]) { position: fixed; inset: 8px 8px calc(var(--taskbar) + 12px + env(safe-area-inset-bottom, 0px)) !important; z-index: 8000; overflow: auto; }
-.js:not(.os) #pan-canvas { width: min(100%, calc(100dvh - 200px)); margin-inline: auto; }
 #bp-canvas { width: 100%; aspect-ratio: 9 / 10; background: linear-gradient(180deg, #103a7a, #0a5cb8 55%, #1f8fe8); border: 1px solid #052450; border-radius: 6px; box-shadow: inset 0 2px 8px rgba(0, 0, 40, .6); touch-action: manipulation; }
 .game__msg { min-height: 2.6em; margin: 0; font-size: 14.5px; line-height: 1.3; color: var(--mp-ink); }
 .paint__tools { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -312,7 +304,6 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 
 /* ------- Taskbar and start menu ------- */
 .icons { position: relative; z-index: 2; }
-.js .icons { display: none; }
 .no-js [data-rundown] { display: none; }
 .no-js .icons { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 14px 0; }
 .ico { color: #fff; font-size: 13px; text-decoration: none; background: none; border: 0; padding: 0; text-shadow: 0 1px 2px #022, 0 0 6px rgba(0, 20, 60, .9); }
@@ -365,7 +356,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .wall.is-cut img { transition: none; }
 .os .wall { will-change: transform; }
 
-/* ------- Rundown: a spotlight and a caption dock ------- */
+/* ------- Rundown: a spotlight and a caption dock. These base rules are the phone's dock. ------- */
 .tourspot { position: fixed; z-index: 8990; border-radius: 16px; box-shadow: 0 0 0 200vmax rgba(3, 14, 40, .6), 0 0 0 2px var(--beat-col), 0 0 36px var(--beat-col); pointer-events: none; transition: left .55s var(--ease-out), top .55s var(--ease-out), width .55s var(--ease-out), height .55s var(--ease-out); }
 .tour { position: fixed; right: 8px; bottom: calc(var(--taskbar) + 8px + env(safe-area-inset-bottom, 0px)); left: 8px; z-index: 8995; border-radius: var(--win-top) var(--win-top) var(--win-bot) var(--win-bot); box-shadow: 0 16px 44px rgba(0, 10, 40, .6); animation: pop .5s var(--ease-out); }
 .tour .win__bar { height: 30px; }
@@ -394,14 +385,14 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .startmenu__btn { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 38px; padding: 3px 8px; color: inherit; font-weight: 600; font-size: 15px; line-height: 1.2; text-align: left; cursor: inherit; background: none; border: 0; border-radius: 4px; }
 .startmenu__btn:hover, .startmenu__btn:focus-visible { color: var(--bar-text); background: linear-gradient(180deg, var(--glass-a), var(--glass-b)); }
 /* Desktop: each episode fills the center and left, and the narration gets the rightmost column. Nothing else competes while the tape plays. */
-.os .tour { top: 64px; right: 12px; bottom: calc(var(--taskbar) + 12px); left: auto; display: flex; flex-direction: column; width: clamp(300px, 27vw, 400px); }
-.os .tour__main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: 18px 18px 16px; overflow: auto; }
-.os .tour__voice { grid-auto-flow: column; justify-content: start; align-items: center; gap: 12px; }
-.os .tour__eye { width: 56px; height: 56px; }
-.os .tour__text { display: flex; flex-direction: column; gap: 10px; }
-.os .tour__seg { margin-top: auto; }
-.os .tour__ctl { grid-column: auto; justify-content: space-between; }
-.os .tour__end { flex: 1 1 100%; margin: 0 0 4px; }
+.os:where(:not(.phone)) .tour { top: 64px; right: 12px; bottom: calc(var(--taskbar) + 12px); left: auto; display: flex; flex-direction: column; width: clamp(300px, 27vw, 400px); }
+.os:where(:not(.phone)) .tour__main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: 18px 18px 16px; overflow: auto; }
+.os:where(:not(.phone)) .tour__voice { grid-auto-flow: column; justify-content: start; align-items: center; gap: 12px; }
+.os:where(:not(.phone)) .tour__eye { width: 56px; height: 56px; }
+.os:where(:not(.phone)) .tour__text { display: flex; flex-direction: column; gap: 10px; }
+.os:where(:not(.phone)) .tour__seg { margin-top: auto; }
+.os:where(:not(.phone)) .tour__ctl { grid-column: auto; justify-content: space-between; }
+.os:where(:not(.phone)) .tour__end { flex: 1 1 100%; margin: 0 0 4px; }
 .is-rundown:has(.tourspot:not([hidden])) .win:not(.is-touring) { visibility: hidden; }
 .win.is-touring { transition: left .55s var(--ease-out), top .55s var(--ease-out), width .55s var(--ease-out), height .55s var(--ease-out); }
 @keyframes talk { from { height: 3px; } to { height: 14px; } }
@@ -430,32 +421,12 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @keyframes sweep { 0% { transform: translateX(-140px) skewX(-18deg); } 9%, 100% { transform: translateX(760px) skewX(-18deg); } }
 @keyframes blink { 0%, 95%, 100% { transform: scaleY(1); } 97.5% { transform: scaleY(.08); } }
 
-/* ------- Small phones ------- */
+/* ------- Touch and no-JS ------- */
 .startmenu a, .gel, .tool { touch-action: manipulation; }
-#viewer { display: none; }
-.js:not(.os) #viewer:not([hidden]) { position: fixed; inset: 8px 8px calc(var(--taskbar) + 12px + env(safe-area-inset-bottom, 0px)) !important; width: auto; z-index: 8000; display: flex; flex-direction: column; }
-.js:not(.os) #viewer .win__main { flex: 1; }
-.js:not(.os) #viewer .viewer__stage img, .js:not(.os) #viewer .viewer__stage video { max-height: 52dvh; }
-.no-js #viewer { display: none; }
-.js:not(.os) .win__btn:not(.win__btn--close) { display: none; }
-.js:not(.os) .win:not(#viewer, #panopticon) .win__btns { display: none; }
-.js:not(.os) .win:not(#viewer, #panopticon) { left: auto !important; top: auto !important; }
-.js:not(.os) .about__face { display: block; float: right; width: 104px; height: 122px; margin: 0 0 8px 12px; background: #000 url(../assets/profile/tahsin-portrait.webp) 50% 14%/190% auto no-repeat; border: 1px solid; border-color: var(--putty-4) #fff #fff var(--putty-4); }
-.js:not(.os) .jump { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 10px; }
-.js:not(.os) .jump a { display: inline-flex; min-height: 44px; align-items: center; padding: 2px 12px; font-weight: 600; font-size: 14.5px; text-decoration: none; background: var(--tint); border-radius: 6px; }
-.js:not(.os) .win__btn--close { width: 44px; height: 32px; }
-.js:not(.os) .balloon { padding-right: 44px; }
-.js:not(.os) .balloon__x { top: 0; right: 0; width: 44px; height: 44px; padding: 13px; }
-.js:not(.os) .tool, .js:not(.os) .pill { min-height: 44px; }
-.js:not(.os) .swatch { width: 44px; height: 44px; }
-.js:not(.os) .tray__btn, .js:not(.os) .ball:not(.ball--big) { width: 44px; height: 44px; }
-.js:not(.os) .mp input[type=range] { height: 36px; }
-.no-js #player, .no-js #bubblepop, .no-js #paint, .no-js #wallpaper, .no-js .tabs, .no-js #copy-mail, .no-js #bin .actions, .no-js #skip-mute, .no-js .ico[href="#player"], .no-js .ico[href="#bubblepop"], .no-js .ico[href="#paint"], .no-js .ico[href="#wallpaper"], .no-js .prints { display: none; }
-.js:not(.os) .win--photo { width: min(82%, 330px); justify-self: center; }
-.js:not(.os) #bin { margin-bottom: 8px; }
+#viewer, .win__tap { display: none; }
+.no-js #player, .no-js #bubblepop, .no-js #paint, .no-js #wallpaper, .no-js .tabs, .no-js #copy-mail, .no-js #bin .actions, .no-js #skip-mute, .no-js .ico[href="#player"], .no-js .ico[href="#bubblepop"], .no-js .ico[href="#paint"], .no-js .ico[href="#wallpaper"] { display: none; }
 @media (min-width: 620px) { .mason { columns: 3 150px; } .split--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .feature { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); } }
 @media (max-width: 360px) { .counter { display: none; } }
-@media (max-width: 619px) { .js:not(.os) #obs-visit { min-height: 860px; } }
 @media (max-width: 460px) { #obs-ab table { font-size: 12.5px; } #obs-ab th, #obs-ab td { padding: 4px 2px; } #obs-ab th { white-space: normal; line-height: 1.15; } [data-theme=vapor] .contact dd { font-size: min(14px, 3.5vw); } .chart text { font-size: 20px; } .clock span { display: none; } .win__body { padding: 14px; } .barlist li { grid-template-columns: minmax(70px, 96px) minmax(0, 1fr) 54px; } }
 
 /* ------- The desktop ------- */
@@ -474,33 +445,32 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .os .win.is-focus { box-shadow: var(--win-shadow-on); }
 .os .win.is-max { top: 8px !important; left: 8px !important; width: calc(100vw - 16px) !important; height: calc(100dvh - var(--taskbar) - 16px) !important; }
 .os .win--player .win__main { padding: 3px; }
-.os .mp__list { max-height: calc(100dvh - 400px); overflow: auto; }
-.os .mp__list:not(.is-open) { display: none; }
-.js:not(.os) #mp-listbtn { display: none; }
+.os:where(:not(.phone)) .mp__list { max-height: calc(100dvh - 400px); overflow: auto; }
+.os:where(:not(.phone)) .mp__list:not(.is-open) { display: none; }
 .os .startmenu { left: 6px; }
 .os #viewer { display: flex; }
 .os #viewer[hidden] { display: none; }
 .os .viewer__stage img, .os .viewer__stage video { max-height: none; position: absolute; inset: 0; }
 .os .viewer__stage { position: relative; }
-.os .mason { columns: 4 170px; }
-.os .split--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-.os .feature { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
-.os .about { padding: 22px 26px; }
-.os .about h1 { font-size: clamp(32px, 3.1vw, 42px); }
-.os .about .actions { position: sticky; bottom: -22px; z-index: 1; margin-bottom: 0; padding: 8px 0; background: var(--sheet); }
+.os:where(:not(.phone)) .mason { columns: 4 170px; }
+.os:where(:not(.phone)) .split--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.os:where(:not(.phone)) .feature { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.os:where(:not(.phone)) .about { padding: 22px 26px; }
+.os:where(:not(.phone)) .about h1 { font-size: clamp(32px, 3.1vw, 42px); }
+.os:where(:not(.phone)) .about .actions { position: sticky; bottom: -22px; z-index: 1; margin-bottom: 0; padding: 8px 0; background: var(--sheet); }
 
 .os .icons { position: fixed; inset: 10px auto calc(var(--taskbar) + 8px) 12px; z-index: 2; display: grid; grid-auto-flow: column; grid-template-rows: repeat(auto-fill, 86px); grid-auto-columns: 100px; align-content: start; justify-content: start; gap: 2px; pointer-events: none; }
 .os .ico { display: grid; justify-items: center; align-content: start; gap: 3px; padding: 5px 1px 4px; color: var(--ico-ink); font: 600 13px/1.12 var(--body); text-align: center; border: 1px solid transparent; border-radius: 5px; pointer-events: auto; text-shadow: var(--ico-shadow); transition: background .15s, border-color .15s; }
 .os .ico svg { display: block; width: 46px; height: 46px; filter: var(--ico-filter); transition: transform .3s var(--ease-out); }
 .os .ico:hover { color: var(--ico-ink); background: color-mix(in srgb, var(--accent) 28%, transparent); border-color: color-mix(in srgb, var(--accent) 65%, #fff); }
 .os .ico:hover svg { transform: translateY(-2px) scale(1.06); }
-.os .tasks { display: flex; flex: 1; gap: 3px; min-width: 0; overflow: hidden; }
+.os:where(:not(.phone)) .tasks { display: flex; flex: 1; gap: 3px; min-width: 0; overflow: hidden; }
 .os .task { display: flex; flex: 0 1 260px; align-items: center; gap: 6px; min-width: 42px; height: 36px; padding: 0 8px; overflow: hidden; color: #fff; font: 400 var(--file-size)/1 var(--pixel); letter-spacing: var(--file-spacing); text-align: left; text-shadow: 0 1px 2px rgba(0, 20, 60, .9); background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05)); border: 1px solid rgba(255, 255, 255, .28); border-radius: 5px; }
 .os .task svg { flex: none; width: 20px; height: 20px; }
 .os .task span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .os .task:hover { background: rgba(255, 255, 255, .3); }
 .os .task[aria-pressed=true] { background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 60%, #fff 10%), color-mix(in srgb, var(--accent) 50%, transparent)); border-color: color-mix(in srgb, var(--accent) 50%, #fff); box-shadow: inset 0 0 8px color-mix(in srgb, var(--accent) 60%, transparent); }
-.os .tray { flex: none; }
+.os:where(:not(.phone)) .tray { flex: none; }
 .os .balloon { right: 16px; }
 
 @media (max-height: 679px) { .os .icons { grid-template-rows: repeat(auto-fill, 72px); } .os .ico { gap: 2px; padding: 3px 1px 2px; } .os .ico svg { width: 34px; height: 34px; } }
@@ -516,7 +486,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
 @media print {
-  .wall, .bubbles, .taskbar, .icons, .boot, .balloon, .prints, .tour, .tourspot { display: none !important; }
+  .wall, .bubbles, .taskbar, .icons, .boot, .balloon, .tour, .tourspot { display: none !important; }
   .os, .os body { height: auto; overflow: visible; }
   .os .desk { position: static; display: block; }
   .os .win { position: static !important; width: auto !important; height: auto !important; max-height: none; box-shadow: none; display: block !important; }
@@ -559,12 +529,10 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 #sting { position: fixed; inset: 0; z-index: 8985; width: 100%; height: 100%; object-fit: cover; mix-blend-mode: screen; pointer-events: none; }
 @media (max-aspect-ratio: 16/9) { #sting { object-fit: contain; } }
 .wall canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-:root:not([data-theme=aero]) .prints { display: none; }
 :root:not([data-theme=aero]) .win__bar::after { display: none; }
 .mp__quake { display: flex; flex: 1 1 100%; align-items: center; gap: 6px; font-size: 13px; }
 .pan__plate { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 10px; padding: 14px; color: #dfe6f2; text-align: center; background: #0a0d14; border-radius: 6px; }
 .pan__plate img { width: min(62%, 300px); }
-@media (max-height: 539px) { .js:not(.os) .pan__plate img { display: none; } }
 .pan__stage { position: relative; }
 .pan__plate p { max-width: 34ch; margin: 0; font-size: 15px; line-height: 1.35; }
 
@@ -807,14 +775,14 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 
 /* Resizing: invisible grips on every edge and corner, with the classic ridges in the bottom right so people know they can. */
 .grip { display: none; }
-.os .grip { position: absolute; z-index: 5; display: block; touch-action: none; }
+.os:where(:not(.phone)) .grip { position: absolute; z-index: 5; display: block; touch-action: none; }
 .grip--n, .grip--s { left: 10px; right: 10px; height: 7px; cursor: ns-resize !important; }
 .grip--e, .grip--w { top: 10px; bottom: 10px; width: 7px; cursor: ew-resize !important; }
 .grip--n { top: -3px; } .grip--s { bottom: -3px; } .grip--e { right: -3px; } .grip--w { left: -3px; }
 .grip--ne, .grip--nw, .grip--se, .grip--sw { width: 16px; height: 16px; }
 .grip--ne { top: -3px; right: -3px; cursor: nesw-resize !important; } .grip--sw { bottom: -3px; left: -3px; cursor: nesw-resize !important; }
 .grip--nw { top: -3px; left: -3px; cursor: nwse-resize !important; } .grip--se { right: -3px; bottom: -3px; cursor: nwse-resize !important; }
-.os .grip--se::after { content: ""; position: absolute; right: 5px; bottom: 5px; width: 11px; height: 11px; background: repeating-linear-gradient(135deg, transparent 0 2px, var(--bar-edge) 2px 3px, rgba(255, 255, 255, .7) 3px 4px); clip-path: polygon(100% 0, 100% 100%, 0 100%); pointer-events: none; }
+.os:where(:not(.phone)) .grip--se::after { content: ""; position: absolute; right: 5px; bottom: 5px; width: 11px; height: 11px; background: repeating-linear-gradient(135deg, transparent 0 2px, var(--bar-edge) 2px 3px, rgba(255, 255, 255, .7) 3px 4px); clip-path: polygon(100% 0, 100% 100%, 0 100%); pointer-events: none; }
 .win.is-max .grip, .is-rundown .grip { display: none; }
 .is-resizing, .is-resizing * { user-select: none; }
 .os #portrait .photo img { height: 100%; }
@@ -915,3 +883,208 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @keyframes crt-tear { 0%, 80% { opacity: 1; transform: translateX(-1.5%); } 40% { transform: translateX(1.5%) translateY(9%); } 100% { opacity: 0; } }
 @keyframes crt-trackmsg { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .crt__band, .crt__tear, .crt__blue { display: none; } }
+
+/* =====================================================================================
+   THE PHONE OS. Same windows, same manager: a home screen, sheets on a stack, a tape that fits in your hand.
+   Below 980 wide or 540 tall, set by the head script in index.html. Last in the file so it wins ties with the desktop rules above.
+   ===================================================================================== */
+@media screen {
+  .phone {
+    --cols: 4; --row: 88px; --ico: 42px; --mp-h: 116px; --hook-band: 0px; --side: 0px;
+    --col: calc((100vw - var(--side) - 2 * var(--gutter)) / var(--cols));
+    --gutter: max(8px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
+    --tb: calc(var(--taskbar) + env(safe-area-inset-bottom, 0px));
+    --top: calc(max(8px, env(safe-area-inset-top, 0px)) + var(--hook-band));
+    -webkit-tap-highlight-color: transparent;
+  }
+  .phone.hook { --hook-band: 60px; }
+  @media (min-height: 720px) { .phone { --row: clamp(98px, calc((100dvh - var(--tb) - var(--mp-h) - 40px) / 4.6), 124px); --ico: 56px; --mp-h: 150px; } }
+  @media (min-width: 600px) { .phone { --cols: 6; --row: 104px; --ico: 54px; } }
+  .phone ::-webkit-scrollbar { width: 8px; height: 8px; }
+  .phone, .phone body { overscroll-behavior-y: none; }   /* no pull-to-refresh on the home screen */
+
+  /* The home screen. A 4-by-4 grid: 14 icons and her photo, which takes two cells in the last column. */
+  .phone .desk { bottom: var(--tb); }
+  .os.phone .icons { inset: 0 0 calc(var(--tb) + var(--mp-h) + 10px) 0; grid-auto-flow: row; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: none; grid-auto-columns: auto; grid-auto-rows: var(--row); gap: 0; padding: var(--top) var(--gutter) 0; overflow: hidden auto; overscroll-behavior: contain; pointer-events: auto; transition: padding-top .5s var(--ease-out); }
+  .phone .icons::before { content: ""; grid-column: var(--cols); grid-row: 1 / span 2; }
+  .os.phone .ico[data-rundown] { grid-area: 1 / 1; }
+  .phone .ico { gap: 2px; padding: 3px 1px 0; font-size: 12px; line-height: 1.1; -webkit-touch-callout: none; user-select: none; }
+  /* Every OS has its own label font, and each one's longest word fits its column. */
+  .os.phone .ico span { font-size: min(12px, calc(var(--col) * .155)); }
+  .os.phone[data-theme=vapor] .ico span { font-size: min(17px, calc(var(--col) * .186)); }
+  .os.phone[data-theme=baroque] .ico span { color: #fff3cf; font-size: min(12px, calc(var(--col) * .13)); }
+  .os.phone[data-theme=ray] .ico span { font-size: min(12.5px, calc(var(--col) * .138)); }
+  .os.phone[data-theme=metro] .ico span { padding: 2px 3px; font-size: min(11.5px, calc(var(--col) * .123)); }
+  /* Their walls are bright behind the labels, and a picked painting can be. Wrapped labels fill their column, so chips would run together: a dark halo instead. */
+  .os.phone[data-theme=baroque] .ico span, .os.phone[data-theme=ray] .ico span, .os.phone[data-pick]:not([data-theme=metro]) .ico span { background: none; box-shadow: none; text-shadow: 0 0 1px #000, 0 0 2px #000, 0 0 2px #000, 0 0 3px #000, 0 1px 3px #000, 0 0 8px rgba(0, 0, 0, .9); }
+  .os.phone .ico svg { width: var(--ico); height: var(--ico); }
+  .phone .ico:active svg { transform: scale(.92); }
+  @media (hover: none) { .phone .ico:hover { background: none; border-color: transparent; } .phone .ico:hover svg { transform: none; } }
+
+  /* Sheets: full screen above the taskbar, one big close button, the body scrolls inside. */
+  .phone .win { inset: 0; width: auto; height: auto; max-width: none; max-height: none; transform-origin: 50% 100%; }
+  .phone .win:not(.is-sheet) { z-index: 1 !important; }
+  .os.phone .win.is-sheet { --win-top: 0px; --win-bot: 0px; box-shadow: none; }
+  .phone.has-sheet .icons, .phone.has-sheet .bubbles, .phone.has-sheet .win:not(.is-sheet) { display: none; }
+  .phone .win__bar { touch-action: manipulation; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .phone .win__bar::after { display: none; }
+  .phone .is-sheet .win__bar { flex: none; height: calc(48px + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(2px, env(safe-area-inset-right, 0px)) 0 max(10px, env(safe-area-inset-left, 0px)); }
+  .phone .is-sheet .win__main { padding-left: max(4px, env(safe-area-inset-left, 0px)); padding-right: max(4px, env(safe-area-inset-right, 0px)); }
+  .phone[data-theme=ghost] .is-sheet .win__bar { clip-path: none; }
+  .phone[data-theme=metro] .is-sheet .win__main { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
+  .phone #bin.is-sheet, .phone #contact.is-sheet { top: auto; max-height: 100%; }   /* short ones sit at the bottom, over her painting */
+  .phone .win__btn:not(.win__btn--close), .phone .win:not(.is-sheet) .win__btns, .phone .is-touring .win__btns { display: none; }
+  .phone .win__btn--close { width: 44px; height: 44px; }
+  .phone .win__btn--close svg { width: 18px; height: 18px; }
+  .phone .win__body { overflow-wrap: break-word; }
+  .phone .log div { white-space: normal; }
+  @media (max-width: 619px) { .phone .split { grid-template-columns: minmax(0, 1fr); } }
+  .phone .prose h1, .phone .prose h2, .phone .prose h3, .phone .headline, .phone .insight { overflow-wrap: anywhere; }
+
+  /* Her photo: a small widget in the top right, spanning two rows of the grid. */
+  .phone #portrait:not(.is-sheet) { inset: var(--top) var(--gutter) auto auto; width: var(--col); height: calc(2 * var(--row) - 4px); transition: top .5s var(--ease-out); }
+  .os.phone:not([data-theme=vapor]) #portrait:not(.is-sheet) { box-shadow: 0 0 0 1px var(--bar-edge); }   /* a soft shadow would dim the labels beside it. Vapor's hard offsets are its frame. */
+  .phone #portrait:not(.is-sheet) .win__bar { height: 22px; padding: 0 4px; }
+  .phone #portrait:not(.is-sheet) .win__ico { display: none; }
+  .phone #portrait:not(.is-sheet) .win__file { font: 600 11.5px/1.5 var(--body); letter-spacing: 0; text-align: center; }
+  .phone #portrait:not(.is-sheet) .win__file::before { content: none; }
+  .phone[data-theme=metro] #portrait:not(.is-sheet) .win__bar, .phone[data-theme=metro] #player:not(.is-sheet) .win__bar { height: 30px; padding-top: 6px; }
+  .os.phone[data-theme=ray] #player:not(.is-sheet) .win__main::before { display: none; }
+  .phone #portrait:not(.is-sheet) .win__main { padding: 2px; }
+  .os.phone #portrait:not(.is-sheet) .photo { margin: 2px; border-width: 2px; flex: 1; min-height: 0; }
+  .phone #portrait:not(.is-sheet) .photo img { height: 100%; aspect-ratio: auto; object-position: 50% 12%; transform: scale(1.25); transform-origin: 50% 12%; }
+  .phone #portrait.is-sheet .photo { flex: 1; min-height: 0; }
+  .phone #portrait.is-sheet .photo img { height: 100%; aspect-ratio: auto; object-position: 50% 20%; transform: none; }
+  .phone .win:not(.is-sheet) > .win__tap { position: absolute; inset: 0; z-index: 2; display: block; }
+
+  /* The player: a compact widget above the taskbar, and everything once it's full screen. */
+  .phone #player:not(.is-sheet) { inset: auto var(--gutter) 6px; height: var(--mp-h); }
+  .phone #player:not(.is-sheet) .win__bar { height: 26px; padding: 0 6px; }
+  .phone #player:not(.is-sheet) .win__ico { width: 16px; height: 16px; }
+  .phone #player:not(.is-sheet) .mp { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: minmax(0, 1fr); align-items: stretch; gap: 8px; padding: 5px 6px; }
+  .phone #player:not(.is-sheet) .mp__seek, .phone #player:not(.is-sheet) .mp__time, .phone #player:not(.is-sheet) #mp-mute, .phone #player:not(.is-sheet) .mp__vol, .phone #player:not(.is-sheet) .mp__quake, .phone #player:not(.is-sheet) .mp__showing, .phone #player:not(.is-sheet) .mp__list { display: none; }
+  .phone #player:not(.is-sheet) .mp__screen { display: flex; flex-direction: column; min-height: 0; }
+  .phone #player:not(.is-sheet) #mp-viz { flex: 1 1 0; height: 0; min-height: 0; }
+  .phone #player:not(.is-sheet) .mp__title span { display: inline; }
+  .phone #player:not(.is-sheet) .mp__title { text-overflow: ellipsis; }
+  @media (prefers-reduced-motion: no-preference) { .phone #player:not(.is-sheet) .mp__title span { display: inline-block; padding-left: 100%; animation: ticker 14s linear infinite; } }
+  .phone #player:not(.is-sheet) .mp__ctl { position: relative; z-index: 3; flex-wrap: nowrap; align-self: center; gap: 4px; }
+  .phone #mp-listbtn { display: none; }
+  .phone #player.is-sheet .mp { flex: 1; min-height: 0; grid-auto-rows: max-content; overflow: auto; overscroll-behavior: contain; }
+  .phone #player.is-sheet #mp-viz { height: 96px; }
+  .phone #player.is-sheet .mp__ctl { justify-content: center; }
+  .phone .mp__list button { min-height: 44px; padding-block: 6px; }
+
+  /* Touch sizes. */
+  .phone a, .phone button { touch-action: manipulation; }
+  .phone .ball:not(.ball--big), .phone .tray__btn { width: 44px; height: 44px; }
+  .phone .tool, .phone .pill { min-height: 44px; }
+  .phone .swatch { width: 44px; height: 44px; }
+  .phone .mp input[type=range] { height: 36px; }
+  .phone .gel { min-height: 44px; }
+  .phone .actions .gel { flex: 1 1 auto; }
+  .phone .tabs button { min-height: 44px; padding-inline: 8px; font-size: 13px; }
+  .phone .balloon { bottom: calc(var(--tb) + var(--mp-h) + 18px); padding-right: 44px; }
+  .phone .balloon__x { top: 0; right: 0; width: 44px; height: 44px; padding: 13px; }
+  .phone .subfiles a { min-height: 44px; }
+  .phone #pan-canvas { width: min(100%, calc(100dvh - 240px)); margin-inline: auto; }
+  .phone .game { justify-content: safe center; }
+  .phone .mp__quake { min-height: 44px; }
+  .phone .mp__quake input { width: 22px; height: 22px; }
+  .phone .reach a, .phone .meta a, .phone .win__status a { display: inline-flex; align-items: center; min-height: 44px; }
+  .phone .win__status { align-items: center; }
+  .phone .contact { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  .phone .contact dt { margin-top: 10px; }
+  .phone .contact dd { display: flex; align-items: center; gap: 8px; min-height: 44px; }
+  .phone .contact dd a { display: flex; flex: 1; align-items: center; min-height: 44px; }
+  .phone .lcds li { align-content: start; }
+  .phone #pt-canvas { height: auto; aspect-ratio: auto; }   /* the shape js/paint.js chose */
+  .phone .paint__canvas { flex: none; }
+  .phone .viewer__info { flex: none; max-height: 45%; overflow: auto; }
+  .os.phone[data-theme=baroque] #about .about::before { content: none; }   /* her photo takes that corner */
+  .phone[data-theme=baroque] .prose h1 { font-size: 34px; }
+  .phone .about__face { display: block; float: right; width: 96px; height: 112px; margin: 0 0 8px 12px; background: #000 url(../assets/profile/tahsin-portrait.webp) 50% 14%/190% auto no-repeat; border: 1px solid; border-color: var(--putty-4) #fff #fff var(--putty-4); }
+
+  /* Taskbar and Start. */
+  .phone .taskbar { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .phone .tray { gap: 3px; }
+  .phone .start { height: 40px; -webkit-touch-callout: none; user-select: none; }
+  .phone .orb { touch-action: none; }
+  .phone .startmenu a, .phone .startmenu__btn { min-height: 44px; }
+  .phone .startmenu { max-height: calc(100dvh - var(--tb) - 12px); }
+  .phone:has(#startmenu:not([hidden])) .crt__osd, .phone:has(#startmenu:not([hidden])) .crt__track { visibility: hidden; }   /* the VCR text belongs on the dock's title bar, which the menu covers */
+
+  /* The hook: the note sits in its own band above the top row, with the arrow coming down to the tape. */
+  .os.phone.hook .pss { top: auto; bottom: calc(100% + 2px); left: 6px; width: max-content; column-gap: 2px; font-size: 19px; line-height: .95; }
+  .os.phone.hook .pss svg { width: 40px; height: 34px; rotate: -42deg; }
+  .phone .pss b { font-size: 31px; }
+  .os.phone.hook .ico[data-rundown]::before { top: calc(var(--ico) / 2 - 52px + 3px); }
+  .os.phone.hook .ico[data-rundown] > svg { width: var(--ico); height: var(--ico); }
+
+  /* The tape: the document on top, the narration below it. The VCR text rides on the dock's title bar, where it covers nothing. */
+  .phone .tourspot { display: none; }
+  .phone .win.is-touring { bottom: var(--dock-h, 0px); }
+  .phone .tour { right: 0; bottom: var(--tb); left: 0; display: flex; flex-direction: column; max-height: 62dvh; border-radius: 0; box-shadow: 0 -2px 10px rgba(0, 10, 40, .5); }
+  .phone .tour .win__bar { flex: none; justify-content: center; height: 30px; padding: 0 8px; }
+  .phone .tour .win__ico, .phone .tour .win__file { display: none; }
+  .phone .tour__count { padding: 0; font: 400 17px/1 "VT323", monospace; }
+  .phone .is-touring .win__status { display: none; }
+  .phone .tour__main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px 12px 8px; overflow: auto; overscroll-behavior: contain; border-radius: 0; }
+  .phone .tour__voice { display: none; }
+  .phone.is-rundown .tour__text h2 { font-size: 25px; line-height: 1; }
+  .phone.is-rundown .tour__text p:not(.vh) { min-height: 0; margin: 3px 0 6px; font-size: 21px; line-height: 1.08; }
+  .phone .tour__ctl { justify-content: space-between; }
+  .phone .tour__ctl .pill, .phone .tour__ctl > .gel { flex: 1 1 0; min-width: 60px; }
+  .phone .tour__end { flex: 1 1 100%; order: -1; margin: 0; }
+  .phone .tour__end .gel { flex: 1 1 auto; }
+  .phone .tour:has(#tour-end:not([hidden])) { max-height: calc(100dvh - var(--tb) - 8px); }   /* only the home screen is behind the end card, so it takes the height it needs */
+  .phone .crt.is-paused .crt__play::after { display: none; }
+  .phone .tour.is-paused #tour-pause { outline: 2px solid currentColor; outline-offset: -4px; }
+  .phone .crt::before { border-radius: 14px / 12px; box-shadow: inset 0 0 44px 8px rgba(0, 0, 0, .55), 0 0 0 40px #000; }
+  .phone .crt__osd { top: auto; right: 12px; bottom: calc(var(--tb) + var(--dock-h, 0px) - 30px); left: 12px; height: 30px; align-items: center; font-size: 22px; }
+  .phone .crt__play::after { margin-left: 6px; border-width: 7px 0 7px 12px; }
+  .phone .crt__track { top: 30%; bottom: auto; font-size: 24px; }
+  @media (max-width: 340px) { .phone.is-rundown .tour__text p:not(.vh) { font-size: 19px; } .phone .crt__osd { font-size: 18px; } }
+
+  /* Landscape: the icons take the left, and her photo and the player step aside to the right. */
+  @media (orientation: landscape) and (max-height: 539px) {
+    .phone { --cols: 5; --row: 78px; --ico: 36px; --mp-h: 100px; --side: calc(292px + var(--gutter)); }
+    @media (max-width: 759px) { .phone { --cols: 4; } .phone .paint__colors { display: grid; grid: repeat(2, 44px) / auto-flow 44px; min-height: 91px; overflow-x: auto; } .phone .tool { padding-inline: 6px; } .phone .paint__sep { display: none; } }
+    .phone.hook { --hook-band: 42px; }
+    .os.phone .icons { right: var(--side); bottom: var(--tb); padding-bottom: 8px; }
+    .phone .icons::before { display: none; }
+    .phone #portrait:not(.is-sheet) { right: var(--gutter); bottom: calc(var(--mp-h) + 12px); left: auto; width: 116px; height: auto; }
+    .phone #player:not(.is-sheet) { left: auto; width: 284px; }
+    @media (min-width: 760px) { .phone { --side: calc(348px + var(--gutter)); } .phone #player:not(.is-sheet) { width: 340px; } }
+    .os.phone.hook .pss { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .os.phone.hook .pss svg { width: 30px; height: 26px; }
+    .phone .pss b { font-size: 26px; }
+    .phone .win.is-touring { right: calc(320px + env(safe-area-inset-right, 0px)); bottom: 0; }
+    .phone .tour { top: 0; right: env(safe-area-inset-right, 0px); left: auto; width: 320px; max-height: none; }
+    .phone.is-rundown .tour__text h2 { font-size: 22px; }
+    .phone.is-rundown .tour__text p:not(.vh) { font-size: 19px; }
+    .phone .tour__end .gel { padding-inline: 8px; font-size: 14px; }
+    .phone .tour:has(#tour-end:not([hidden])) { width: min(440px, 100vw); max-height: none; }
+    .phone .tour__end { flex: 1 1 auto; order: 0; }   /* Back shares its row */
+    .phone .crt__osd { top: 0; right: calc(10px + env(safe-area-inset-right, 0px)); bottom: auto; left: auto; width: 300px; font-size: 20px; }
+    .phone:has(#tour-end:not([hidden])) .crt__osd { width: min(420px, calc(100vw - 20px)); }
+    /* Games and pieces sit beside their controls, so nothing needs scrolling to reach. */
+    .phone .game { display: grid; grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; align-content: start; }
+    .phone .game > :not(#bp-canvas, .pan__stage) { grid-column: 2; }
+    .phone #bp-canvas, .phone .pan__stage { grid-row: 1 / span 4; width: calc((100dvh - var(--tb) - 48px - 32px) * .9); }
+    .phone #pan-canvas { width: 100%; }
+    .phone .paint { display: grid; grid-template-rows: auto auto minmax(0, 1fr); grid-template-columns: auto minmax(0, 1fr); column-gap: 12px; }
+    .phone .paint > :not(.paint__canvas) { grid-column: 2; }
+    .phone .paint__canvas { position: sticky; top: 0; grid-row: 1 / -1; align-self: start; }   /* if the tools outgrow a tiny screen, they scroll and the canvas stays */
+    .phone #pt-canvas { width: auto; height: calc(100dvh - var(--tb) - 96px); }
+    .phone #portrait.is-sheet .photo { align-self: center; aspect-ratio: 944 / 1100; }   /* her whole face, with the frame around the picture */
+    .phone #portrait.is-sheet .photo img { object-fit: contain; }
+    .phone .pan__plate img { display: none; }
+    .phone .viewer { flex-direction: row; }
+    .phone .viewer__stage { flex: 1 1 60%; }
+    .phone .viewer__info { flex: 1 1 40%; max-height: none; }
+  }
+  /* A short portrait screen: the player gives up its visualizer first, then its place on the home screen. */
+  @media (orientation: portrait) and (max-height: 600px) { .phone { --mp-h: 84px; --row: 84px; --ico: 40px; } .phone #player:not(.is-sheet) #mp-viz { display: none; } }
+  @media (orientation: portrait) and (max-height: 500px) { .phone { --mp-h: 0px; } .phone #player:not(.is-sheet) { display: none; } }
+}

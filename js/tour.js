@@ -1,5 +1,5 @@
 // PLAY_ME.EXE: a 30-second guided tour for recruiters. It answers three things: who is she, what can she do, why hire her.
-// A spotlight moves from window to window. Written, never spoken: there is no synthesized voice.
+// A spotlight moves from window to window, and on a phone the document sits above the dock. Written, never spoken: there is no synthesized voice.
 import { track } from './analytics.js';
 import { vhs } from './audio.js';
 
@@ -50,15 +50,15 @@ let api, opener = null, active = false, index = 0, timer = 0, running = false, h
 const dock = $('tour'), spot = $('tourspot');
 
 function snapshot() {
-  saved = [...api.wins].map(([id, w]) => ({ id, open: w.open, min: w.min, placed: w.placed, left: w.el.style.left, top: w.el.style.top, cw: w.el.style.getPropertyValue('--w'), ch: w.el.style.getPropertyValue('--h'), z: w.el.style.zIndex, max: w.el.classList.contains('is-max') }));
+  saved = [...api.wins].map(([id, w]) => ({ id, open: w.open, min: w.min, placed: w.placed, left: w.el.style.left, top: w.el.style.top, cw: w.el.style.getPropertyValue('--w'), ch: w.el.style.getPropertyValue('--h'), z: w.el.style.zIndex, max: w.el.classList.contains('is-max'), sheet: w.el.classList.contains('is-sheet') }));
   saved.focus = api.focused();
 }
 function restore() {
-  if (!api.desktop()) return;
   for (const s of saved) {
     const w = api.wins.get(s.id);
     w.el.classList.remove('is-touring');
     w.el.classList.toggle('is-max', s.max);
+    w.el.classList.toggle('is-sheet', s.sheet);
     w.el.style.left = s.left; w.el.style.top = s.top; w.el.style.zIndex = s.z;
     w.el.style.setProperty('--w', s.cw); w.el.style.setProperty('--h', s.ch);
     w.open = s.open; w.min = s.min; w.placed = s.placed;
@@ -70,14 +70,16 @@ function restore() {
 
 // Every episode gets the same frame: the open space between the icons and the narration column, centered if there's extra room.
 function frame(id) {
-  const w = api.wins.get(id), left = api.leftEdge(), top = 14, room = dock.offsetLeft - left - 14;
-  const width = Math.min(1000, room), height = innerHeight - 48 - top * 2, x = left + (room - width) / 2;
+  const w = api.wins.get(id);
   w.el.classList.remove('is-max');
   w.el.classList.add('is-touring');
-  w.el.style.left = `${x}px`; w.el.style.top = `${top}px`;
-  w.el.style.setProperty('--w', `${width}px`); w.el.style.setProperty('--h', `${height}px`);
   api.focus(id);
   spot.hidden = false;
+  if (!api.desktop()) return;   // the CSS stacks the document above the dock
+  const left = api.leftEdge(), top = 14, room = dock.offsetLeft - left - 14;
+  const width = Math.min(1000, room), height = innerHeight - 48 - top * 2, x = left + (room - width) / 2;
+  w.el.style.left = `${x}px`; w.el.style.top = `${top}px`;
+  w.el.style.setProperty('--w', `${width}px`); w.el.style.setProperty('--h', `${height}px`);
   spot.style.cssText = `left:${x - 6}px;top:${top - 6}px;width:${width + 12}px;height:${height + 12}px`;
 }
 
@@ -85,7 +87,10 @@ function say(text) {
   const p = $('tour-p');
   $('tour-live').textContent = text;
   clearInterval(typing);
-  if (still.matches) { p.textContent = text; return; }
+  p.textContent = text;
+  p.style.minHeight = '';
+  if (!api.desktop()) p.style.minHeight = `${p.offsetHeight}px`;   // the dock takes its full height now, so typing never moves the document above it
+  if (still.matches) return;
   const words = text.split(' ');
   let n = 0;
   dock.classList.add('is-talking');
@@ -101,6 +106,9 @@ function say(text) {
 function hold() {
   const held = paused || hovering, run = active && !held && !still.matches && index < STEPS.length - 1;
   dock.classList.toggle('is-paused', held);
+  const stopped = paused && !api.desktop() && index < STEPS.length - 1;   // on a phone a scroll pauses the tape, so the VCR text and clock say so
+  crt.classList.toggle('is-paused', stopped);
+  crt.querySelector('.crt__play').textContent = stopped ? 'PAUSE' : 'PLAY';
   if (run === running) return;
   running = run;
   if (run) { stepEnd = performance.now() + remaining; timer = setTimeout(next, remaining); }
@@ -129,7 +137,7 @@ function powerOn() {
   vhs.start();
   tapeStart = performance.now();
   clearInterval(clockTimer);
-  clockTimer = setInterval(() => { const s = Math.floor((performance.now() - tapeStart) / 1000); $('crt-time').textContent = `SP 0:${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 500);
+  clockTimer = setInterval(() => { if (crt.classList.contains('is-paused')) { tapeStart += 500; return; } const s = Math.floor((performance.now() - tapeStart) / 1000); $('crt-time').textContent = `SP 0:${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`; }, 500);
 }
 function powerOff() {
   clearInterval(clockTimer);
@@ -153,7 +161,6 @@ function show(i) {
   index = Math.max(0, Math.min(STEPS.length - 1, i));
   const s = STEPS[index], last = index === STEPS.length - 1;
   $('tour-h').textContent = s.heading;
-  say(s.caption);
   $('tour-count').textContent = `Episode ${index + 1} of ${STEPS.length}`;
   dock.querySelectorAll('.tour__seg i').forEach((seg, n) => {
     seg.className = n < index ? 'is-done' : n === index ? 'is-now' : '';
@@ -163,6 +170,7 @@ function show(i) {
   $('tour-pause').hidden = last;
   $('tour-end').hidden = !last;
   $('tour-stop').hidden = last;
+  say(s.caption);   // after those, so a phone measures it in the dock's final shape
   if (dock.contains(from) && (from.disabled || from.closest('[hidden]'))) (last ? $('tour-play') : $('tour-next')).focus({ preventScroll: true });   // the keyboard stays in the dock when its button goes away
   track('rundown_step', { step: index + 1, window: s.win || 'end' });
   if (last) {
@@ -174,8 +182,7 @@ function show(i) {
   }
   if (!api.wins.get(s.win).open || api.wins.get(s.win).min) opened.add(s.win);
   api.open(s.win, { user: false, quiet: true, tab: s.tab });
-  if (api.desktop()) { frame(s.win); s.after?.(api); }
-  else { api.wins.get(s.win).el.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' }); }
+  frame(s.win);
   const words = s.caption.split(' ').length;
   arm(Math.max(3800, 900 + words * 215));
 }
@@ -206,6 +213,7 @@ let wired = false;
 function wire() {
   if (wired) return;
   wired = true;
+  new ResizeObserver(() => document.documentElement.style.setProperty('--dock-h', `${dock.offsetHeight}px`)).observe(dock);
   const segs = dock.querySelector('.tour__seg');
   segs.innerHTML = STEPS.map(() => '<i></i>').join('');
   $('tour-next').addEventListener('click', next);

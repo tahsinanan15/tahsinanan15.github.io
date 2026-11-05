@@ -1,4 +1,4 @@
-// Tahsin OS: windows, taskbar, start menu, boot, wallpaper. Phones and no-JS get the plain scrolling page.
+// Tahsin OS: windows, taskbar, start menu, boot, wallpaper. One window manager: on a phone the windows are sheets on a stack. No-JS gets the plain scrolling page.
 import { track, convert, countOnce, startVisit, sawHeadline, variant, HEADLINES, session } from './analytics.js';
 import { initAudio, sfx, startSoundNow, tryAutoplay, declineSound, osChime, playSong } from './audio.js';
 import { initBubbles } from './bubbles.js';
@@ -22,8 +22,9 @@ const deskH = () => innerHeight - TASKBAR - (root.dataset.theme === 'metro' ? 72
 const FIXED_SIZE = ['player', 'bubblepop', 'paint', 'panopticon'];   // their contents are a fixed shape, so they don't resize
 const START_OPEN = ['portrait', 'player'];   // the desktop stays clear so PLAY_ME.EXE is the first thing a new visitor notices
 const wins = new Map();
-const isOS = () => innerWidth >= 980 && innerHeight >= 540;
-const desktop = () => root.classList.contains('os');
+const isPhone = () => innerWidth < 980 || innerHeight < 540;
+const desktop = () => !root.classList.contains('phone');   // free-floating windows, as opposed to a phone's sheets
+const sheets = [];   // phones: what's open, bottom to top, plus 'tour' while the tape plays. Each one owns a history entry.
 let z = 10, focused = null;
 
 /* ---------- Windows ---------- */
@@ -161,10 +162,9 @@ function refreshTasks() {
 
 function focus(id) {
   const w = wins.get(id);
-  if (!w || !desktop()) return;
-  wins.forEach((o) => o.el.classList.remove('is-focus'));
+  if (!w) return;
+  wins.forEach((o) => o.el.classList.toggle('is-focus', o === w || !desktop()));   // a phone has no inactive windows
   w.el.style.zIndex = ++z;
-  w.el.classList.add('is-focus');
   focused = id;
   refreshTasks();
 }
@@ -174,24 +174,20 @@ function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
   if (!w) return;
   if (id === 'about' && !touring) sawHeadline();   // the tape shows both headlines, so tape watchers stay out of the test
   lazy(id, tab);
-  if (!desktop()) {
-    if (id === 'panopticon') { w.el.hidden = false; w.el.focus({ preventScroll: true }); return; }
-    if (id === 'viewer') {
-      if (w.el.hidden) history.pushState({ viewer: 1 }, '');   // the phone's back gesture closes the piece, not the site
-      w.el.hidden = false;
-      w.el.focus({ preventScroll: true });
-      return;
-    }
-    w.el.scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' });
-    if (user) { w.el.focus({ preventScroll: true }); track('window_open', { window: id }); if (id === 'resume') convert('resume'); }
-    return;
-  }
-  if (user && !w.open) { track('window_open', { window: id }); calmHook(); }
+  // On a phone her photo and the player first open as widgets on the home screen. Everything else, and opening those again, is a sheet.
+  const rising = !desktop() && !w.el.classList.contains('is-sheet') && (w.open || !START_OPEN.includes(id));
+  if (user && (!w.open || rising)) { track('window_open', { window: id }); calmHook(); }
   if (user && id === 'resume') convert('resume');
   if (w.min) return restore(id);
-  if (!w.open) {
+  if (rising) { w.el.classList.add('is-sheet'); balloon.hidden = true; }
+  if (!touring && w.el.classList.contains('is-sheet')) {   // the tape puts back what it opens, so its windows stay off the stack
+    if (sheets.includes(id)) sheets.splice(sheets.indexOf(id), 1);
+    sheets.push(id);
+    syncHistory();
+  }
+  if (!w.open || rising) {
     w.el.hidden = false;
-    if (!w.placed) { place(w.el); w.placed = true; }
+    if (desktop() && !w.placed) { place(w.el); w.placed = true; }
     w.open = true;
     if (!quiet) sfx.open();
     if (!still.matches) w.el.animate(POP_IN, { duration: 420, delay, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
@@ -209,19 +205,19 @@ function handOffFocus(had) {
 
 async function close(id) {
   const w = wins.get(id);
-  if (!desktop() && id !== 'viewer' && id !== 'panopticon') return;
+  if (!desktop()) {
+    if (!sheets.includes(id)) return;   // a second tap on the way out
+    sheets.splice(sheets.indexOf(id), 1);
+    syncHistory();
+  }
   const had = w.el.contains(document.activeElement);
   if (id === 'viewer') $('vw-stage').replaceChildren();
-  if (!desktop()) {
-    w.el.hidden = true;
-    if (history.state?.viewer) history.back();
-    viewerOpener?.focus({ preventScroll: true });
-    return;
-  }
   sfx.close();
   track('window_close', { window: id });
   await animate(w.el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px) scale(.95)' }], 170);
-  w.el.hidden = true; w.open = false; w.min = false; w.placed = START_OPEN.includes(id);   // her photo and the player come back where they were
+  if (sheets.includes(id)) return;   // reopened while it was closing
+  if (desktop() || !START_OPEN.includes(id)) { w.el.hidden = true; w.open = false; w.min = false; w.placed = START_OPEN.includes(id); }   // her photo and the player come back where they were
+  if (!desktop()) { w.el.classList.remove('is-sheet'); w.el.style.zIndex = ''; }
   focusTop();
   if (id === 'viewer' && viewerOpener?.offsetParent) viewerOpener.focus({ preventScroll: true }); else handOffFocus(had);
 }
@@ -230,7 +226,7 @@ function focusTop() {
   let best = null, bestZ = -1;
   wins.forEach((o, i) => { const v = +o.el.style.zIndex || 0; if (o.open && !o.min && v > bestZ) { best = i; bestZ = v; } });
   focused = null;
-  wins.forEach((o) => o.el.classList.remove('is-focus'));
+  wins.forEach((o) => o.el.classList.toggle('is-focus', !desktop()));
   if (best) focus(best); else refreshTasks();
 }
 
@@ -260,13 +256,36 @@ function toggleMax(id) {
 }
 
 function fit(el) {
+  if (!desktop()) return;
   const H = innerHeight - TASKBAR;   // offset sizes, so a running pop-in animation can't skew the measure
   if (el.offsetTop + el.offsetHeight > H - 6) el.style.top = `${Math.max(6, H - el.offsetHeight - 6)}px`;
   if (el.offsetLeft + el.offsetWidth > innerWidth - 6) el.style.left = `${Math.max(6, innerWidth - el.offsetWidth - 6)}px`;
 }
 addEventListener('tahsin:player-resize', () => fit(wins.get('player').el));
 
-addEventListener('popstate', () => { if (!desktop() && !$('viewer').hidden) { $('viewer').hidden = true; $('vw-stage').replaceChildren(); viewerOpener?.focus({ preventScroll: true }); } });
+// One history entry per sheet, so the phone's back gesture closes the top one and never leaves the site while one is open.
+// It runs a beat later so that a close and an open in the same tap share an entry instead of racing, and a stale entry (a reload, or going forward) just steps back.
+let historyTimer = 0, historyBusy = false;
+function syncHistory() {
+  root.classList.toggle('has-sheet', sheets.some((s) => s !== 'tour'));
+  clearTimeout(historyTimer);
+  historyTimer = setTimeout(() => {
+    if (historyBusy) return;
+    const want = sheets.length, have = history.state?.sheets || 0;
+    for (let n = have + 1; n <= want; n++) history.pushState({ sheets: n }, '');
+    if (want < have) { historyBusy = true; history.go(want - have); setTimeout(() => { historyBusy = false; }, 600); }   // the timer, in case there was no entry to go to
+  });
+}
+addEventListener('popstate', () => {
+  const ours = historyBusy;   // a step the site took itself only needs re-syncing: a sheet opened meanwhile must stay
+  historyBusy = false;
+  if (!ours) {
+    const dialog = document.querySelector('dialog[open]'), have = history.state?.sheets || 0;
+    if (!startMenu.hidden || dialog) { closeStart(); dialog?.close(); }   // back acts on what's on top, and the sync below puts the sheet's entry back
+    else while (sheets.length > have) { const top = sheets[sheets.length - 1]; if (top === 'tour') tourMod.stop(); else close(top); }
+  }
+  syncHistory();
+});
 
 /* ---------- Lazy modules: nothing heavy loads until someone wants it ---------- */
 const loaded = {};
@@ -332,18 +351,25 @@ document.addEventListener('click', (e) => {
 /* ---------- Start menu ---------- */
 const startBtn = $('start'), startMenu = $('startmenu');
 function closeStart() { startMenu.hidden = true; startBtn.setAttribute('aria-expanded', 'false'); }
+let stared = false;   // the finger that unlocked the hidden one is still on the button
 startBtn.addEventListener('click', () => {
+  if (stared) { stared = false; return; }
   startMenu.hidden = !startMenu.hidden;
   startBtn.setAttribute('aria-expanded', String(!startMenu.hidden));
   if (!startMenu.hidden) { startMenu.style.zIndex = 9001; startMenu.querySelector('a').focus({ preventScroll: true }); track('start_menu'); }
 });
 addEventListener('pointerdown', (e) => { if (!startMenu.hidden && !e.target.closest('#startmenu, #start')) closeStart(); });
+startMenu.addEventListener('click', (e) => { if (!desktop() && e.target.closest('a')) closeStart(); });
 addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (!startMenu.hidden) { closeStart(); startBtn.focus(); return; }
-  if (wins.get('viewer').open || !$('viewer').hidden) close('viewer');
-  else if (desktop() && focused && document.activeElement?.closest('.win') && !document.querySelector('dialog[open]')) close(focused);
+  const dialog = document.querySelector('dialog[open]');
+  if (!desktop()) { if (sheets.length && !dialog) close(sheets[sheets.length - 1]); }
+  else if (wins.get('viewer').open) close('viewer');
+  else if (focused && document.activeElement?.closest('.win') && !dialog) close(focused);
 });
+
+$('icons').addEventListener('contextmenu', (e) => { if (!desktop()) e.preventDefault(); });   // a long press on an app icon is not a link menu
 
 /* ---------- Clock ---------- */
 function tickClock() {
@@ -493,7 +519,8 @@ balloon.addEventListener('focusin', () => clearTimeout(balloonTimer));
 $('balloon-x').addEventListener('click', hideBalloon);
 $('balloon-go').addEventListener('click', () => { balloon.hidden = true; open('observe'); });
 function inviteObserve() {
-  if (session.counted.balloon || wins.get('observe').open || touring || (desktop() && hooked())) return;
+  if (session.counted.balloon || wins.get('observe').open || touring || hooked()) return;
+  if (sheets.length) { setTimeout(inviteObserve, 15000); return; }   // a sheet fills a phone's screen, so it waits for the home screen
   session.counted.balloon = 1;
   const n = session.events.length;
   $('balloon-text').textContent = `I've logged ${n} ${n === 1 ? 'thing' : 'things'} you did here. The log stays in your browser. Want to see what I noticed?`;
@@ -511,46 +538,42 @@ function calmHook() {   // they went their own way, so stop asking until the nex
   setTimeout(inviteObserve, 15000);
 }
 function startHook() {
-  if (!hooked() || !desktop() || touring) return;
+  if (!hooked() || touring) return;
   bubbles.gather(document.querySelector('.ico[data-rundown]'));
   setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
   setTimeout(calmHook, 60000);
 }
 function startRundown(from) {
+  if (touring && !desktop()) tourMod.stop('link');   // a phone's end card shows the home screen, so a tap on the tape replays it
   balloon.hidden = true;
   closeStart();
   const burst = hooked();
   store.set('tahsin.played', '1');
   if (burst) { root.classList.remove('hook'); bubbles.release(true); }
-  setTimeout(() => import('./tour.js').then((m) => (tourMod = m).start({
+  const font = desktop() ? null : Promise.race([document.fonts?.load('20px VT323'), new Promise((r) => setTimeout(r, 500))]).catch(() => {});   // a phone's dock measures its text, so the tape's font comes first
+  setTimeout(() => Promise.all([import('./tour.js'), font]).then(([m]) => (tourMod = m).start({
     wins, open, focus, desktop, refresh: refreshTasks, focused: () => focused,
     leftEdge: () => $('icons').getBoundingClientRect().right + 10,
   }, from)), burst && !still.matches ? 420 : 0);   // let them see the bubbles pop first
 }
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-rundown]'); if (b) startRundown(b); });
-addEventListener('tahsin:rundown', (e) => { touring = e.detail.active; if (!touring) setTimeout(inviteObserve, 20000); });
+addEventListener('tahsin:rundown', (e) => {
+  touring = e.detail.active;
+  if (touring && !desktop()) sheets.push('tour');   // the back gesture stops the tape
+  else if (sheets.includes('tour')) sheets.splice(sheets.indexOf('tour'), 1);
+  syncHistory();
+  if (!touring) setTimeout(inviteObserve, 20000);
+});
 
 /* ---------- Reading the case study counts only when someone actually engages with it ---------- */
 function caseRead() { if (!session.counted.case) { countOnce('case'); track('case_read'); } }
 const caseWin = $('case');
 caseWin.querySelector('.win__body').addEventListener('scroll', caseRead, { passive: true, once: true });
 caseWin.querySelector('.win__body').addEventListener('pointerdown', caseRead, { once: true });
-const readTimers = new Map();
-const seen = new IntersectionObserver((entries) => {
-  if (desktop()) return;
-  entries.forEach((en) => {
-    const id = en.target.id;
-    if (en.isIntersecting) {
-      lazy(id);
-      if (id === 'case' || id === 'resume') readTimers.set(id, setTimeout(() => { if (id === 'case') caseRead(); else track('resume_seen'); }, 4000));
-    } else clearTimeout(readTimers.get(id));
-  });
-}, { threshold: .2 });
-['case', 'resume', 'observe', 'bubblepop', 'paint'].forEach((id) => seen.observe($(id)));
 
 /* ---------- The hidden one. Stare back at the eye and hold still, or type its name. ---------- */
 function unlockPanopticon() {
-  if (wins.get('panopticon').open || !$('panopticon').hidden === true && !desktop()) return;
+  if (wins.get('panopticon').open) return;
   tourMod?.stop('link');
   track('panopticon_found');
   closeStart();
@@ -559,12 +582,14 @@ function unlockPanopticon() {
 {
   const orb = document.querySelector('.start .orb');
   let stare = 0, sx = 0, sy = 0;
-  const begin = (e) => { clearTimeout(stare); sx = e.clientX; sy = e.clientY; stare = setTimeout(unlockPanopticon, e.pointerType === 'touch' ? 3000 : 6000); };
+  const touch = (e) => e.pointerType === 'touch';
+  const begin = (e) => { clearTimeout(stare); stared = false; sx = e.clientX; sy = e.clientY; stare = setTimeout(() => { stared = touch(e); unlockPanopticon(); }, touch(e) ? 3000 : 6000); };
   orb.addEventListener('pointerenter', begin);
   orb.addEventListener('pointerdown', begin);
-  orb.addEventListener('pointermove', (e) => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > 3) begin(e); });
+  orb.addEventListener('pointermove', (e) => { if (Math.hypot(e.clientX - sx, e.clientY - sy) > (touch(e) ? 14 : 3)) begin(e); });
   orb.addEventListener('pointerleave', () => clearTimeout(stare));
-  orb.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch') clearTimeout(stare); });
+  orb.addEventListener('pointerup', (e) => { if (touch(e)) clearTimeout(stare); });
+  orb.addEventListener('contextmenu', (e) => e.preventDefault());   // a long press is the whole point here
   let typed = '';
   addEventListener('keydown', (e) => {
     if (e.target.closest?.('input, textarea') || e.key.length !== 1) return;
@@ -574,50 +599,50 @@ function unlockPanopticon() {
   setTimeout(() => track('note', { to_self: 'stare_back_at_the_eye' }), 75000);   // the only clue, left in the event log
 }
 
-/* ---------- Layout mode ---------- */
+/* ---------- Crossing the phone line: only .phone changes, and what's open comes along ---------- */
 function applyMode() {
-  const os = isOS();
-  root.classList.toggle('os', os);
-  $('story').open = os;
-  document.querySelector('#story summary').tabIndex = os ? -1 : 0;
-  if (os) {
-    wins.forEach((w, id) => { w.el.hidden = !w.open || w.min; });
+  const phone = isPhone(), stacked = [...wins.keys()].filter((id) => wins.get(id).open && !wins.get(id).min && !START_OPEN.includes(id)).sort((a, b) => wins.get(a).el.style.zIndex - wins.get(b).el.style.zIndex);
+  root.classList.toggle('phone', phone);
+  wins.forEach((w, id) => {
+    if (START_OPEN.includes(id)) { w.open = true; w.min = false; }
+    else if (w.min) w.open = w.min = false;   // no task buttons to bring it back with
+    w.el.classList.remove('is-max', 'is-sheet');
+    w.el.querySelector('[data-act=max]')?.setAttribute('aria-label', `Maximize ${w.el.dataset.file}`);
+    w.el.classList.toggle('is-sheet', phone && w.open && !START_OPEN.includes(id));
+    w.el.hidden = !w.open;
+    if (phone) { w.el.style.left = w.el.style.top = ''; w.placed = false; }
+  });
+  sheets.length = 0;
+  if (phone) sheets.push(...stacked);
+  syncHistory();
+  if (!phone) {
     placeStart();
-  } else {
-    wins.forEach((w, id) => { w.el.hidden = id === 'viewer' || id === 'panopticon'; w.el.classList.remove('is-max'); });
-    sawHeadline();
+    wins.forEach((w) => { if (w.open && !w.placed) { place(w.el); w.placed = true; } });
   }
+  focusTop();
 }
-let wasOS = isOS();
+let wasPhone = isPhone();
 addEventListener('resize', () => {
-  const os = isOS();
+  const phone = isPhone();
   syncLook();
-  if (os !== wasOS) {
+  if (phone !== wasPhone) {
     tourMod?.stop('link');
-    wasOS = os;
-    const firstDesktop = os && !wins.get('player').open;
+    wasPhone = phone;
     applyMode();
-    if (firstDesktop) { START_OPEN.forEach((id) => open(id, { user: false, quiet: true })); focus('player'); startHook(); }
     return;
   }
-  if (os) wins.forEach((w) => { if (w.open && !w.min) fit(w.el); });
+  if (!phone) wins.forEach((w) => { if (w.open && !w.min) fit(w.el); });
 });
 
 function showDesktop(pop) {
   root.classList.add('up');
-  if (desktop()) {
-    wins.forEach((w) => { w.el.hidden = true; });
-    placeStart();
-    START_OPEN.forEach((id, i) => open(id, { user: false, quiet: true, delay: pop ? 180 + i * 90 : 0 }));
-    focus('player');
-  } else {
-    wins.get('viewer').el.hidden = true;
-    wins.get('panopticon').el.hidden = true;
-  }
+  wins.forEach((w) => { w.el.hidden = true; });
+  if (desktop()) placeStart();
+  START_OPEN.forEach((id, i) => open(id, { user: false, quiet: true, delay: pop ? 180 + i * 90 : 0 }));
+  focus('player');
   tryAutoplay();
   const target = location.hash.slice(1);
-  if (wins.has(target) && !START_OPEN.includes(target)) open(target, { user: false });
-  else if (wins.has(target) && desktop()) focus(target);
+  if (wins.has(target) && target !== 'viewer') open(target, { user: false });   // a link to the viewer has no piece to show
   // A shared link opens its window once. Reloading goes back to the clean desktop, like restarting an OS.
   if (target) history.replaceState(history.state, '', location.pathname + location.search);
 }
@@ -694,16 +719,14 @@ $('off-restart').addEventListener('click', () => { store.del('tahsin.booted'); l
 window.tahsinUp = true;
 $('headline').textContent = HEADLINES[variant];
 $('abnote').hidden = false;
-root.classList.toggle('os', isOS());
-$('story').open = isOS();
-document.querySelector('#story summary').tabIndex = isOS() ? -1 : 0;
+document.querySelector('#story summary').tabIndex = -1;
 syncLook();
 initAudio();
 bubbles = initBubbles();
 boot();
+syncHistory();   // a reload leaves no sheets open, so it drops back to the entry they came in on
 // Text metrics change once the fonts arrive. Re-measure the opening layout unless someone already moved things.
 document.fonts?.ready.then(() => { if (desktop() && !session.events.some((e) => e.name === 'window_drag' || e.name === 'window_resize')) { placeStart(); } });
-if (!desktop()) sawHeadline();   // on a phone it's the first thing on the page
 startVisit().then((n) => {
   if (n == null) return;
   $('counter-n').textContent = String(n).padStart(6, '0');
@@ -711,4 +734,3 @@ startVisit().then((n) => {
 });
 setTimeout(startHook, root.classList.contains('booting') ? 2600 : 900);
 setTimeout(inviteObserve, 42000);
-addEventListener('scroll', () => { if (!desktop() && scrollY > innerHeight * 2.5) inviteObserve(); }, { passive: true });

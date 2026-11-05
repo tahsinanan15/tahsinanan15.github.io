@@ -15,7 +15,7 @@ function begin() {
   cells = Array.from({ length: N }, (_, i) => ({ a: i / N * TAU, up: 0, fear: 0, rate: .09 + Math.random() * .12, hit: 0 }));
   caught = 0; out = 0; idle = 0; turn = 0; state = 'play';
   $('pan-end').hidden = true;
-  say("You're in the tower. Point to look. Click anyone acting up.");
+  say(matchMedia('(hover: none)').matches ? "You're in the tower. Touch to look. Tap anyone acting up." : "You're in the tower. Point to look. Click anyone acting up.");
   hud();
   if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); }
 }

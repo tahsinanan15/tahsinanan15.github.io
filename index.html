@@ -16,17 +16,17 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=78bbad13", "./js/bubblepop.js": "./js/bubblepop.js?v=3485dfff", "./js/bubbles.js": "./js/bubbles.js?v=73dfe530", "./js/fx.js": "./js/fx.js?v=f57c02f0", "./js/main.js": "./js/main.js?v=77949b45", "./js/observe.js": "./js/observe.js?v=f4d5aa11", "./js/paint.js": "./js/paint.js?v=55ec27ef", "./js/panopticon.js": "./js/panopticon.js?v=554f4ca1", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=67b5843d"}}</script>
-<link rel="stylesheet" href="css/site.css?v=de592d87">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=78bbad13", "./js/bubblepop.js": "./js/bubblepop.js?v=3485dfff", "./js/bubbles.js": "./js/bubbles.js?v=95bd3aa7", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=b040e359", "./js/observe.js": "./js/observe.js?v=f4d5aa11", "./js/paint.js": "./js/paint.js?v=20faf4fb", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
+<link rel="stylesheet" href="css/site.css?v=4eebb7d6">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
-    var c = document.documentElement.classList; c.remove('no-js'); c.add('js');
+    var c = document.documentElement.classList; c.remove('no-js'); c.add('js', 'os');
     var seen = false; try { seen = !!localStorage.getItem('tahsin.booted'); } catch (e) {}
     if (!seen) c.add('booting');
     var played = false; try { played = !!localStorage.getItem('tahsin.played'); } catch (e) {}
     if (!played && !location.hash) c.add('hook');
-    if (innerWidth >= 980 && innerHeight >= 540) c.add('os');
+    if (innerWidth < 980 || innerHeight < 540) c.add('phone');
   })();
 </script>
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Person","name":"Tahsin Anan","jobTitle":"Marketing analytics graduate","email":"mailto:tahsinanan6@gmail.com","url":"https://tahsinanan15.github.io/","sameAs":["https://www.linkedin.com/in/tahsinanan/"],"alumniOf":"Baruch College","address":{"@type":"PostalAddress","addressLocality":"New York","addressRegion":"NY"}}</script>
@@ -141,7 +141,6 @@
       </div>
       <p class="subfiles"><a href="#portrait" data-open="portrait"><svg aria-hidden="true"><use href="#i-person"/></svg>TAHSIN.JPG</a></p>
       <p class="reach"><a href="mailto:tahsinanan6@gmail.com" data-conv="contact">tahsinanan6@gmail.com</a> <a href="tel:+19295579947" data-conv="contact">(929) 557-9947</a></p>
-      <nav class="jump" aria-label="Jump to"><a href="#case" data-open="case">Case study</a><a href="#observe" data-open="observe">Live analytics</a><a href="#design" data-open="design">Design</a><a href="#art" data-open="art">Art</a><a href="#player" data-open="player">Music</a><a href="#bubblepop" data-open="bubblepop">Games</a></nav>
       <details class="story" id="story" open><summary><h2>How I got here</h2></summary>
       <p>I grew up in Dhaka, Bangladesh, drawing on walls. At two I drew a cockroach, because why was it there? At ten, an art school told me I wouldn't start at level one. They put me at level three, with the older kids. Eyes became my favorite thing to draw. I came to New York to study at Baruch.</p>
       <p>People open up to me. Friends, coworkers and the students I've mentored come to me for advice, and I listen.</p>
@@ -182,17 +181,13 @@
   </section>
 
   <section class="win win--photo" id="portrait" data-file="TAHSIN.JPG" data-icon="i-person" aria-label="Portrait of Tahsin Anan">
+    <a class="win__tap" href="#portrait" data-open="portrait" aria-label="Open TAHSIN.JPG full screen"></a>
     <div class="win__bar"><svg class="win__ico"><use href="#i-person"/></svg><span class="win__file">TAHSIN.JPG</span></div>
     <div class="win__main"><div class="win__body photo">
       <img src="assets/profile/tahsin-portrait.webp" width="944" height="1100" alt="Portrait of Tahsin Anan in front of a dark floral wall, toned to match this song.">
           </div></div>
   </section>
 
-  <div class="prints" aria-label="Three pieces from my art">
-    <a href="#art" data-open="art" style="--r:-5deg"><img src="assets/art/thumb/baseball-glove-and-bat.webp" width="520" height="356" alt="Baseball Glove and Bat" loading="lazy"></a>
-    <a href="#art" data-open="art" style="--r:3deg"><img src="assets/art/thumb/eye-with-a-tear.webp" width="520" height="515" alt="Eye with a Tear" loading="lazy"></a>
-    <a href="#art" data-open="art" style="--r:-2deg"><img src="assets/art/thumb/sunflowers.webp" width="520" height="392" alt="Sunflowers" loading="lazy"></a>
-  </div>
 
   <section class="win" id="observe" data-file="OBSERVE.EXE" data-icon="i-eye" data-size="wide" aria-labelledby="obs-h">
     <div class="win__bar"><svg class="win__ico"><use href="#i-eye"/></svg><span class="win__file">OBSERVE.EXE</span></div>
@@ -320,6 +315,7 @@
   </section>
 
   <section class="win win--player" id="player" data-file="MEDIA_PLAYER.EXE" data-icon="i-cd" aria-label="Media player">
+    <a class="win__tap" href="#player" data-open="player" aria-label="Open MEDIA_PLAYER.EXE full screen"></a>
     <div class="win__bar"><svg class="win__ico"><use href="#i-cd"/></svg><span class="win__file">MEDIA_PLAYER.EXE</span></div>
     <div class="win__main"><div class="mp" id="mp">
       <div class="mp__screen">
@@ -595,7 +591,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=77949b45"></script>
+<script type="module" src="js/main.js?v=b040e359"></script>
 <script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
 </body>
 </html>

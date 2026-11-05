@@ -31,7 +31,14 @@ Aero sky and grass carry the surface. Sheets stay white so the work stays calm.
 One authored moment: the eyelids. Windows pop open with an exponential ease-out over 420ms. Bubbles rise slowly at about 30fps. Reduced motion removes the travel and keeps everything readable.
 
 ## Layout
-Base styles are a plain scrolling page, used by phones and no-JS. `.os` (980x560 and up) adds absolute windows. Only her photo and the media player start open, so the desktop is clear and PLAY_ME.EXE is the first thing a new visitor notices. `placeStart()` computes where every window will land.
+The base styles are a plain scrolling page, used only without JavaScript. With JavaScript the page is always `.os`: windows over a wallpaper. Only her photo and the media player start open, so the desktop is clear and PLAY_ME.EXE is the first thing a new visitor notices. `placeStart()` computes where every window will land.
+
+Under 980 wide or 540 tall the head script in `index.html` adds `.phone` before first paint, and that one class is all that changes when a window crosses the line. A phone is the same OS on the same window manager:
+- Home screen: a 4-by-4 grid of the 14 icons, with her photo as a widget in the top two cells of the last column, and the player as a compact widget above the taskbar. Until the tape is played the grid moves down, so the handwritten note has its own band and covers nothing. In landscape the icons take the left and the widgets step aside to the right. On a short portrait screen the player gives up its visualizer first, then its place on the home screen.
+- Sheets: an open window fills the screen above the taskbar, with one 44px close button, and its body scrolls inside. `sheets` in `js/main.js` is the stack, and `syncHistory` gives each sheet one history entry, so the back gesture closes the top one and never leaves the site. An open Start menu or dialog takes the back gesture first. Her photo and the player go back to being widgets when closed. The short sheets, Contact and Recycle Bin, sit at the bottom over her painting. Paint's paper is sized when it first opens: as tall as an upright phone has room for, and it keeps that shape if the phone turns.
+- The tape: the document on top, the dock below it, and the VCR text riding the dock's title bar. No spotlight. In landscape the dock is the right column. A touch on the document pauses it, and the VCR text and clock say so. On the end card only the home screen is behind the dock, so the dock takes the room it needs, and the tape's icon replays it.
+
+Rules for wide windows are written `.os:where(:not(.phone))`, which keeps the desktop's specificity. Everything phone lives in the last block of `css/site.css`, inside `@media screen` so print is untouched.
 
 ## Sound
 All effects are synthesized in `js/audio.js`. Music starts on the first gesture, because browsers allow nothing earlier. Mute is always visible in the taskbar.
