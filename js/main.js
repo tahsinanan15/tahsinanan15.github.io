@@ -296,6 +296,11 @@ function lazy(id, tab) {
   if (id === 'panopticon') (loaded.pan ||= import('./panopticon.js')).then((m) => m.init(open));
 }
 
+/* ---------- Play along: the star in the player's screen turns the bars into a game ---------- */
+const beats = () => (loaded.beats ||= import('./beats.js'));
+$('mp-star').addEventListener('click', () => { calmHook(); beats().then((m) => m.toggle()); });
+if (store.get('tahsin.beat')) beats();   // someone who has cleared a level gets their stars back in the playlist
+
 /* ---------- Viewer ---------- */
 let viewerList = [], viewerIndex = 0, viewerOpener = null;
 function showPiece(i) {
@@ -520,7 +525,7 @@ $('balloon-x').addEventListener('click', hideBalloon);
 $('balloon-go').addEventListener('click', () => { balloon.hidden = true; open('observe'); });
 function inviteObserve() {
   if (session.counted.balloon || wins.get('observe').open || touring || hooked()) return;
-  if (sheets.length) { setTimeout(inviteObserve, 15000); return; }   // a sheet fills a phone's screen, so it waits for the home screen
+  if (sheets.length || $('player').classList.contains('is-beat')) { setTimeout(inviteObserve, 15000); return; }   // a sheet fills a phone's screen, and a game wants its corner, so it waits
   session.counted.balloon = 1;
   const n = session.events.length;
   $('balloon-text').textContent = `I've logged ${n} ${n === 1 ? 'thing' : 'things'} you did here. The log stays in your browser. Want to see what I noticed?`;

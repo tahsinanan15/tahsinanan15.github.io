@@ -64,5 +64,14 @@ Her photo follows the song too: the same picture, toned to each OS's palette, in
 
 The screen moves gently and only with the music. Windows themselves do not move, the checkbox in the media player turns it all off, and reduced motion removes it. Evoke a world, never copy a franchise's logos, characters or art.
 
+## Play along
+The star in the media player's screen is a button. It turns the visualizer into a four-lane rhythm game (`js/beats.js`): the screen grows, the bars stay as its floor, and notes fall onto the song's beat, about one a second. Each song is a level of its first 90 seconds, with up to three stars, kept in the playlist. One note at a time, so a single finger or a mouse can clear every level. Keys are A S K L. Results go to OBSERVE.EXE's log next to Bubble Pop's.
+
+It adds nothing to the design system. Notes are that OS's own bubbles, text is the LCD's, colors come from `THEMES[id].viz`, and each OS lays its own floor under the notes: glass panes, the rolling grid, gold strings, scanlines, film sprockets, lane markings.
+
+One board, two views. In the player it lies flat. The corner glyph beside the time takes it full screen: the player's screen leaves its window and fills the display, the board tilts back into a road, and the bars line both sides of it to the horizon, low sounds nearest. Escape steps back one view at a time. The same projection draws both, so anything added to a floor works in either.
+
+Charts are built from the audio by `_dev/build_beats.py`, so rebuild them if a song file changes.
+
 ## PLAY_ME.EXE
 A 30-second tour for recruiters. It answers three things: who is she, what can she do, why hire her. Until someone has played it, the tape bounces and glows, the bubbles spiral into it, and a handwritten "psst... start here" with an arrow points at it. Clicking pops the bubbles and starts the tape. If they open something else or change the song, it calms down until the next visit. It plays as an old tape: cassette-deck icon, blue screen and tracking bars on power-up, tape hiss and motor from `vhs` in `js/audio.js`, and a shutter skip between steps. It restores the desktop exactly as it found it.

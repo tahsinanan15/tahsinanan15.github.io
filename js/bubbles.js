@@ -4,7 +4,7 @@ import { drawFx, bubbleAlpha, reactSite, spritesFor, bubbleKind } from './fx.js'
 import { track } from './analytics.js';
 
 const R = 128;
-function sprite() {
+export function soap() {
   const c = document.createElement('canvas'); c.width = c.height = R * 2;
   const g = c.getContext('2d');
   const body = g.createRadialGradient(R, R, R * .55, R, R, R);
@@ -30,7 +30,7 @@ function sprite() {
 export function initBubbles() {
   const canvas = document.getElementById('bubbles'), g = canvas.getContext('2d');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
-  const img = sprite();
+  const img = soap();
   let W = 0, H = 0, dpr = 1, list = [], sparks = [], raf = 0, last = 0, dtNow = 0, well = null, joinIn = 0;
 
   const small = () => document.documentElement.classList.contains('phone');   // fewer, smaller, and a tighter orbit

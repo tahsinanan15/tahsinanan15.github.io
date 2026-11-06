@@ -87,7 +87,7 @@ function finish() {
   if (score > best) { best = score; try { localStorage.setItem('tahsin.bubblepop', best); } catch { /* fine */ } }
   $('bp-msg').textContent = left ? `No more pops. Final score ${score}.` : `Board cleared, ${score} points.`;
   hud(0);
-  track('game_score', { score });
+  track('game_score', { game: 'bubble_pop', score });
 }
 
 function draw() {

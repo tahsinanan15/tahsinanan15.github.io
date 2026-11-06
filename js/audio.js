@@ -18,6 +18,8 @@ let muted = read('tahsin.muted', '0') === '1';
 let volume = +read('tahsin.volume', '55') / 100;
 let userPaused = false;
 let startedByGesture = false;
+// What a game needs from the deck: the song, a clock that matches what's heard, and a turn at the visualizer's canvas.
+export const deck = { audio, game: null, heard: () => audio.currentTime - (ctx ? (ctx.baseLatency || 0) + (ctx.outputLatency || 0) : 0) };
 
 function ensureContext() {
   if (ctx) return ctx;
@@ -116,36 +118,52 @@ function listen(now) {
   if (b > bassAvg + .04 && b > .3 && now - beat.kickAt > 340) { beat.kick = 1; beat.kickAt = now; }
 }
 
-// Bars built from chunky pixels, with falling peak caps, in the current theme's colors.
+// Bars built from chunky pixels, with falling peak caps, in the current theme's colors. Each bar is drawn in a space 120
+// tall and stood wherever `place` says: [x, floor, width, height, alpha]. The player stands them in a row across its own
+// 600 by 120 canvas. A game can stand them anywhere, far end first if `back` is set.
 let vizColors = THEMES.aero.viz;
+const BARS = 30, CHUNK = 6, GAP = 2, peaks = new Float32Array(BARS);
+let grad = null, gradFor = null;
+const strip = (W, floor, zone) => (i) => [i * W / BARS + W / 600, floor, W / BARS - W / 200, zone];
+function bars(g, place, alpha = 1, back = false) {
+  if (gradFor !== vizColors) {
+    gradFor = vizColors;
+    grad = g.createLinearGradient(0, 0, 0, -120);
+    vizColors.forEach((c, i) => grad.addColorStop(i / (vizColors.length - 1), c));
+  }
+  for (let b = 0; b < BARS; b++) {
+    const i = back ? BARS - 1 - b : b, v = spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] / 255, n = Math.max(1, Math.round(v * 15));
+    const [x, floor, w, zone, a = 1] = place(i);
+    peaks[i] = Math.max(n * (CHUNK + GAP), peaks[i] - 1.1);
+    if (!a) continue;
+    g.setTransform(1, 0, 0, zone / 120, x, floor);
+    g.globalAlpha = alpha * a;
+    g.fillStyle = v ? grad : 'rgba(127,180,220,.22)';
+    for (let j = 0; j < n; j++) g.fillRect(0, -(j + 1) * (CHUNK + GAP), w, CHUNK);
+    if (v) { g.fillStyle = vizColors[vizColors.length - 1]; g.fillRect(0, -peaks[i] - CHUNK, w, 3); }
+  }
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.globalAlpha = 1;
+}
 function visualizer() {
   const canvas = $('mp-viz'), g = canvas.getContext('2d');
-  const BARS = 30, CHUNK = 6, GAP = 2;
-  const peaks = new Float32Array(BARS);
-  let grad = null, gradFor = null, idle = false;
-  const draw = (now) => {
+  let rested = -1e9;
+  const draw = (now = 0) => {
     requestAnimationFrame(draw);
-    listen(now || 0);
+    listen(now);
     if (canvas.offsetParent === null || document.hidden) return;
-    if (audio.paused && idle) return;   // one flat frame after pausing, then nothing until play
-    idle = audio.paused;
-    if (still.matches && !audio.paused) spectrum.fill(40);
-    if (gradFor !== vizColors) {
-      gradFor = vizColors;
-      grad = g.createLinearGradient(0, canvas.height, 0, 0);
-      vizColors.forEach((c, i) => grad.addColorStop(i / (vizColors.length - 1), c));
+    if (deck.game) return deck.game(g, now, bars, strip);   // a game sizes the canvas, paints its board, and stands the bars where it wants them
+    if (audio.paused) {   // nothing playing, which is how every visit starts: a slow swell so the screen isn't dead, about 16 times a second
+      if (now - rested < (still.matches ? Infinity : 60)) return;
+      rested = now;
+      const t = still.matches ? 0 : now / 1000;
+      for (let i = 0; i < BARS; i++) spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] = 255 * (.2 + .13 * Math.sin(t * 1.3 + i * .45) + .07 * Math.sin(t * .8 - i * .9));
+    } else {
+      rested = -1e9;
+      if (still.matches) spectrum.fill(40);
     }
-    const W = canvas.width, H = canvas.height, w = W / BARS;
-    g.clearRect(0, 0, W, H);
-    for (let i = 0; i < BARS; i++) {
-      const v = spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] / 255;
-      const n = Math.max(1, Math.round(v * H / (CHUNK + GAP)));
-      g.fillStyle = v ? grad : 'rgba(127,180,220,.22)';
-      for (let k = 0; k < n; k++) g.fillRect(i * w + 1, H - (k + 1) * (CHUNK + GAP), w - 3, CHUNK);
-      const top = n * (CHUNK + GAP);
-      peaks[i] = Math.max(top, peaks[i] - 1.1);
-      if (v) { g.fillStyle = vizColors[vizColors.length - 1]; g.fillRect(i * w + 1, H - peaks[i] - CHUNK, w - 3, 3); }
-    }
+    g.clearRect(0, 0, canvas.width, canvas.height);
+    bars(g, strip(canvas.width, canvas.height, canvas.height));
   };
   draw();
 }

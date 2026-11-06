@@ -31,7 +31,10 @@ const RULES = [
   ['Art lover', (e) => e.name === 'wallpaper_set', 1, 'changed the wallpaper'],
   ['Player', (e) => e.name === 'window_open' && (e.params.window === 'bubblepop' || e.params.window === 'paint'), 3, 'opened a game'],
   ['Player', (e) => e.name === 'bubble_pop', .5, 'popped a bubble'],
-  ['Player', (e) => e.name === 'game_score', 1, 'scored in Bubble Pop'],
+  ['Player', (e) => e.name === 'game_score' && e.params.game !== 'play_along', 1, 'scored in Bubble Pop'],
+  ['Player', (e) => e.name === 'game_start' && e.params.game === 'play_along', 3, 'played along with a song'],
+  ['Player', (e) => e.name === 'game_score' && e.params.stars > 0, 2, 'cleared a song level'],
+  ['Player', (e) => e.name === 'game_full', 1, 'took a level full screen'],
   ['Listener', (e) => e.name === 'track_play' && !e.params.auto, 2, 'picked a song'],
   ['Listener', (e) => e.name === 'window_open' && e.params.window === 'player', 1, 'went back to the player'],
 ];
