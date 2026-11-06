@@ -12,7 +12,7 @@ const write = (k, v) => { try { localStorage.setItem(k, v); } catch { /* fine */
 
 const audio = new Audio();
 audio.preload = 'none';
-let ctx = null, master = null, analyser = null, sfxBus = null, musicGain = null, musicTone = null, wired = false;
+let ctx = null, master = null, analyser = null, sfxBus = null, musicGain = null, musicTone = null, songGain = null, underGain = null, under = null, wired = false;
 let index = 0;
 let muted = read('tahsin.muted', '0') === '1';
 let volume = +read('tahsin.volume', '55') / 100;
@@ -20,6 +20,30 @@ let userPaused = false;
 let startedByGesture = false;
 // What a game needs from the deck: the song, a clock that matches what's heard, and a turn at the visualizer's canvas.
 export const deck = { audio, game: null, heard: () => audio.currentTime - (ctx ? (ctx.baseLatency || 0) + (ctx.outputLatency || 0) : 0) };
+// A game can also make the player earn the song. band(buffer) plays a copy of its rhythm section in step with it, and
+// lead(x) is how much of the song itself sounds over that copy: 1 is the song as it always plays. sound(fn) lends the synth's two voices.
+deck.decode = (bytes) => ensureContext().decodeAudioData(bytes);
+deck.band = (buffer) => { under?.node?.stop(ctx.currentTime + .6); under = buffer && songGain ? { buffer, node: null, from: 0, at: 0 } : null; if (!under) deck.lead(1, .12); };   // the old copy fades out under the song coming back
+deck.lead = (x, tau = .03) => {
+  if (!songGain) return;
+  songGain.gain.setTargetAtTime(under ? x : 1, ctx.currentTime, tau);
+  underGain.gain.setTargetAtTime(under ? 1 - x : 0, ctx.currentTime, tau);
+};
+deck.sound = (fn) => { if (canSfx()) fn(tone, burst); };
+function follow() {   // keeps that copy in step: started where the song is, and started again if the two drift apart
+  if (!under) return;
+  const run = !audio.paused && !audio.seeking && audio.readyState > 2 && audio.currentTime < under.buffer.duration - .05;
+  if (run && under.node && Math.abs(under.from + (ctx.currentTime - under.at) * audio.playbackRate - audio.currentTime) < .08) return;
+  under.node?.stop();
+  under.node = null;
+  if (!run) return;
+  under.node = ctx.createBufferSource();
+  under.node.buffer = under.buffer;
+  under.node.playbackRate.value = audio.playbackRate;
+  under.node.connect(underGain);
+  under.node.start(0, under.from = audio.currentTime);
+  under.at = ctx.currentTime;
+}
 
 function ensureContext() {
   if (ctx) return ctx;
@@ -48,7 +72,11 @@ function wireMusic() {
   musicTone = ctx.createBiquadFilter();
   musicTone.type = 'lowpass';
   musicTone.frequency.value = 20000;
-  source.connect(musicGain).connect(musicTone).connect(analyser).connect(master);
+  songGain = ctx.createGain();    // the song itself: always 1, except while a game holds it back
+  underGain = ctx.createGain();   // and the copy of its rhythm section a game plays under it
+  underGain.gain.value = 0;
+  source.connect(songGain).connect(musicGain).connect(musicTone).connect(analyser).connect(master);
+  underGain.connect(musicGain);
 }
 
 function applyVolume() {
@@ -102,6 +130,7 @@ export const beat = { bass: 0, kick: 0, kickAt: 0, pulse: 0, playing: false };
 const spectrum = new Uint8Array(512);
 let bassAvg = 0;
 function listen(now) {
+  follow();
   beat.playing = !audio.paused;
   if (!analyser || audio.paused) {
     spectrum.fill(0);
