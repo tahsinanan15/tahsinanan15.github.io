@@ -206,6 +206,8 @@ html, body { transition: none; }
 .mp__full { display: none; color: inherit; }
 .is-beat .mp__full, .arcade .mp__full { display: block; }
 .mp__full svg { filter: drop-shadow(0 0 3px var(--lcd-glow)); }
+.mp__full[aria-pressed=true] { color: #ffe14d; }
+.is-beat #mp-time { display: none; }   /* in the player the level buttons take its room, and the bar across the top shows how far along */
 .mp__star:hover svg, .mp__star[aria-pressed=true] svg { filter: drop-shadow(0 0 4px #ffe14d); }
 .playing .mp__star:not([aria-pressed=true]) { animation: twinkle 1.4s steps(2) infinite; }
 /* Play along: the star turns the visualizer into a four-lane game (js/beats.js). The screen grows and the bars stay as its floor. */
@@ -1009,6 +1011,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone #player.is-sheet.is-beat #mp-viz { flex: 1 1 0; height: 0; min-height: 0; }
   .phone .is-beat .mp__vol { display: none; }
   .phone .mp__star::after, .phone .mp__full::after { inset: -15px; }
+  .phone .mp__full { margin-left: 12px; }   /* four in a row: room for a thumb between them */
   .phone #player:not(.is-sheet) .mp__star { z-index: 3; }
   @media (orientation: landscape) { .phone #player.is-sheet.is-beat .mp { grid-template: minmax(0, 1fr) / minmax(0, 1fr) max-content; } .phone #player.is-sheet.is-beat .mp__ctl { flex-direction: column; } }
   .phone .mp__list button { min-height: 44px; padding-block: 6px; }

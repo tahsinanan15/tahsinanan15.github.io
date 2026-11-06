@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=59773400", "./js/beatworlds.js": "./js/beatworlds.js?v=b40f786a", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=d57315c3", "./js/observe.js": "./js/observe.js?v=42a1229f", "./js/paint.js": "./js/paint.js?v=20faf4fb", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
-<link rel="stylesheet" href="css/site.css?v=f0d42c9c">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=be0b2548", "./js/beatworlds.js": "./js/beatworlds.js?v=2a5de457", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=d57315c3", "./js/observe.js": "./js/observe.js?v=42a1229f", "./js/paint.js": "./js/paint.js?v=20faf4fb", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
+<link rel="stylesheet" href="css/site.css?v=29c73a15">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
@@ -83,6 +83,9 @@
   <symbol id="i-pixstar" viewBox="0 0 11 11"><path d="M5 0h1v2h1v2h4v1h-1v1H9v1h1v3H9V9H8V8H6v1H5V8H3v1H2v1H1V7h1V6H1V5H0V4h4V2h1z" fill="currentColor"/></symbol>
   <symbol id="i-pixfull" viewBox="0 0 11 11"><path d="M0 0h4v1H1v3H0zM7 0h4v4h-1V1H7zM0 7h1v3h3v1H0zM10 7h1v4H7v-1h3z" fill="currentColor"/></symbol>
   <symbol id="i-pixsmall" viewBox="0 0 11 11"><path d="M3 0h1v4H0V3h3zM7 0h1v3h3v1H7zM0 7h4v4H3V8H0zM7 7h4v1H8v3H7z" fill="currentColor"/></symbol>
+  <symbol id="i-pixprev" viewBox="0 0 11 11"><path d="M1 1h1v9H1zM3 5h1v1H3zM4 4h1v3H4zM5 3h1v5H5zM6 2h1v7H6zM7 1h2v9H7z" fill="currentColor"/></symbol>
+  <symbol id="i-pixnext" viewBox="0 0 11 11"><path d="M9 1h1v9H9zM7 5h1v1H7zM6 4h1v3H6zM5 3h1v5H5zM4 2h1v7H4zM2 1h2v9H2z" fill="currentColor"/></symbol>
+  <symbol id="i-pixeye" viewBox="0 0 11 11"><path d="M3 2h5v1H3zM1 3h2v1H1zM8 3h2v1H8zM0 4h1v3H0zM10 4h1v3h-1zM4 4h3v3H4zM1 7h2v1H1zM8 7h2v1H8zM3 8h5v1H3z" fill="currentColor"/></symbol>
 
   <symbol id="i-rundown" viewBox="0 0 48 48"><rect x="3" y="27" width="42" height="17" rx="2.500" fill="url(#g-chrome)" stroke="#3a4250"/><rect x="8" y="31" width="32" height="4" rx="1" fill="#10141c"/><circle cx="38.500" cy="39.500" r="1.800" fill="#57e04a"/><rect x="8" y="38.300" width="14" height="2.200" fill="#5d6676"/><path d="M9 3h30a2 2 0 0 1 2 2v28H7V5a2 2 0 0 1 2-2z" fill="#171a22" stroke="#000"/><rect x="12" y="6" width="24" height="9" fill="#f4efe3"/><rect x="12" y="11" width="24" height="1.700" fill="#e2452f"/><rect x="12" y="12.700" width="24" height="1.700" fill="#2b9bee"/><rect x="14" y="17.500" width="20" height="9" rx="4.500" fill="#3a4250"/><circle cx="19" cy="22" r="3.300" fill="#f4efe3"/><circle cx="29" cy="22" r="3.300" fill="#f4efe3"/><circle cx="19" cy="22" r="1.200" fill="#171a22"/><circle cx="29" cy="22" r="1.200" fill="#171a22"/><path d="M9 4.500h14L9 16z" fill="#fff" opacity=".14"/></symbol>
 
@@ -332,6 +335,9 @@
           <button class="mp__star" id="mp-star" type="button" aria-pressed="false" aria-label="Play along with the song" title="Play along"><svg aria-hidden="true"><use href="#i-pixstar"/></svg></button>
           <div class="mp__title" aria-live="polite"><span id="mp-title">ONLINE OFFICE V4.20</span></div>
           <span class="mp__time" id="mp-time">0:00</span>
+          <button class="mp__full" id="mp-back" type="button" aria-label="Previous level" title="Previous level (left arrow)"><svg aria-hidden="true"><use href="#i-pixprev"/></svg></button>
+          <button class="mp__full" id="mp-skip" type="button" aria-label="Next level" title="Next level (right arrow)"><svg aria-hidden="true"><use href="#i-pixnext"/></svg></button>
+          <button class="mp__full" id="mp-watch" type="button" aria-pressed="false" aria-label="Just watch: the whole song plays, with nothing to hit" title="Just watch (W)"><svg aria-hidden="true"><use href="#i-pixeye"/></svg></button>
           <button class="mp__full" id="mp-full" type="button" aria-label="Full screen" title="Full screen"><svg aria-hidden="true"><use id="mp-full-ico" href="#i-pixfull"/></svg></button>
         </div>
       </div>

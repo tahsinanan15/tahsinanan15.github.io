@@ -21,10 +21,10 @@ const EASE = 'cubic-bezier(.16, 1, .3, 1)';
 
 const $ = (id) => document.getElementById(id);
 const clamp = (v) => Math.max(0, Math.min(1, v));
-const root = document.documentElement, win = $('player'), canvas = $('mp-viz'), panel = canvas.parentElement, star = $('mp-star'), wide = $('mp-full'), card = $('mp-result');
+const root = document.documentElement, win = $('player'), canvas = $('mp-viz'), panel = canvas.parentElement, star = $('mp-star'), wide = $('mp-full'), eye = $('mp-watch'), card = $('mp-result');
 const still = matchMedia('(prefers-reduced-motion: reduce)'), coarse = matchMedia('(pointer: coarse)');
 const charts = {}, layers = {}, down = [0, 0, 0, 0], litAt = [0, 0, 0, 0], reach = [0, 3], turn = [1, -1], fingers = new Map(), fx = [], trail = [];
-let on = false, run = 0, song = null, notes = [], first = 0, end = 0, hits = 0, judged = 0, streak = 0, best = 0, score = 0, sharp = 0, over = false, open = false, stem = null;
+let on = false, watching = false, run = 0, song = null, notes = [], first = 0, end = 0, hits = 0, judged = 0, streak = 0, best = 0, score = 0, sharp = 0, over = false, open = false, stem = null;
 let lag = 16, slow = 0, lite = false, before = 0;
 let skin = null, view = null, seen = 0, seenAt = 0, last = 0, home = 0, energy = 0, missAt = -1e9, flashAt = -1e9, shakeAt = -1e9, shakeAmp = 0, sizedAt = 0;
 let full = false, tilt = 0, tiltFrom = 0, tiltTo = 0, tiltAt = 0, stage = null, slot = null, hushed = [], hud = 9, board = { left: 0, lane: 1 };
@@ -258,7 +258,7 @@ function frame(g, now, bars, strip) {
   const travel = TRAVEL + .6 * tilt, far = 1 + 2.2 * tilt, lie = 1 - .5 * tilt, ring = size * .56, away = size / 2, ink = w.ink || s.fg;
   board = { left: cx - 2 * lane, lane };
   if (on) step(last = t);
-  energy += ((over ? 0 : Math.min(1, streak / 20)) - energy) * .04;
+  energy += ((watching ? .75 : over ? 0 : Math.min(1, streak / 20)) - energy) * .04;   // a world is at its liveliest on a streak, and nearly so for someone just watching
 
   // Where things go: u runs 0 to 4 across the lanes, and r is how far a note still has to travel (1 where it starts, 0 on the
   // line, below 0 past it). Flat, r is simply height. On the road, things shrink toward the horizon the way distance does.
@@ -338,7 +338,6 @@ function frame(g, now, bars, strip) {
         for (let j = 6; j >= 0; j--) { const p = at(u, r + (r1 - r) * j / 6); g.lineTo(p[0] + hw * p[2], p[1]); }
         g.fill();
       }
-      w.wake?.(g, f, u, r, tone, show);
       if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
       g.globalAlpha = show;
       const img = sprite(s.id, hand, n.kind, n.v);
@@ -467,7 +466,7 @@ function enter() {
   star.setAttribute('aria-pressed', 'true');
   canvas.removeAttribute('aria-hidden');
   canvas.tabIndex = 0;
-  canvas.setAttribute('aria-label', 'Play along. Press A, S, K or L, or tap or swipe a lane, when a block reaches the line. The song only plays while you keep hitting. Escape leaves.');
+  canvas.setAttribute('aria-label', 'Play along. Press A, S, K or L, or tap or swipe a lane, when a block reaches the line. The song only plays while you keep hitting. Left and right arrows change the level, W just watches, Escape leaves.');
   morph(() => win.classList.add('is-beat'));
   deck.audio.currentTime = 0;
   play().catch(() => {});
@@ -482,6 +481,7 @@ function leave(quick) {
   notes = []; down.fill(0); fingers.clear(); fx.length = trail.length = 0;
   deck.band(null);
   canvas.style.filter = ''; layers.sky = layers.land = null;
+  watching = false; eye.setAttribute('aria-pressed', 'false');
   card.hidden = true;
   const back = win.contains(document.activeElement);
   star.setAttribute('aria-pressed', 'false');
@@ -497,8 +497,13 @@ export function toggle() { if (on) leave(); else if (!win.hidden) enter(); }
 function key(e) {
   if (!on) return;
   if (e.key === 'Escape') { if (e.type === 'keydown') { e.stopImmediatePropagation(); if (full) collapse(); else leave(); } return; }   // Escape steps back one view, and never closes the window
-  const lane = KEYS.indexOf(e.key?.toLowerCase());
-  if (lane < 0 || over || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input')) return;
+  const move = { ArrowLeft: -1, ArrowRight: 1 }[e.key], lane = KEYS.indexOf(e.key?.toLowerCase());
+  if (move || e.key?.toLowerCase() === 'w') {   // arrows change the level, W is for watching
+    if (e.type === 'keydown' && !e.repeat) { e.preventDefault(); if (move) skip(move); else watch(!watching); }
+    return;
+  }
+  if (lane < 0 || over || watching || e.repeat) return;
   if (e.type === 'keydown') press(lane); else lift(lane);
 }
 addEventListener('keydown', key, true);
@@ -509,7 +514,7 @@ function point(e) {   // which lane a finger or the mouse is over, and where on 
   return Math.max(0, Math.min(3, Math.floor((x - board.left) / board.lane)));
 }
 canvas.addEventListener('pointerdown', (e) => {
-  if (!on || over) return;
+  if (!on || over || watching) return;
   e.preventDefault();
   const lane = point(e);
   fingers.set(e.pointerId, lane);
@@ -537,7 +542,31 @@ $('mp-again').addEventListener('click', () => {
 });
 $('mp-next-level').addEventListener('click', () => { playSong((SONGS.indexOf(song) + 1) % SONGS.length); begin(); canvas.focus({ preventScroll: true }); });
 $('mp-done').addEventListener('click', () => leave());
-addEventListener('tahsin:song', () => { if (on && !over) begin(); });   // changing the song mid-level starts that song's level. A result stays up until they choose.
+// To the level before or after, from either view. A result gives way to the new level. Someone watching just gets the next world.
+function skip(step) {
+  const was = over;
+  playSong((SONGS.indexOf(currentSong()) + step + SONGS.length) % SONGS.length);
+  if (was && !watching) begin();
+  canvas.focus({ preventScroll: true });
+}
+// Watching: the whole song and the world it plays in, with nothing to hit. Coming back starts the level from the top.
+function watch(yes) {
+  if (!on || watching === yes) return;
+  watching = yes;
+  eye.setAttribute('aria-pressed', String(yes));
+  if (yes) {
+    quit(); run++;
+    notes = []; fx.length = trail.length = 0; down.fill(0); fingers.clear(); streak = 0; over = false; open = true;
+    card.hidden = true;
+    deck.band(null);
+    track('game_watch', { song: currentSong().title });
+  } else { deck.audio.currentTime = 0; play().catch(() => {}); begin(); }
+  canvas.focus({ preventScroll: true });
+}
+$('mp-back').addEventListener('click', () => skip(-1));
+$('mp-skip').addEventListener('click', () => skip(1));
+eye.addEventListener('click', () => watch(!watching));
+addEventListener('tahsin:song', () => { if (on && !over && !watching) begin(); });   // changing the song mid-level starts that song's level. A result stays up until they choose.
 // The tape takes the screen, and it remembers where every window stood, so the player is back in place before it starts.
 document.addEventListener('click', (e) => { if (e.target.closest?.('[data-rundown]')) leave(true); }, true);
 addEventListener('tahsin:rundown', (e) => { if (e.detail.active) leave(true); });

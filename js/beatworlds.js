@@ -66,13 +66,6 @@ function shade(g, f, rgb, a) {   // the corners fall away
 function slip(g, f, n, reach) {   // a missed note tears the picture sideways in a few bands
   for (let i = 0; i < n; i++) { const y = (Math.sin(i * 91.7 + Math.floor(f.time * 30)) * .5 + .5) * f.H, h = f.H * .04; g.drawImage(g.canvas, 0, y, f.W, h, Math.sin(i * 7.1 + f.time * 90) * reach * f.d * f.miss, y, f.W, h); }
 }
-function wake(g, f, u, r, tone, show) {   // a light leaves a trail down the road behind it
-  if (!f.tilt) return;
-  const a = f.at(u, r), b = f.at(u, r + .4), up = f.size * .3 * f.tilt;
-  g.save(); g.globalCompositeOperation = 'lighter'; g.globalAlpha = show; g.lineCap = 'round';
-  g.strokeStyle = lin(g, a[0], a[1], b[0], b[1], `${tone[1]}cc`, `${tone[1]}00`); g.lineWidth = f.size * a[2] * .16;
-  g.beginPath(); g.moveTo(a[0], a[1] - up * a[2]); g.lineTo(b[0], b[1] - up * b[2]); g.stroke(); g.restore();
-}
 const edges = (g, f, inner, outer, glow) => {   // lane lines and the road's two edges
   for (let i = 0; i <= 4; i++) {
     f.line(i);
@@ -360,7 +353,7 @@ function sign(g, x, y, s, R) {   // a neon sign in writing nobody reads
 }
 const ghost = {
   hands: [['#c9fdff', '#19f7ff', '#0a7f8c'], ['#ffd0f6', '#ff2bd6', '#8a0f72']],
-  shade: 'rgba(25,247,255,.35)', fall: 0, wake,
+  shade: 'rgba(25,247,255,.35)', fall: 0,
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(23), u = H / 100;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#020405', '#07100f', '#2a2208', '#7a5a12'); g.fillRect(0, 0, W, hz);   // toxic amber, thickest at the horizon
@@ -496,7 +489,7 @@ const ray = {
 /* ---------- Concrete Jungle: an avenue at dusk, the sun going down the end of it ---------- */
 const metro = {
   hands: [['#fff3cf', '#ffc247', '#c27a0a'], ['#eafaff', '#8fdcff', '#2a7fb8']],
-  shade: 'rgba(255,190,90,.3)', fall: 0, wake,
+  shade: 'rgba(255,190,90,.3)', fall: 0,
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(57), u = H / 100, step = Math.max(W * .058, u * 5);
     g.fillStyle = lin(g, 0, 0, 0, hz, '#141c27', '#2b3a4d', '#7a6a66', '#f0a35a', '#ffd9a0'); g.fillRect(0, 0, W, hz);
