@@ -202,7 +202,7 @@ def main():
         if status == 'in' and not m.get('source'):
             got = (RAW / f"{c['id']}.own_p.csv").exists() or c['id'] in EMPTY
             wiki = (f"the Wikipedia article '{c['wiki_article']}' had no pageviews for the window" if c['wiki_article']
-                    else 'there is no Wikipedia article for the product')
+                    else 'no Wikipedia article was named for it (see RUBRIC addendum 2026-11-10, after scoring)')
             status, why = 'dropped', (f'attention series too thin: Google Trends had too little data and {wiki} (RUBRIC data rule)' if got
                                       else UNMEASURED.get(c['id'], 'the Google Trends series for the planned search term was not downloaded; not yet measured'))
         rows.append({**c, 'status': status, 'drop_reason': why, 'band': band, **{k: v for k, v in m.items() if k != 'curve'}, '_curve': m.get('curve'),
@@ -267,6 +267,7 @@ def write_outputs(rows, use, res):
         g = [r for r in sc if r['category'] == cat]; lines.append(f"| {cat} | {sum(r['lasted'] for r in g)} | {len(g)} |")
     for name, g in (('lasted', [r for r in sc if r['lasted']]), ('did not last', [r for r in sc if not r['lasted']])):
         lines.append(f"| {name}: interest rising before the news (ratio above 1) | {sum(r['ratio'] > 1 for r in g)} | {len(g)} |")
+        lines.append(f"| {name}: rising by more than 15% (ratio above 1.15) | {sum(r['ratio'] > 1.15 for r in g)} | {len(g)} |")
     rs = sorted(sc, key=lambda r: r['ratio']); k = len(rs) // 3
     for name, g in (('lowest third of ratios', rs[:k]), ('middle third', rs[k:len(rs) - k]), ('highest third', rs[len(rs) - k:])):
         lines.append(f"| {name} ({g[0]['ratio']:.2f} to {g[-1]['ratio']:.2f}) | {sum(r['lasted'] for r in g)} | {len(g)} |")
@@ -275,6 +276,7 @@ def write_outputs(rows, use, res):
                 ('train_n', 'train_lasted', 'holdout_n', 'holdout_lasted', 'rule_hits', 'base_hits', 'majority_call', 'forward_n', 'sourced')} |
                 {'rule_ci': [round(x, 2) for x in res['rule_ci']], 'diff_ci': [round(x, 2) for x in res['diff_ci']]},
                 rising={k: [int(sum(r['ratio'] > 1 for r in g)), len(g)] for k, g in (('lasted', [r for r in use if r['lasted'] == 1]), ('faded', [r for r in use if r['lasted'] == 0]))},
+                rising15={k: [int(sum(r['ratio'] > 1.15 for r in g)), len(g)] for k, g in (('lasted', [r for r in use if r['lasted'] == 1]), ('faded', [r for r in use if r['lasted'] == 0]))},   # the same 15% margin the window's card() uses for 'rising'
                 cases=[dict(id=r['id'], name=r['product'], brand=r['brand'], cat=r['category'], announced=r['announced'], band=r['band'],
                             outcome=r['outcome'], note=r['outcome_note'], url=r['outcome_url'], src=r['source'], wiki=r['wiki_article'] if r['source'] == 'Wikipedia pageviews' else None, ratio=round(r['ratio'], 2), call=r['call'],
                             w=[int(round(x / max(r['_curve'].max(), 1) * 99)) for x in r['_curve']]) for r in sorted(use, key=lambda r: r['announced'])])

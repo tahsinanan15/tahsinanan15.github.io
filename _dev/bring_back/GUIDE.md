@@ -5,12 +5,12 @@ For Tahsin. Interviewers will ask you to walk through this. Everything below is 
 The scripts below are written in the first person as a starting point. Say only what you did yourself. Where the sourcing, the code or the rubric had support, say so in your own words, for example "we", or "I designed the question; the sourcing and the code had support". An interviewer will respect that far more than a claim you can't back up.
 
 ## The 30-second version
-"I wanted to know if you can see a comeback working before the brand even announces it. I took about 40 real US relaunches from 2014 to 2025 in food, beauty and sportswear. For each one I measured whether people were already searching for it more in the three months before the announcement than in the nine months before that, compared with the brand overall. I set a cut-off using the older cases, then tested it once on cases from 2021 to 2023 that it had never seen. The rules were written down and dated before anyone looked at a single curve." Then the result: "It didn't work as a predictor. On the 10 held-out comebacks the rule got 4 right, the same as always saying 'leave it', with a range of 10% to 70%. And 6 of those 10 lasted, so always saying 'bring it back' would have got 6. What I did see is that search interest was already rising, compared with the brand, before 18 of the 22 comebacks I could score: 10 of the 12 that lasted and 8 of the 10 that didn't. So a rise before the news is normal, and on its own it doesn't separate the keepers from the flops. That part is exploratory, so I'd test it next."
+"I wanted to know if you can see a comeback working before the brand even announces it. I took about 40 real US relaunches from 2014 to 2025 in food, beauty and sportswear. For each one I measured whether people were already searching for it more in the three months before the announcement than in the nine months before that, compared with the brand overall. I set a cut-off using the older cases, then tested it once on cases from 2021 to 2023 that it had never seen. The rules were written down and dated before any case's curve was pulled, apart from a three-week library test that's disclosed in the rubric." Then the result: "It didn't work as a predictor. On the 10 held-out comebacks the rule got 4 right, the same as always saying 'leave it', with a range of 10% to 70%. And 6 of those 10 lasted, so always saying 'bring it back' would have got 6. What I did see is that search interest was at least a little higher, compared with the brand, before 18 of the 22 comebacks I could score (12 of 22 by more than 15%): 10 of the 12 that lasted and 8 of the 10 that didn't. So a rise before the news is common, and on its own it doesn't separate the keepers from the flops. That part is exploratory, so I'd test it next."
 
 ## The files
 | File | What it is | Open it when they ask |
 |---|---|---|
-| `RUBRIC.md` | The rules, written and committed to git before any curve was pulled | "How do I know you didn't tune this after?" |
+| `RUBRIC.md` | The rules, written and committed to git before any case's curve was pulled (one three-week library test is disclosed inside) | "How do I know you didn't tune this after?" |
 | `cases.csv` | Every candidate: dates, outcomes, sources, quotes, and why any were dropped | "Where does this date come from?" |
 | `sourcing/` | The raw research notes behind `cases.csv`, plus every correction made before pulling data, with its reason | "Did you change anything?" |
 | `raw/` | Every Google Trends and Wikipedia download (script pulls and hand exports, filed by `study.py import`) | "Can I see the data?" |
@@ -21,14 +21,14 @@ The scripts below are written in the first person as a starting point. Say only 
 
 ## The words to use
 - **Attention, not sales.** Google search interest and Wikipedia pageviews measure how many people looked something up. No company publishes sales for a single relaunched flavour or shoe. Never say the rule predicts sales.
-- **Directional.** With 10 held-out cases, each case moves the hit rate by 10 points. That's why the range is wide, and why you always say it with the range.
+- **Small sample.** With 10 held-out cases, each case moves the hit rate by 10 points. That's why the range is wide, and why you always say it with the range.
 - **Held out.** The 2021 to 2023 cases were never used to set the cut-off.
 - **Base rate.** What you'd score with no signal at all, by always guessing whatever happened most often in the older cases. A rule is only worth anything if it beats that.
 
 ## Walking through the method, step by step
 
 ### 1. Which comebacks count
-A product, flavour, menu item, shade or shoe that was stopped or left to fade, then publicly brought back, announced between 2014 and 2025, sold in the US, in food and drink, beauty or sportswear. I deliberately went looking for flops, so the list isn't just famous wins. Every case needs a sourced announcement date and a sourced outcome, or it's dropped, and the reason is written down in `cases.csv`.
+A product, flavour, menu item, shade or shoe that was stopped or left to fade, then publicly brought back, announced between 2014 and 2025, sold in the US, in food and drink, beauty or sportswear. I deliberately went looking for flops, so the list isn't just famous wins. Every case needs a sourced announcement date and a sourced outcome (or, for 2024 and 2025, a dated call to score in 2027), or it's dropped, and the reason is written down in `cases.csv`.
 
 *If asked "why these categories?"*: they're the ones where companies bring things back most often, and where people search for products by name.
 
@@ -45,7 +45,7 @@ Coded from what the company did in the 24 months after the announcement:
 - **Recurring limited**: only came back for more limited runs.
 - **Gone again**: not sold any more, or for shoes, the company said it was cutting supply or the relaunch disappointed.
 
-The last two count as **did not last**. These rules were written down and dated before any data was pulled. Cases from 2024 and 2025 haven't had 24 months yet, so they get a prediction now and get scored in 2027.
+The last two count as **did not last**. These rules were written down and dated before any case's curve was pulled. Cases from 2024 and 2025 haven't had 24 months yet, so they get a prediction now and get scored in 2027.
 
 *If asked "isn't 'recurring limited' a success?"*: "Maybe for a stunt, but the question was whether the comeback lasts. A product the company keeps as a regular item is the clearest sign demand held up. I decided that before seeing any data."
 
@@ -81,7 +81,7 @@ A bootstrap: resample the held-out cases with replacement 10,000 times and recom
 *If asked "why bootstrap and not a formula?"*: "With this few cases, the bootstrap makes no assumption about the shape of the distribution, and it gives a range for the difference against the base rate too."
 
 ## Limits to say before they do
-- **Small n.** 10 held-out cases. Directional, not proof.
+- **Small n.** 10 held-out cases. Read it with its range, not as proof.
 - **Many cases were too small for Google to measure.** 42 comebacks were sourced, but only 26 had enough search data under the rule set in advance (more than half the weeks above zero), so big, much-searched products are over-represented. One case (Popeyes Cajun Rice) is still unmeasured because the planned search term wasn't downloaded.
 - **The rule tied with always saying "leave it", and did worse than always saying "bring it back"** (6 of 10). Say it plainly. A null result found with a fixed method is still a finding, and it's more believable than a lucky win.
 - **Attention, not sales.** Search interest is a proxy for curiosity.
@@ -92,11 +92,13 @@ A bootstrap: resample the held-out cases with replacement 10,000 times and recom
 - **Google Trends is sampled.** Pulling the same term twice can give slightly different numbers. The raw downloads are saved so the result can be checked exactly.
 
 ## Questions you might get, and short answers
-- *"So should a brand team use this?"* "As one input. If search interest is already climbing before you announce, that's a cheap signal worth checking. But not on its own: on 10 held-out comebacks it did no better than always saying 'leave it', and worse than always saying 'bring it back'."
+- *"So should a brand team use this?"* "Not as a go/no-go signal. Search was already rising before most comebacks, keepers and flops alike, and on 10 held-out cases the rule did no better than always saying 'leave it' (4 of 10) and worse than always saying 'bring it back' (6 of 10). What I'd test next is whether demand holds after launch, with a limited run or a few regions."
 - *"What if you'd just said 'bring it back' every time?"* "You'd have got 6 of 10, better than the rule. The older cases split 6 and 6, so the base call came from a tie rule I set in advance, and it went to 'leave it'. In the holdout more lasted than not, which is one more reason the rule isn't useful."
 - *"What would you do with more time?"* "Add more held-out cases, have a second person code the outcomes independently and check agreement, and score the 2024 and 2025 predictions in 2027."
 - *"What surprised you?"* "How common the pre-announcement rise is: 18 of 22, faded ones included. My guess is that brands bring things back when people are already talking about them, and leaks and teasers before the official date could also push the numbers up. Either way, buzz alone didn't separate the keepers." Say it's exploratory and a guess: only products that did come back were studied, so it can't say whether a rise means a comeback is coming.
-- *"So the study failed?"* "The rule did. The study did its job: it stopped me trusting a signal that looks convincing on a chart. The next thing I'd test is how the product came back, a limited run or a permanent spot, because that might be what separates them."
+- *"So the study failed?"* "The rule did. The study did its job: it stopped me trusting a signal that looks convincing on a chart. The next thing I'd test is whether demand holds after the first spike, measured after launch, and I'd have a second person code the outcomes."
+- *"What counts as rising?"* "A ratio above 1, with no margin. With a 15% margin it's 12 of 22, and it still doesn't separate keepers from flops: 7 of the 12 that lasted and 5 of the 10 that didn't."
+- *"Did you see any data before freezing the rules?"* "One thing, and it's written in the rubric: while checking the Google Trends library worked, a test printed three weeks of 'crystal pepsi' against 'pepsi'. That's why each term is pulled in its own request. No case's curve was pulled before the rules were dated. The Wikipedia articles for two thin cases were named after the Trends downloads, and that's disclosed too."
 - *"Why did data collection change?"* "Google Trends blocked the script partway through, so the rest was exported by hand from the Trends website with the same terms and dates. It's logged in the rubric file."
 - *"Did you change anything after seeing the results?"* "No. The rules were committed to git before the data, and every correction made before pulling the data is logged with its reason. The git history shows the order."
 

@@ -55,7 +55,9 @@ Share that lasted, all scored cases 2014-2023:
 | food & drink | 9 | 18 |
 | sportswear | 2 | 2 |
 | lasted: interest rising before the news (ratio above 1) | 10 | 12 |
+| lasted: rising by more than 15% (ratio above 1.15) | 7 | 12 |
 | did not last: interest rising before the news (ratio above 1) | 8 | 10 |
+| did not last: rising by more than 15% (ratio above 1.15) | 5 | 10 |
 | lowest third of ratios (0.65 to 1.08) | 4 | 7 |
 | middle third (1.12 to 1.36) | 3 | 8 |
 | highest third (1.47 to 2.82) | 5 | 7 |

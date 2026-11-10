@@ -115,12 +115,12 @@ const otherGuess = (r) => `always saying "${said(r.majority_call !== 'LASTS').to
 function finding(r) {
   const [lo, hi] = r.rule_ci.map(pct);
   const vs = r.rule_hits > r.base_hits ? 'more than' : r.rule_hits === r.base_hits ? 'the same as' : 'fewer than';
-  return `The rules were dated before any data was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Buzz before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right, ${vs} ${baseGuess(r)} (range ${lo} to ${hi}).`;
+  return `The rules were dated before any case's curve was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Buzz before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
 }
 const otherLine = (r) => `${r.holdout_lasted} of those ${r.holdout_n} lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits}.`;
 const risingLine = (d) => {
-  const [a, n1] = d.rising.lasted, [b, n2] = d.rising.faded;
-  return `Interest was already rising, compared with the brand, before ${a + b} of ${n1 + n2} comebacks: ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is normal, so on its own it doesn't separate them (exploratory).`;
+  const [a, n1] = d.rising.lasted, [b, n2] = d.rising.faded, m = d.rising15.lasted[0] + d.rising15.faded[0];
+  return `Interest was at least a little higher, compared with the brand, before ${a + b} of ${n1 + n2} comebacks (${m} of ${n1 + n2} by more than 15%): ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is common, so on its own it doesn't separate them (exploratory).`;
 };
 
 function paper() {
@@ -130,8 +130,8 @@ function paper() {
   return `
     <summary><h2>The study</h2></summary>
     <p><b>Question.</b> When fans are already looking a product up before a brand says it's coming back, does the comeback last?</p>
-    <p><b>Cases.</b> ${r.sourced} US comebacks from 2014 to 2025 in food and drink, beauty and sportswear, each with a sourced announcement date and a sourced outcome. I went looking for flops on purpose, so this isn't a list of winners. ${rows.length} had enough search data to measure; the rest are listed with the reason in the study files.</p>
-    <p><b>Outcome</b>, from what the company did in the 24 months after announcing: still on sale (lasted), back only for limited runs, or gone again. I wrote these rules down and dated them before pulling a single curve.</p>
+    <p><b>Cases.</b> ${r.sourced} US comebacks from 2014 to 2025 in food and drink, beauty and sportswear, each with a sourced announcement date and a sourced outcome, or, for 2024 and 2025, a dated call to score in 2027. I went looking for flops on purpose, so this isn't a list of winners. ${rows.length} had enough search data to measure; the rest are listed with the reason in the study files.</p>
+    <p><b>Outcome</b>, from what the company did in the 24 months after announcing: still on sale (lasted), back only for limited runs, or gone again. I wrote these rules down and dated them before pulling any case's curve.</p>
     <p><b>Signal.</b> Weekly Google search interest in the US for the 12 months before the news. The last 3 months divided by the 9 before, then divided by the same number for the parent brand, so a brand that's growing anyway doesn't count. Wikipedia pageviews stand in where search is too thin to read. This measures attention, not sales.</p>
     <p><b>Test.</b> I set the line (${data.threshold.toFixed(2)}x) on the ${r.train_n} comebacks from 2014 to 2020, then scored it once on the ${r.holdout_n} from 2021 to 2023 without changing it.</p>
     <ul class="lcds lcds--sm">
@@ -169,9 +169,10 @@ export async function init() {
   $('bb-root').innerHTML = `
     <h2 id="bb-h">Can fans call a comeback?</h2>
     <p class="insight">${esc(finding(data.result))}</p>
-    <p>${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
+    <p class="bb__also--top">${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
     <p>Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
     <ol class="bb__deck" id="bb-deck" aria-label="Cases"></ol>
+    <p class="bb__also--low">${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
     <div class="bb__score" id="bb-score" hidden></div>
     <details class="bb__paper" id="bb-paper">${paper()}</details>`;
   const list = $('bb-deck');

@@ -350,9 +350,11 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__curve { width: 100%; height: auto; margin: 4px 0 2px; overflow: visible; }
 .bb__line { fill: none; stroke: var(--lcd-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--lcd-glow)); vector-effect: non-scaling-stroke; }
 .bb__last { fill: color-mix(in srgb, var(--lcd-fg) 10%, transparent); }
-.bb__card:not(.is-shown) .bb__line { stroke-dasharray: 1; animation: bb-draw 1.2s var(--ease-out) both; }
-@keyframes bb-draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
-@media (prefers-reduced-motion: reduce) { .bb__card:not(.is-shown) .bb__line { animation: none; stroke-dasharray: none; } }
+.bb__card:not(.is-shown) .bb__line { animation: bb-draw 1.2s var(--ease-out) both; }   /* a wipe, not a dash: a dash is measured in screen px under non-scaling-stroke and stops short */
+@keyframes bb-draw { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px); } }
+@media (prefers-reduced-motion: reduce) { .bb__card:not(.is-shown) .bb__line { animation: none; } }
+.bb__also--low, .phone .bb__also--top { display: none; }   /* on a phone the first case comes before the second paragraph */
+.phone .bb__also--low { display: block; }
 .bb__ask { margin: 10px 0 0 !important; font-weight: 600; }
 .bb__pick { margin-top: 8px; }
 .bb__reveal h3 { margin-top: 12px; }
