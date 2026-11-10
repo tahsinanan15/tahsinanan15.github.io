@@ -252,6 +252,7 @@ if __name__ == "__main__":
         retro={b: [pm(v) for v in monthly_franchise(b)] for b in BRANDS},
         franchises={b: [f.replace("adidas ", "").replace("puma ", "").replace("nike ", "").title() for f in FR[b]] for b in BRANDS},
         years=years,
+        sos_year={b: [pm(sos_y.at[y, b]) for y in years] + [pm(sos_y.at[2026, b])] for b in BRANDS},   # last entry: 2026 to date
         som_cc={b: [pm(sc.at[y, b]) for y in years] for b in BRANDS},
         som_usd={b: [pm(su.at[y, b]) for y in years] for b in BRANDS},
         binet={k: dict(n=v["n"], slope=round(v["slope"], 2), r=round(v["r"], 2), loyo=round(v["loyo"], 2), naive=round(v["naive"], 2))

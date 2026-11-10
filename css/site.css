@@ -977,7 +977,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
    ===================================================================================== */
 @media screen {
   .phone {
-    --cols: 4; --row: 88px; --ico: 42px; --mp-h: 116px; --hook-band: 0px; --side: 0px;
+    --cols: 4; --row: min(88px, calc((100dvh - var(--tb) - var(--mp-h) - 24px - var(--hook-band)) / 5)); --ico: 42px; --mp-h: 116px; --hook-band: 0px; --side: 0px;   /* five rows of icons fit above the player */
     --col: calc((100vw - var(--side) - 2 * var(--gutter)) / var(--cols));
     --gutter: max(8px, env(safe-area-inset-left, 0px), env(safe-area-inset-right, 0px));
     --tb: calc(var(--taskbar) + env(safe-area-inset-bottom, 0px));
@@ -986,7 +986,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   }
   .phone.hook { --hook-band: 92px; }   /* until the tape is played the kitty sits in a band over PLAY_ME.EXE, or with the kitty off, the note does */
   .phone.hook.no-kitty { --hook-band: 60px; }
-  @media (min-height: 720px) { .phone { --row: clamp(98px, calc((100dvh - var(--tb) - var(--mp-h) - 40px) / 4.6), 124px); --ico: 56px; --mp-h: 150px; } }
+  @media (min-height: 720px) { .phone { --row: clamp(84px, calc((100dvh - var(--tb) - var(--mp-h) - 24px - var(--hook-band)) / 5), 124px); --ico: 56px; --mp-h: 150px; } }
   @media (min-width: 600px) { .phone { --cols: 6; --row: 104px; --ico: 54px; } }
   .phone ::-webkit-scrollbar { width: 8px; height: 8px; }
   .phone, .phone body { overscroll-behavior-y: none; }   /* no pull-to-refresh on the home screen */

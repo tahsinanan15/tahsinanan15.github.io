@@ -47,10 +47,9 @@ function draw() {
   for (const b of document.querySelectorAll('#bringback [data-brand]')) b.setAttribute('aria-pressed', String(b.dataset.brand === brand));
   for (const b of document.querySelectorAll('#bringback [data-cc]')) b.setAttribute('aria-pressed', String((b.dataset.cc === '1') === cc));
   $('bb-table').innerHTML = `<thead><tr><th>Year</th><th>Search share</th><th>Revenue share, constant currency</th><th>Revenue share, US dollars</th></tr></thead><tbody>${d.years.map((yr, i) => {
-    const ms = d.months.map((m, j) => [m, j]).filter(([m]) => +m.slice(0, 4) === yr).map(([, j]) => d.sos[brand][j]);
-    return `<tr><td>${yr}</td><td>${p1(ms.reduce((a, b) => a + b, 0) / ms.length)}%</td><td>${p1(d.som_cc[brand][i])}%</td><td>${p1(d.som_usd[brand][i])}%</td></tr>`;
+    return `<tr><td>${yr}</td><td>${p1(d.sos_year[brand][i])}%</td><td>${p1(d.som_cc[brand][i])}%</td><td>${p1(d.som_usd[brand][i])}%</td></tr>`;
   }).join('')}</tbody>`;
-  $('bb-table-cap').textContent = `${NAME[brand]}, as a share of the three brands. Search share here is the average of each year's months, so it can differ from the study's summed figure by a tenth.`;
+  $('bb-table-cap').textContent = `${NAME[brand]}, as a share of the three brands. Search share ${d.years.at(-1) + 1} to date: ${p1(d.sos_year[brand].at(-1))}%.`;
 }
 
 function hoverAt(e) {
