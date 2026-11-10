@@ -7,7 +7,7 @@
 import { track } from './analytics.js';
 import { deck, beat, play, playSong, currentSong } from './audio.js';
 import { SONGS } from './themes.js';
-import { WORLDS, sprite } from './beatworlds.js';
+import { WORLDS, sprite, bomb } from './beatworlds.js';
 
 const LEVEL = 90;      // seconds of each song a level plays, as in _dev/build_beats.py
 const TRAVEL = 2.6;    // seconds a note takes to reach the line: slow enough to read. On the road it takes a little longer, since it starts far away
@@ -26,6 +26,8 @@ const still = matchMedia('(prefers-reduced-motion: reduce)'), coarse = matchMedi
 const charts = {}, layers = {}, down = [0, 0, 0, 0], litAt = [0, 0, 0, 0], reach = [0, 3], turn = [1, -1], fingers = new Map(), fx = [], trail = [];
 let on = false, watching = false, run = 0, song = null, notes = [], first = 0, end = 0, hits = 0, judged = 0, streak = 0, best = 0, score = 0, sharp = 0, over = false, open = false, stem = null;
 let lag = 16, slow = 0, lite = false, before = 0;
+let swell = 0, booms = 0, warned = false, bombs = [];
+let kickSeen = 0, snapAt = -1e9;
 let skin = null, view = null, seen = 0, seenAt = 0, last = 0, home = 0, energy = 0, missAt = -1e9, flashAt = -1e9, shakeAt = -1e9, shakeAmp = 0, sizedAt = 0;
 let full = false, tilt = 0, tiltFrom = 0, tiltTo = 0, tiltAt = 0, stage = null, slot = null, hushed = [], hud = 9, board = { left: 0, lane: 1 };
 let bests = {};
@@ -62,8 +64,8 @@ function shake(amp) {
   shakeAmp = Math.max(amp, shakeAmp * Math.max(0, 1 - (now - shakeAt) / 260) ** 2);
   shakeAt = now;
 }
-function say(text, u, color, lift = 1) {
-  add(540, (a, g, f) => {
+function say(text, u, color, lift = 1, life = 540) {
+  add(life, (a, g, f) => {
     const [x, y] = f.at(u, 0);
     g.globalAlpha = a < .7 ? 1 : (1 - a) / .3; g.font = `${f.type}px ${f.font}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     g.fillStyle = color; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 5 * f.d;
@@ -78,7 +80,6 @@ function strike(n, late, clean = true) {
   lead(true);
   deck.sound((voice, burst) => w.sound(voice, burst, n.hz, broad ? 1 : n.hold ? 2 : 0, (u - 2) / 2.4));
   litAt[n.lane] = litAt[n.lane + broad] = performance.now();
-  if (n.fine || broad) shake(broad ? 5 : 2.5);
   add(260, (a, g, f) => {   // its lane lights up
     const p = f.at(u, 0), q = f.at(u, .6), fill = g.createLinearGradient(p[0], p[1], q[0], q[1]);
     fill.addColorStop(0, tone[1]); fill.addColorStop(1, `${tone[1]}00`);
@@ -130,6 +131,24 @@ function cheer() {   // every tenth hit in a row
   const hz = (notes[first] || notes[notes.length - 1]).hz;
   deck.sound((voice) => [1, 1.5, 2, 3].forEach((m, i) => voice(hz * 2 * m, i * .06, .3, { gain: .08 })));
 }
+function released(n) {   // a hold carried through lets go with a chime and a wider ring
+  if (!view) return;
+  const tone = WORLDS[view.id].hands[+(n.lane > 1)], u = n.lane + .5;
+  deck.sound((voice) => { voice(n.hz * 2, 0, .3, { gain: .12 }); voice(n.hz * 3, .05, .3, { gain: .08 }); });
+  say('HELD', u, tone[0]);
+  add(420, (a, g, f) => { const [x, y] = f.at(u, 0), e = f.size * .6 * (1 + a * 1.6); g.globalAlpha = 1 - a; g.strokeStyle = tone[0]; g.lineWidth = 5 * f.d * (1 - a) + 1; g.beginPath(); g.ellipse(x, y, e, e * f.lie, 0, 0, 7); g.stroke(); });
+}
+function boom(b) {   // a bomb, pressed: the streak and the song go, and 300 points with them
+  b.state = 2; booms++; streak = 0; score = Math.max(0, score - 300); missAt = performance.now();
+  lead(false); shake(10);
+  deck.sound((voice, burst) => { voice(70, 0, .5, { to: 28, gain: .32 }); burst(0, .45, 600, .5); });
+  say('BOOM', b.lane + .5, '#ff8a3c', 1.3, 800);
+  add(520, (a, g, f) => {
+    const [x, y] = f.at(b.lane + .5, 0), cy = y - f.size * .3 * f.tilt, e = f.size * (.6 + a * 2.4), fire = g.createRadialGradient(x, cy, 0, x, cy, e);
+    fire.addColorStop(0, '#fff6c8'); fire.addColorStop(.35, '#ff9a2e'); fire.addColorStop(.7, 'rgba(220,40,20,.6)'); fire.addColorStop(1, 'rgba(220,40,20,0)');
+    g.globalCompositeOperation = 'lighter'; g.globalAlpha = 1 - a * a; g.fillStyle = fire; g.fillRect(x - e, cy - e, e * 2, e * 2);
+  });
+}
 function judge(n, hit) {
   n.state = hit ? 2 : 3;
   n.at = performance.now();
@@ -161,19 +180,24 @@ function press(lane) {
     } else if (n.hold) { n.state = 1; strike(n, t - n.t); } else { strike(n, t - n.t); judge(n, true); }
     return;
   }
+  const b = bombs.find((m) => !m.state && m.lane === lane && Math.abs(m.t - t) <= .18);   // no note in reach, but a bomb is
+  if (b) return boom(b);
   deck.sound((voice) => voice(190, 0, .05, { gain: .045, type: 'triangle' }));   // nothing there: the blade still swishes
 }
 function lift(lane) {
   down[lane] = 0;
   const n = notes.find((m) => m.state === 1 && m.lane === lane);
-  if (n) judge(n, clock(performance.now()) > n.t + n.hold * .5);   // holding it for half its length is enough
+  if (!n) return;
+  const kept = clock(performance.now()) > n.t + n.hold * .5;   // holding it for half its length is enough
+  judge(n, kept);
+  if (kept) released(n);
 }
 function step(t) {
   while (first < notes.length && notes[first].state > 1) first++;
   for (let i = first; i < notes.length && notes[i].t < t; i++) {
     const n = notes[i];
     if (!n.state && t - n.t > HIT) judge(n, false);                // it slipped past
-    else if (n.state === 1 && t >= n.t + n.hold) judge(n, true);   // held to the end
+    else if (n.state === 1 && t >= n.t + n.hold) { judge(n, true); released(n); }   // held to the end
   }
   if (!over && notes.length && t >= end) finish();
 }
@@ -190,7 +214,8 @@ async function begin() {
   const mine = ++run;
   quit();
   song = currentSong();
-  notes = []; fx.length = 0; first = hits = judged = streak = best = score = sharp = 0; over = false; open = false;
+  bomb(song.theme);   // its picture starts loading now
+  notes = []; fx.length = 0; first = hits = judged = streak = best = score = sharp = booms = 0; over = false; open = false; warned = false; bombs = [];
   deck.band(null);
   card.hidden = true;
   backing(song.src).then((buffer) => { if (buffer && mine === run && on && !over) { deck.band(buffer); deck.lead(open ? 1 : QUIET, .25); } });   // until it loads, the song just plays
@@ -202,12 +227,19 @@ async function begin() {
   if (!notes.length) return leave();
   const final = notes[notes.length - 1];
   end = final.t + final.hold + 1.2;
+  // Bombs: past the opening, every fourth single note brings one in a lane of the other hand, if nothing else needs that lane then.
+  const taken = (lane, t) => notes.some((m) => lane >= m.lane && lane <= m.lane + (m.kind ? 1 : 0) && t > m.t - .75 && t < m.t + m.hold + .75);
+  notes.forEach((n, k) => {
+    if (n.t < 20 || k % 4 !== 2 || n.kind || notes[k - 1]?.t === n.t || notes[k + 1]?.t === n.t) return;
+    const lane = (n.lane < 2 ? [3, 2] : [0, 1]).find((l) => !taken(l, n.t));
+    if (lane != null) bombs.push({ t: n.t, lane, state: 0 });
+  });
   track('game_start', { game: 'play_along', song: song.title });
 }
 function finish() {
   over = true; open = true;
   deck.band(null);   // the song plays on, whole
-  const pct = Math.round(hits / notes.length * 100), stars = (pct >= 40) + (pct >= 60) + (pct >= 80);
+  const pct = Math.round(hits / notes.length * 100), net = Math.max(0, hits - booms * 5) / notes.length * 100, stars = (net >= 40) + (net >= 60) + (net >= 80);   // a bomb set off costs five notes
   track('game_score', { game: 'play_along', song: song.title, hit: `${pct}%`, streak: best, stars });
   if (stars > (bests[song.src] || 0)) {
     bests[song.src] = stars;
@@ -217,7 +249,7 @@ function finish() {
   $('mp-result-h').textContent = stars ? 'Level clear' : 'Level over';
   $('mp-result-stars').innerHTML = starRow(stars);
   $('mp-result-stars').setAttribute('aria-label', `${stars} of 3 stars`);
-  $('mp-result-p').textContent = `${pct}% of notes hit, ${sharp} of them perfect. Longest streak ${best}. Score ${score.toLocaleString('en-US')}.`;
+  $('mp-result-p').textContent = `${pct}% of notes hit, ${sharp} of them perfect.${booms ? ` ${booms} bomb${booms > 1 ? 's' : ''} set off.` : ''} Longest streak ${best}. Score ${score.toLocaleString('en-US')}.`;
   card.hidden = false;
   if (win.contains(document.activeElement) || panel.contains(document.activeElement)) $(stars ? 'mp-next-level' : 'mp-again').focus({ preventScroll: true });
 }
@@ -245,7 +277,7 @@ function scenery(name, w, f) {
 // The visualizer calls this each frame in place of its own drawing, and hands over its bars to stand wherever the board wants them.
 function frame(g, now, bars, strip) {
   lag += (Math.min(100, now - before) - lag) * .05; before = now;
-  if (lag <= 24) slow = 0; else if (++slow > 90) lite = true;   // a screen that can't keep up for three seconds gets a plainer picture from then on: no film grain, fewer pixels
+  if (lag <= 24) slow = 0; else if ((slow += lag) > 2500) lite = true;   // a screen that can't keep up for a few seconds gets a plainer picture from then on: no film grain, fewer pixels, and a world that holds still behind the road
   const d = Math.min(devicePixelRatio || 1, lite ? 1 : full ? 1.5 : 2), W = Math.round(canvas.clientWidth * d), H = Math.round(canvas.clientHeight * d), calm = still.matches;
   if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; sizedAt = now; } else g.clearRect(0, 0, W, H);
   const x = calm ? 1 : clamp((now - tiltAt) / 500);
@@ -262,19 +294,28 @@ function frame(g, now, bars, strip) {
 
   // Where things go: u runs 0 to 4 across the lanes, and r is how far a note still has to travel (1 where it starts, 0 on the
   // line, below 0 past it). Flat, r is simply height. On the road, things shrink toward the horizon the way distance does.
+  // The road is a ribbon. Once a level is under way, waves travel down it toward the player, the way a shaken-out carpet
+  // carries one. Each song sets its waves: how tall, how long, how fast (w.ride).
+  // Nothing moves sideways, the camera holds still, and the waves flatten out before the line, so the pads never move. They also die away in the distance, where they would crowd into a jagged edge.
+  swell += (beat.bass - swell) * .02;
+  const [tall, long, fast] = w.ride, rise = (calm ? 0 : tilt * clamp((t - 8) / 12)) * tall * (.6 + .4 * Math.min(1, swell * 2.2)) * size * .55;
+  if (beat.kickAt !== kickSeen) { kickSeen = beat.kickAt; if (beat.playing && !calm) snapAt = now; }
+  const snap = Math.max(0, 1 - (now - snapAt) / 260) * tilt;
   const at = (u, r) => {
-    const m = 1 / (1 + Math.max(-.25, r) * (DEPTH - 1)), k = 1 + (m - 1) * tilt;
-    return [cx + (u - 2) * lane * k, (yHit - r * (yHit + away)) * (1 - tilt) + (hz + (yHit - hz) * m) * tilt, k];
+    const m = 1 / (1 + Math.max(-.25, r) * (DEPTH - 1)), k = 1 + (m - 1) * tilt, q = Math.max(0, r), e = clamp((q - .22) / .5), p = q * 6.283 / long + t * fast * 2.2;
+    return [cx + (u - 2) * lane * k, (yHit - r * (yHit + away)) * (1 - tilt) + (hz + (yHit - hz) * m) * tilt - rise * m * e * e * (3 - 2 * e) * (1 - clamp((q - 1.1) / .7)) * (Math.sin(p) + .35 * Math.sin(p * 2.3 + 1)), k];
   };
-  const rail = (u, r0, r1) => { for (let i = 0; i <= 8; i++) { const p = at(u, r0 + (r1 - r0) * i / 8); g.lineTo(p[0], p[1]); } };
+  const mid = (r0, r1, k) => r0 + (r1 - r0) * k;
+  const rail = (u, r0, r1) => { for (let i = 0; i <= 48; i++) { const p = at(u, mid(r0, r1, i / 48)); g.lineTo(p[0], p[1]); } };   // enough points that a wave reads as a curve
   const stop = tilt * (yHit - H) / ((H - hz) * (DEPTH - 1));   // the flat board stops at the line; the road runs on to the bottom edge
   const phase = calm ? 0 : t / travel;
   const f = view = {
-    id: s.id, W, H, d, cx, lane, size, yHit, hz, tilt, lie, full, calm, lite, now, travel, far, stop, type, font: s.font, at,
+    id: s.id, W, H, d, cx, lane, size, yHit, hz, tilt, lie, full, calm, lite, snap, now, travel, far, stop, type, font: s.font, at,
     time: calm ? 0 : now / 1000, energy, pulse: beat.pulse, progress: clamp(t / (end || LEVEL)),
     miss: calm ? 0 : Math.max(0, 1 - (now - missAt) / 350), missAge: (now - missAt) / 1000, lit: litAt.map((v) => Math.max(0, 1 - (now - v) / 300)),
     quad: (u0, u1, r0 = far, r1 = stop) => { g.beginPath(); rail(u0, r0, r1); rail(u1, r1, r0); g.closePath(); },
     line: (u, r0 = far, r1 = stop) => { g.beginPath(); rail(u, r0, r1); },
+    mid: (k) => mid(far, stop, k),
     rows: (gap, draw) => { for (let r = Math.ceil((stop + phase) / gap) * gap - phase; r <= far; r += gap) draw(r); },   // rows that travel with the notes
   };
 
@@ -282,7 +323,8 @@ function frame(g, now, bars, strip) {
   const knock = shakeAmp * Math.max(0, 1 - (now - shakeAt) / 260) ** 2 * d, sx = knock * Math.sin(now / 13), sy = knock * Math.cos(now / 17), o = Math.ceil(knock);
   const settle = () => { g.setTransform(1, 0, 0, 1, sx, sy); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over'; g.shadowBlur = 0; };
   settle();
-  g.drawImage(scenery('sky', w, f), -o, -o, W + o * 2, H + o * 2);
+  const sky = scenery('sky', w, f);
+  g.drawImage(sky, -o, -o, W + o * 2, H + o * 2);
   w.far?.(g, f);
   const land = scenery('land', w, f);
   if (land) g.drawImage(land, -o, -o, W + o * 2, H + o * 2);
@@ -304,24 +346,24 @@ function frame(g, now, bars, strip) {
 
   if (!over && notes.length) {
     // The line to hit on, and a pad in each lane: it fills while its key or finger is down, and brightens when a note is in reach.
-    const x0 = cx - 2 * lane, hot = [0, 0, 0, 0];
+    const hot = [0, 0, 0, 0], l0 = at(0, 0), l4 = at(4, 0);
     for (let i = first; i < notes.length && notes[i].t - t <= HIT; i++) { const n = notes[i]; if (!n.state) hot[n.lane] = hot[n.lane + (n.kind ? 1 : 0)] = 1; }
-    g.globalAlpha = .55; g.fillStyle = ink; g.fillRect(x0, yHit - d, lane * 4, 2 * d);
+    g.globalAlpha = .55; g.strokeStyle = ink; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(l0[0], l0[1]); g.lineTo(l4[0], l4[1]); g.stroke();
     g.font = `${type}px ${s.font}`; g.textAlign = 'center'; g.textBaseline = 'middle';
     for (let i = 0; i < 4; i++) {
-      const tone = w.hands[+(i > 1)], lit = Math.max(down[i], f.lit[i]), px = x0 + (i + .5) * lane;
-      const pool = g.createRadialGradient(px, yHit, 0, px, yHit, ring * 1.7);   // light pooled under the pad
+      const tone = w.hands[+(i > 1)], lit = Math.max(down[i], f.lit[i]), [px, py] = at(i + .5, 0);
+      const pool = g.createRadialGradient(px, py, 0, px, py, ring * 1.7);   // light pooled under the pad
       pool.addColorStop(0, `${tone[1]}66`); pool.addColorStop(1, `${tone[1]}00`);
-      g.save(); g.translate(0, yHit * (1 - lie)); g.scale(1, lie); g.globalAlpha = .5 + .5 * Math.max(lit, hot[i]); g.fillStyle = pool; g.fillRect(px - ring * 1.7, yHit - ring * 1.7, ring * 3.4, ring * 3.4); g.restore();
-      g.beginPath(); g.ellipse(px, yHit, ring, ring * lie, 0, 0, 7);
+      g.save(); g.translate(0, py * (1 - lie)); g.scale(1, lie); g.globalAlpha = .5 + .5 * Math.max(lit, hot[i]); g.fillStyle = pool; g.fillRect(px - ring * 1.7, py - ring * 1.7, ring * 3.4, ring * 3.4); g.restore();
+      g.beginPath(); g.ellipse(px, py, ring, ring * lie, 0, 0, 7);
       g.globalAlpha = .2 + .5 * lit + .2 * hot[i]; g.fillStyle = tone[1]; g.fill();
       g.globalAlpha = 1; g.strokeStyle = tone[hot[i] || lit ? 0 : 1]; g.lineWidth = (hot[i] ? 3.5 : 2.5) * d; g.stroke();
-      g.beginPath(); g.ellipse(px, yHit, ring * .62, ring * .62 * lie, 0, 0, 7); g.globalAlpha = .5; g.lineWidth = d; g.stroke();
-      if (!coarse.matches) { g.globalAlpha = .95; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.75)'; g.shadowBlur = 4 * d; g.fillText(KEYS[i].toUpperCase(), px, yHit + d); g.shadowBlur = 0; }
+      g.beginPath(); g.ellipse(px, py, ring * .62, ring * .62 * lie, 0, 0, 7); g.globalAlpha = .5; g.lineWidth = d; g.stroke();
+      if (!coarse.matches) { g.globalAlpha = .95; g.fillStyle = '#fff'; g.shadowColor = 'rgba(0,0,0,.75)'; g.shadowBlur = 4 * d; g.fillText(KEYS[i].toUpperCase(), px, py + d); g.shadowBlur = 0; }
     }
 
     // Notes, farthest first. A missed one keeps going and fades. One to hold trails a ribbon as long as it lasts. On the road each floats over its shadow.
-    const see = 1 + .5 * tilt;
+    const see = 1 + .6 * tilt;
     let stopAt = first;
     while (stopAt < notes.length && (notes[stopAt].t - t) / travel < see) stopAt++;
     for (let i = stopAt - 1; i >= Math.max(0, first - 6); i--) {
@@ -329,22 +371,51 @@ function frame(g, now, bars, strip) {
       if (n.state === 2 || gone >= 1) continue;
       const broad = n.kind ? 1 : 0, hand = +(n.lane > 1), tone = w.hands[hand], u = n.lane + .5 + broad * .5, r = n.state === 1 ? 0 : (n.t - t) / travel, [nx, ny, k] = at(u, r);
       const show = (1 - gone) * clamp((see - r) / .2) * (n.state === 3 ? .55 : 1), sz = size * k, iw = sz * (1 + broad), topY = ny - sz * (.5 + .3 * tilt);
-      if (n.hold) {
-        const r1 = Math.min(see, (n.t + n.hold - t) / travel), hw = size * .2, tip = at(u, r1);
-        g.fillStyle = tone[n.state === 1 ? 0 : 1]; g.globalAlpha = (1 - gone) * (n.state === 1 ? .9 : .6);
-        g.beginPath();
-        for (let j = 0; j <= 6; j++) { const p = at(u, r + (r1 - r) * j / 6); g.lineTo(p[0] - hw * p[2], p[1]); }
-        g.arc(tip[0], tip[1], hw * tip[2], Math.PI, 0);
-        for (let j = 6; j >= 0; j--) { const p = at(u, r + (r1 - r) * j / 6); g.lineTo(p[0] + hw * p[2], p[1]); }
-        g.fill();
+      if (n.hold) {   // a note to hold: a rail of light as long as it lasts, beaded, with a ring where it ends
+        const r1 = Math.min(see, (n.t + n.hold - t) / travel), held = n.state === 1, fade = 1 - gone, tip = at(u, r1);
+        const band = (hw, color, alpha) => {
+          g.fillStyle = color; g.globalAlpha = fade * alpha; g.beginPath();
+          for (let j = 0; j <= 8; j++) { const p = at(u, mid(r, r1, j / 8)); g.lineTo(p[0] - hw * p[2], p[1]); }
+          g.arc(tip[0], tip[1], hw * tip[2], Math.PI, 0);
+          for (let j = 8; j >= 0; j--) { const p = at(u, mid(r, r1, j / 8)); g.lineTo(p[0] + hw * p[2], p[1]); }
+          g.fill();
+        };
+        band(size * .3, tone[1], held ? .45 : .28); band(size * .19, tone[1], held ? 1 : .8); band(size * .07, '#ffffff', held ? 1 : .75);
+        g.fillStyle = tone[2]; g.globalAlpha = fade * .9;   // beads, running in toward the line
+        for (let q = r + .05 - (calm ? 0 : (t * .5) % .05); q < r1; q += .05) { const p = at(u, q); g.beginPath(); g.arc(p[0], p[1], size * .045 * p[2], 0, 7); g.fill(); }
+        g.strokeStyle = tone[0]; g.lineWidth = 2.5 * d * tip[2] + 1; g.globalAlpha = fade;
+        g.beginPath(); g.ellipse(tip[0], tip[1], size * .34 * tip[2], size * .34 * tip[2] * lie, 0, 0, 7); g.stroke();
+        if (held) {   // while it's held the pad burns, and it ticks upward as it fills
+          const pulse = ring * (1.15 + (calm ? 0 : .12 * Math.sin(now / 55)));
+          g.lineWidth = 3 * d; g.beginPath(); g.ellipse(nx, ny, pulse, pulse * lie, 0, 0, 7); g.stroke();
+          if (now - (n.tick || 0) > 130) { n.tick = now; deck.sound((voice) => voice(n.hz * 2 * (1 + clamp((t - n.t) / n.hold)), 0, .07, { gain: .05 })); }
+        }
       }
-      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
+      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade[hand]; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
       g.globalAlpha = show;
       const img = sprite(s.id, hand, n.kind, n.v);
       if (n.kind === 2) { g.save(); g.translate(nx, 0); g.scale(-1, 1); g.drawImage(img, -iw / 2, topY, iw, sz); g.restore(); } else g.drawImage(img, nx - iw / 2, topY, iw, sz);
+      if (n.hold) { g.strokeStyle = tone[0]; g.lineWidth = 2.5 * d * k + 1; g.beginPath(); g.arc(nx, topY + sz / 2, sz * .56, 0, 7); g.stroke(); }   // and a collar round its head
     }
     g.globalAlpha = 1;
 
+    // Bombs: not to be touched. Each world has its own picture, and all of them sit over the same blinking red ring with a spark at the fuse.
+    for (const b of bombs) {
+      const r = (b.t - t) / travel;
+      if (b.state || r >= see || r < -.3) continue;
+      const [bx, by, k] = at(b.lane + .5, r), sz = size * k, show = clamp((see - r) / .2) * clamp((r + .3) / .2), top2 = by - sz * (.9 + .3 * tilt);
+      if (!warned && r < 1) { warned = true; say("DON'T HIT THE BOMBS", 2, '#ff6b6b', 1.9, 2600); }
+      g.beginPath(); g.ellipse(bx, by, sz * .62, sz * .62 * lie, 0, 0, 7);
+      g.globalAlpha = show * .35; g.fillStyle = '#ff3b30'; g.fill();
+      g.globalAlpha = show * (calm ? 1 : .6 + .4 * Math.sin(now / 70)); g.strokeStyle = '#ff3b30'; g.lineWidth = 3 * d * k + 1; g.stroke();
+      const ball = bomb(s.id);
+      g.globalAlpha = show; if (ball) g.drawImage(ball, bx - sz * .55, top2, sz * 1.1, sz * 1.1);
+      const sx2 = bx + sz * .33, sy2 = top2 + sz * .09, spark = sz * (.12 + (calm ? 0 : .05 * Math.sin(now / 40)));   // the fuse, burning
+      g.globalCompositeOperation = 'lighter'; g.fillStyle = '#ffd24a'; g.beginPath();
+      for (let j = 0; j < 8; j++) { const a = j * Math.PI / 4 + (calm ? 0 : now / 200), q = j % 2 ? spark * .4 : spark; g.lineTo(sx2 + Math.cos(a) * q, sy2 + Math.sin(a) * q); }
+      g.fill(); g.globalCompositeOperation = 'source-over';
+    }
+    g.globalAlpha = 1;
     // A finger or the mouse leaves a blade of light behind it.
     while (trail.length && now - trail[0].at > 220) trail.shift();
     g.globalCompositeOperation = 'lighter'; g.lineCap = 'round';
@@ -365,6 +436,7 @@ function frame(g, now, bars, strip) {
   // Over everything: what this world's lens does to the picture, a red edge on a miss, a flash on a streak.
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   w.post?.(g, f);
+  if (snap > .02) w.snap?.(g, f);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   if (f.miss && !w.mono) {
     const edge = g.createRadialGradient(cx, H / 2, Math.min(W, H) * .3, cx, H / 2, Math.hypot(W, H) / 2);

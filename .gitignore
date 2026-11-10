@@ -3,3 +3,4 @@ _dev/check.mjs
 _dev/hooks/
 .impeccable/
 .claude/
+__pycache__/

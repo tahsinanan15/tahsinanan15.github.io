@@ -25,7 +25,7 @@ export const variant = (() => {
   return v;
 })();
 
-export const KEYS = ['visit', 'case', 'resume', 'contact', 'a_seen', 'b_seen', 'a_conv', 'b_conv'];
+export const KEYS = ['visit', 'visitor', 'case', 'resume', 'contact', 'a_seen', 'b_seen', 'a_conv', 'b_conv'];
 
 // Funnel steps count once per session. The experiment's unit is the browser, so its counts persist.
 async function hit(key, perBrowser = false) {
@@ -84,6 +84,7 @@ export async function startVisit() {
   const first = !session.counted.visit;
   if (first) track('session_start', { headline: variant });
   const value = await hit('visit');
+  hit('visitor', true);   // the same visit, counted once per browser, so a browser that comes back daily is one visitor
   if (value != null) return value;
   if (!LIVE) return null;
   try { const r = await timed(`${API}/get/${NS}/visit`); return r.ok ? Number((await r.json()).value) || null : null; } catch { return null; }

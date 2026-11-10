@@ -9,6 +9,9 @@ const PAPER = '#fbf8f1';
 const W = document.documentElement.classList.contains('phone') ? 900 : 1280;
 const H = Math.round(W * Math.max(.625, innerWidth < 620 ? (innerHeight - 444) / (innerWidth - 42) : 0));
 const $ = (id) => document.getElementById(id);
+// Each tool keeps its own size: a share of the width it was made with.
+const BASE = { pen: 4.4, brush: 20, coffee: 96, erase: 34 }, size = { pen: 1, brush: 1, coffee: 1, erase: 1 };
+let showSize = () => {};
 let canvas, g, tool = 'pen', color = '#17151a', drawing = false, last = null, mid = null, undo = [], ready = false, layer, layerG, grain, wash = [], started = false;
 
 // Coffee behaves like a wash: flat and even inside one stroke, with grain and a darker dried edge.
@@ -37,14 +40,14 @@ function renderWash() {
   x.lineCap = x.lineJoin = 'round';
   x.globalCompositeOperation = 'source-over';
   x.clearRect(0, 0, W, H);
-  x.strokeStyle = grain; x.lineWidth = 96; trace(x);
+  x.strokeStyle = grain; x.lineWidth = BASE.coffee * size.coffee; trace(x);
   g.globalCompositeOperation = 'source-over'; g.globalAlpha = 1;
   g.drawImage(undo[undo.length - 1], 0, 0);
   g.globalCompositeOperation = 'multiply'; g.globalAlpha = .44;
   g.drawImage(layer, 0, 0);
   x.clearRect(0, 0, W, H);
   x.strokeStyle = '#6b4018'; trace(x);
-  x.globalCompositeOperation = 'destination-out'; x.lineWidth = 89; trace(x);
+  x.globalCompositeOperation = 'destination-out'; x.lineWidth = BASE.coffee * size.coffee - 7; trace(x);
   g.globalAlpha = .34;
   g.drawImage(layer, 0, 0);
   g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
@@ -62,9 +65,9 @@ function line(a, c, b, width, style) {
 }
 function draw(p, speed) {
   const m = [(last[0] + p[0]) / 2, (last[1] + p[1]) / 2];
-  if (tool === 'pen') line(mid, last, m, Math.max(2.2, 4.4 - speed * .05), color);
-  else if (tool === 'brush') line(mid, last, m, 20, color);
-  else if (tool === 'erase') line(mid, last, m, 34, PAPER);
+  if (tool === 'pen') line(mid, last, m, Math.max(2.2, BASE.pen - speed * .05) * size.pen, color);
+  else if (tool === 'brush') line(mid, last, m, BASE.brush * size.brush, color);
+  else if (tool === 'erase') line(mid, last, m, BASE.erase * size.erase, PAPER);
   else { wash.push(p); renderWash(); }
   mid = m; last = p;
 }
@@ -98,6 +101,7 @@ export function init() {
   document.querySelectorAll('.tool[data-tool]').forEach((b) => b.addEventListener('click', () => {
     tool = b.dataset.tool;
     document.querySelectorAll('.tool[data-tool]').forEach((o) => o.setAttribute('aria-pressed', String(o === b)));
+    showSize();
   }));
   $('pt-undo').addEventListener('click', () => { const s = undo.pop(); if (s) { g.globalCompositeOperation = 'source-over'; g.drawImage(s, 0, 0); } });
   $('pt-clear').addEventListener('click', () => { remember(); clear(); });
@@ -110,6 +114,14 @@ export function init() {
     });
   });
 
+  // The slider sets the size of whichever tool is in hand. The dot beside it is that stroke, as wide as it will be on screen.
+  const slider = $('pt-size'), dot = $('pt-dot');
+  showSize = () => {
+    slider.value = size[tool] * 100;
+    const d = Math.max(2, Math.min(24, BASE[tool] * size[tool] * canvas.clientWidth / W));
+    dot.style.cssText = `width:${d}px;height:${d}px;background:${tool === 'erase' ? '#cfc8b8' : tool === 'coffee' ? '#8a5c2e' : color}`;
+  };
+  slider.addEventListener('input', () => { size[tool] = slider.value / 100; showSize(); });
   const box = $('pt-colors');
   COLORS.forEach(([hex, name], i) => {
     const b = document.createElement('button');
@@ -119,6 +131,7 @@ export function init() {
       color = hex;
       if (tool === 'erase' || tool === 'coffee') $('pt-root').querySelector('[data-tool=pen]').click();
       box.querySelectorAll('.swatch').forEach((o) => { o.setAttribute('aria-checked', String(o === b)); o.tabIndex = o === b ? 0 : -1; });
+      showSize();
     });
     box.append(b);
   });
@@ -130,4 +143,5 @@ export function init() {
     n.click(); n.focus();
   });
   if (COLORS[0]) color = COLORS[0][0];
+  showSize();
 }

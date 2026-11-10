@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=be0b2548", "./js/beatworlds.js": "./js/beatworlds.js?v=2a5de457", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=d57315c3", "./js/observe.js": "./js/observe.js?v=42a1229f", "./js/paint.js": "./js/paint.js?v=20faf4fb", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
-<link rel="stylesheet" href="css/site.css?v=29c73a15">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=96af613f", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=08e7aba4", "./js/beatworlds.js": "./js/beatworlds.js?v=ba3038b6", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=1d461a6d", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/kitty.js": "./js/kitty.js?v=1e613b4a", "./js/main.js": "./js/main.js?v=e9cf6fa6", "./js/observe.js": "./js/observe.js?v=ebdbe8fa", "./js/paint.js": "./js/paint.js?v=0e55c193", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=14ec0b47"}}</script>
+<link rel="stylesheet" href="css/site.css?v=5520a1aa">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
@@ -112,7 +112,7 @@
 
 <nav class="icons" id="icons" aria-label="Desktop icons">
   <a class="ico" href="#about" data-open="about"><svg><use href="#i-person"/></svg><span>ABOUT_<wbr>ME.EXE</span></a>
-  <button class="ico" type="button" data-rundown aria-label="PLAY_ME.EXE, a 30-second tour"><svg aria-hidden="true"><use href="#i-rundown"/></svg><span>PLAY_<wbr>ME.EXE</span><i class="pss" id="pss"><svg viewBox="0 0 64 40" aria-hidden="true"><path d="M60 31C45 9 25 8 7 19M7 19l11-8M7 19l12 6"/></svg><b>psst... start here</b><small>30 seconds, then go play</small></i></button>
+  <button class="ico" type="button" data-rundown aria-label="PLAY_ME.EXE, a 30-second tour"><svg aria-hidden="true"><use href="#i-rundown"/></svg><span>PLAY_<wbr>ME.EXE</span></button>
   <a class="ico" href="#case" data-open="case"><svg><use href="#i-chart"/></svg><span>NCL_<wbr>CASE.DOC</span></a>
   <a class="ico" href="#observe" data-open="observe"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="url(#g-page)" stroke="#07417f" stroke-width="1.500"/><g class="eye__iris"><circle cx="24" cy="24" r="12" fill="url(#g-iris)" stroke="#07366f"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="19.500" cy="18.500" rx="4" ry="2.800" fill="#fff" opacity=".92"/></g></svg><svg class="ico__os" aria-hidden="true"><use href="#i-eye"/></svg><span>OBSERVE.EXE</span></a>
   <a class="ico" href="#resume" data-open="resume"><svg><use href="#i-pdf"/></svg><span>RESUME.PDF</span></a>
@@ -382,6 +382,7 @@
         <button class="tool" data-tool="brush" aria-pressed="false">Brush</button>
         <button class="tool" data-tool="coffee" aria-pressed="false">Coffee</button>
         <button class="tool" data-tool="erase" aria-pressed="false">Eraser</button>
+        <label class="paint__size">Size <input type="range" id="pt-size" min="30" max="300" step="10" value="100"><span class="paint__dot" aria-hidden="true"><i id="pt-dot"></i></span></label>
         <span class="paint__sep"></span>
         <button class="tool" id="pt-undo">Undo</button>
         <button class="tool" id="pt-clear">Clear</button>
@@ -508,7 +509,7 @@
   <div class="win__bar"><svg class="win__ico" aria-hidden="true"><use href="#i-rundown"/></svg><span class="win__file">PLAY_ME.EXE</span><span class="tour__count" id="tour-count"></span></div>
   <div class="tour__main">
     <div class="tour__voice" aria-hidden="true">
-      <svg class="tour__eye" viewBox="0 0 48 48"><path d="M2 24C8 12 16 7 24 7s16 5 22 17c-6 12-14 17-22 17S8 36 2 24z" fill="url(#g-page)" stroke="#07417f" stroke-width="1.500"/><g class="eye__iris"><circle cx="24" cy="24" r="12" fill="url(#g-iris)" stroke="#07366f"/><circle cx="24" cy="24" r="5.500" fill="#061a33"/><ellipse cx="19.500" cy="18.500" rx="4" ry="2.800" fill="#fff" opacity=".92"/></g></svg>
+      <canvas class="tour__kitty"></canvas>
       <div class="tour__wave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
     </div>
     <div class="tour__text">
@@ -543,6 +544,7 @@
   <div class="startmenu__cols">
     <ul>
       <li><button type="button" class="startmenu__btn" data-rundown><svg aria-hidden="true"><use href="#i-rundown"/></svg>30-second rundown</button></li>
+      <li><button type="button" class="startmenu__btn" id="replay-intro"><svg aria-hidden="true"><use href="#u-play"/></svg>Replay the intro</button></li>
       <li><a href="#about" data-open="about"><svg><use href="#i-person"/></svg>About me</a></li>
       <li><a href="#portrait" data-open="portrait"><svg><use href="#i-person"/></svg>My photo</a></li>
       <li><a href="#case" data-open="case"><svg><use href="#i-chart"/></svg>Case study</a></li>
@@ -606,7 +608,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=d57315c3"></script>
+<script type="module" src="js/main.js?v=e9cf6fa6"></script>
 <script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
 </body>
 </html>
