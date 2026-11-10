@@ -57,16 +57,6 @@ export async function readCounts() {
   } catch { return null; }
 }
 
-// One aggregate total, e.g. how many visitors called a BRING_BACK case. Null off the live site or when unreachable.
-export async function readCount(key) {
-  if (!LIVE) return null;
-  try {
-    const res = await timed(`${API}/get/${NS}/${key}`);
-    if (res.status === 404) return 0;
-    return res.ok ? Math.max(0, Number((await res.json()).value) || 0) : null;
-  } catch { return null; }
-}
-
 export function track(name, params = {}) {
   session.events.push({ t: Date.now() - session.start, name, params });
   if (session.events.length > 200) session.events.shift();

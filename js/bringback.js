@@ -1,161 +1,62 @@
-// BRING_BACK.EXE. Her study of 2014-2025 comebacks, and a round where the visitor calls a few of them blind.
-// Every number comes from assets/data/bring_back.json, which _dev/bring_back/study.py writes. Nothing here is typed in by hand.
-import { track, countOnce, readCount } from './analytics.js';
+// BRING_BACK.EXE: share of search against share of revenue for Nike, adidas and Puma, 2010 to 2026.
+// Every number comes from assets/data/share_of_search.json, which _dev/share_of_search/analysis.py writes.
+import { track } from './analytics.js';
 
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-const pct = (x) => `${Math.round(x * 100)}%`;
-const still = matchMedia('(prefers-reduced-motion: reduce)');
-const ROUND = 3, MORE = 8;
-let data, deck = [], played = [], ready = false;
+const NAME = { nike: 'Nike', adidas: 'adidas', puma: 'Puma' };
+const p1 = (v) => (v / 10).toFixed(1);   // per mille to a percent with one decimal
+let d, brand = 'adidas', cc = true, hover = null, ready = false;
 
-const said = (lasts) => (lasts ? 'Bring it back' : 'Leave it');
-const lasted = (c) => c.outcome === 'PERMANENT';
-const OUT = { PERMANENT: 'Still on sale two years on', 'RECURRING LIMITED': 'Only ever back for limited runs', 'GONE AGAIN': 'Gone again within two years' };
-const CAT = { 'food & drink': 'Food and drink', beauty: 'Beauty', sportswear: 'Sportswear' };
-
-// One line on the LCD: the product's own weekly search interest, scaled to its own peak, for the 52 weeks before the news.
-function curve(w, label) {
-  const W = 320, H = 96, P = 6, n = w.length, top = Math.max(...w, 1);
-  const x = (i) => P + i * (W - 2 * P) / (n - 1), y = (v) => H - P - v / top * (H - 2 * P - 8);
-  const d = w.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('');
-  const split = x(n - 13);
-  return `<svg class="bb__curve" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">
-    <rect class="bb__last" x="${split}" y="0" width="${W - split}" height="${H}"/>
-    <path class="bb__line" d="${d}" pathLength="1"/>
+const W = 640, H = 250, L = 34, R = 10, T = 12, B = 22;
+function chart() {
+  const m = d.months, n = m.length, sos = d.sos[brand], retro = d.retro[brand], som = (cc ? d.som_cc : d.som_usd)[brand];
+  const y0 = +m[0].slice(0, 4), x = (i) => L + i * (W - L - R) / (n - 1), xy = (yr) => x((yr - y0) * 12);
+  const vals = [...sos, ...som].filter((v) => v != null);
+  const lo = Math.floor((Math.min(...vals) - 20) / 50) * 50, hi = Math.ceil((Math.max(...vals) + 20) / 50) * 50;
+  const y = (v) => T + (hi - v) / (hi - lo) * (H - T - B);
+  const line = sos.map((v, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(v).toFixed(1)}`).join('');
+  // The retro shoes' slice: the band from the line down by the share of the brand's searches that were for them.
+  const top = sos.map((v, i) => `${x(i).toFixed(1)} ${y(v).toFixed(1)}`);
+  const bot = sos.map((v, i) => `${x(i).toFixed(1)} ${y(v * (1 - (retro[i] ?? 0) / 1000)).toFixed(1)}`).reverse();
+  const band = `M${top.join('L')}L${bot.join('L')}Z`;
+  const steps = som.map((v, i) => `${i ? 'L' : 'M'}${xy(d.years[i]).toFixed(1)} ${y(v).toFixed(1)}H${xy(d.years[i] + 1).toFixed(1)}`).join('');
+  const grid = [];
+  for (let v = lo; v <= hi; v += 50) grid.push(`<line class="bb__grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="bb__ax" x="${L - 5}" y="${y(v) + 3.5}" text-anchor="end">${v / 10}%</text>`);
+  for (let yr = 2010; yr <= 2026; yr += 4) grid.push(`<text class="bb__ax" x="${xy(yr) + 2}" y="${H - 6}">${yr}</text>`);
+  let pending = '';
+  if (brand === d.pending.brand) {   // the open call: Puma's 2026 revenue share against its 2025 level, not yet reported
+    const base = cc ? d.pending.som_2025_cc : d.pending.som_2025_usd, x1 = xy(2026), x2 = Math.min(xy(2027), W - R);
+    pending = `<path class="bb__pend" d="M${x1} ${y(base)}H${x2}"/><text class="bb__ax" x="${x2}" y="${y(base) + 14}" text-anchor="end">2026 CALL: UP</text>`;
+  }
+  const h = hover ?? n - 1, hx = x(h);
+  return `<svg class="bb__chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(NAME[brand])} share of search by month and share of revenue by year, 2010 to 2026. The yearly numbers are in the table below.">
+    ${grid.join('')}<path class="bb__band" d="${band}"/><path class="bb__steps" d="${steps}"/>${pending}<path class="bb__line" d="${line}"/>
+    <line class="bb__cross" x1="${hx}" x2="${hx}" y1="${T}" y2="${H - B}"/><circle class="bb__dot" cx="${hx}" cy="${y(sos[h])}" r="3.5"/>
   </svg>`;
 }
 
-function card(c, i) {
-  const recent = c.w.slice(-13).reduce((a, b) => a + b, 0) / 13, before = c.w.slice(0, 39).reduce((a, b) => a + b, 0) / 39;
-  const trend = recent > before * 1.15 ? 'rising' : recent < before / 1.15 ? 'falling' : 'flat';
-  return `<li class="bb__card" data-i="${i}" aria-roledescription="case" aria-label="Case ${i + 1}">
-    <div class="bb__screen">
-      <div class="bb__lcd"><span>CASE ${String(i + 1).padStart(2, '0')}</span><span>${esc(CAT[c.cat] || c.cat).toUpperCase()}</span></div>
-      ${curve(c.w, `Search interest for an unnamed ${CAT[c.cat]?.toLowerCase() || c.cat} product over the 12 months before its comeback was announced. Its last three months are ${trend} compared with the nine before.`)}
-      <div class="bb__lcd bb__lcd--axis"><span>12 MONTHS BEFORE THE NEWS</span><span>LAST 3</span></div>
-    </div>
-    <p class="bb__ask">A ${esc((CAT[c.cat] || c.cat).toLowerCase())} comeback, announced ${esc(c.announced.slice(0, 4))}. Will it last?</p>
-    <div class="actions bb__pick">
-      <button class="gel gel--go" type="button" data-pick="1">Bring it back</button>
-      <button class="gel" type="button" data-pick="0">Leave it</button>
-    </div>
-    <div class="bb__reveal" hidden></div>
-  </li>`;
+function readout() {
+  const i = hover ?? d.months.length - 1, mo = d.months[i], yi = d.years.indexOf(+mo.slice(0, 4));
+  const som = yi < 0 ? null : (cc ? d.som_cc : d.som_usd)[brand][yi], r = d.retro[brand][i];
+  return `<span>${mo}</span><span>SEARCH ${p1(d.sos[brand][i])}%</span><span>RETRO ${r == null ? '-' : Math.round(r / 10)}%</span><span>REVENUE ${som == null ? 'NOT YET' : `${p1(som)}%`}</span>`;
 }
 
-function reveal(li, c, pick) {
-  const right = pick === lasted(c), rule = c.call === 'LASTS', ruleRight = rule === lasted(c);
-  played.push({ right, ruleRight, base: (data.result.majority_call === 'LASTS') === lasted(c), other: (data.result.majority_call !== 'LASTS') === lasted(c) });
-  track('bb_guess', { case: c.id, said: pick ? 'back' : 'leave', right });
-  countOnce(`bb_${c.id}_${pick ? 'y' : 'n'}`);
-  const box = li.querySelector('.bb__reveal');
-  li.querySelector('.bb__pick').hidden = true;
-  li.querySelector('.bb__ask').hidden = true;
-  li.classList.add('is-shown');
-  box.innerHTML = `
-    <h3>${esc(c.name)} <span class="bb__yr">${esc(c.announced.slice(0, 7))}</span></h3>
-    <p class="bb__out"><b>${esc(OUT[c.outcome])}.</b> ${esc(c.note)}</p>
-    <dl class="cells bb__calls">
-      <div><dt>You said</dt><dd>${said(pick)}</dd><dd class="bb__mark">${right ? 'Right' : 'Wrong'}</dd></div>
-      <div><dt>Her rule said</dt><dd>${said(rule)}</dd><dd class="bb__mark">${ruleRight ? 'Right' : 'Wrong'}</dd></div>
-    </dl>
-    <p class="note">Interest in the last 3 months ran at ${c.ratio.toFixed(2)}x the 9 before, against its brand${c.wiki ? `, from Wikipedia views of the "${esc(c.wiki)}" article${c.wiki !== c.name ? ', which covers the whole line, not just this model' : ''}` : ''}. The rule says bring it back at ${data.threshold.toFixed(2)}x or more.${c.band === 'train' ? ' This case helped set that line.' : ' This case was held out: the line was set without it.'}
-      <span class="bb__crowd" data-id="${esc(c.id)}"></span> <a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a></p>
-    <div class="actions"><button class="gel gel--go" type="button" data-next>${played.length === $('bb-deck').children.length ? 'See the score' : 'Next case'}</button></div>`;
-  crowd(box.querySelector('.bb__crowd'), c.id);
-  box.hidden = false;
-  box.querySelector('[data-next]').focus({ preventScroll: true });
+function draw() {
+  $('bb-screen').innerHTML = `<div class="bb__lcd">${readout()}</div>${chart()}`;
+  for (const b of document.querySelectorAll('#bringback [data-brand]')) b.setAttribute('aria-pressed', String(b.dataset.brand === brand));
+  for (const b of document.querySelectorAll('#bringback [data-cc]')) b.setAttribute('aria-pressed', String((b.dataset.cc === '1') === cc));
+  $('bb-table').innerHTML = `<thead><tr><th>Year</th><th>Search share</th><th>Revenue share, constant currency</th><th>Revenue share, US dollars</th></tr></thead><tbody>${d.years.map((yr, i) => {
+    const ms = d.months.map((m, j) => [m, j]).filter(([m]) => +m.slice(0, 4) === yr).map(([, j]) => d.sos[brand][j]);
+    return `<tr><td>${yr}</td><td>${p1(ms.reduce((a, b) => a + b, 0) / ms.length)}%</td><td>${p1(d.som_cc[brand][i])}%</td><td>${p1(d.som_usd[brand][i])}%</td></tr>`;
+  }).join('')}</tbody>`;
+  $('bb-table-cap').textContent = `${NAME[brand]}, as a share of the three brands. Search share here is the average of each year's months, so it can differ from the study's summed figure by a tenth.`;
 }
 
-// The crowd line only appears once enough visitors have called this case, and it never says who.
-async function crowd(el, id) {
-  const [y, n] = await Promise.all([readCount(`bb_${id}_y`), readCount(`bb_${id}_n`)]);
-  if (y == null || n == null || y + n < 10) return;
-  el.textContent = `${pct(y / (y + n))} of ${y + n} visitors said bring it back.`;
-}
-
-function score() {
-  const k = played.length, you = played.filter((p) => p.right).length, rule = played.filter((p) => p.ruleRight).length, base = played.filter((p) => p.base).length, other = played.filter((p) => p.other).length;
-  const left = deck.length - k;
-  $('bb-score').innerHTML = `
-    <ul class="lcds">
-      <li><b>${you}/${k}</b><span>You</span></li>
-      <li><b>${rule}/${k}</b><span>Her rule</span></li>
-      <li><b>${base}/${k}</b><span>Saying "${said(data.result.majority_call === 'LASTS').toLowerCase()}" every time</span></li>
-      <li><b>${other}/${k}</b><span>Saying "${said(data.result.majority_call !== 'LASTS').toLowerCase()}" every time</span></li>
-    </ul>
-    <div class="actions">${left > 0 ? `<button class="gel" type="button" id="bb-more">${Math.min(MORE, left)} more</button>` : ''}<button class="gel" type="button" id="bb-study">Read the study</button></div>`;
-  $('bb-score').hidden = false;
-  $('bb-more')?.addEventListener('click', () => deal(MORE));
-  $('bb-study').addEventListener('click', () => { $('bb-paper').open = true; $('bb-paper').scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'start' }); });
-  track('bb_score', { you, rule, of: k });
-}
-
-function deal(n) {
-  const list = $('bb-deck'), from = list.children.length;
-  const next = deck.slice(from, from + n);
-  if (!next.length) return;
-  list.insertAdjacentHTML('beforeend', next.map((c, j) => card(c, from + j)).join(''));
-  $('bb-score').hidden = true;
-  go(list.children[from]);
-}
-
-// Cards that aren't current are inert as well as faded, so the peeking card's buttons can't be clicked or tabbed to.
-const mark = (li) => { if (li) for (const c of $('bb-deck').children) { c.classList.toggle('is-current', c === li); c.inert = c !== li; } };
-function go(li) {
-  if (!li) return;
-  const list = $('bb-deck');
-  mark(li);
-  list.scrollTo({ left: li.offsetLeft - list.offsetLeft, behavior: still.matches ? 'auto' : 'smooth' });
-  li.querySelector('[data-pick], [data-next]')?.focus({ preventScroll: true });
-}
-
-// The base call is named, and so is the opposite guess, because an interviewer will ask about both.
-const baseGuess = (r) => `always saying "${said(r.majority_call === 'LASTS').toLowerCase()}"`;
-const otherGuess = (r) => `always saying "${said(r.majority_call !== 'LASTS').toLowerCase()}"`;
-const method = (r) => `The rules were written down and dated before any of the cases' search data was downloaded, then tested once on ${r.holdout_n} comebacks the rule had never seen.`;
-function finding(r) {
-  const [lo, hi] = r.rule_ci.map(pct);
-  const vs = r.rule_hits > r.base_hits ? 'more than' : r.rule_hits === r.base_hits ? 'the same as' : 'fewer than';
-  return `Search before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
-}
-const otherLine = (r) => `${r.holdout_lasted} of the ${r.holdout_n} held-out comebacks lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits} of ${r.holdout_n}.`;
-const nextLine = 'A rise in search before launch is common, so it isn\'t a green light on its own (exploratory). What I\'d test next is whether demand holds after launch.';
-const risingLine = (d) => {
-  const [a, n1] = d.rising.lasted, [b, n2] = d.rising.faded, m = d.rising15.lasted[0] + d.rising15.faded[0];
-  return `Interest was at least a little higher, compared with the brand, before ${a + b} of ${n1 + n2} comebacks (${m} of ${n1 + n2} by more than 15%): ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is common, so on its own it doesn't separate them (exploratory).`;
-};
-
-// How many dated (unscored) calls have passed 24 months by the day the data was made.
-const past = (rows) => rows.filter((c) => c.band === 'check back 2027' && `${+c.announced.slice(0, 4) + 2}${c.announced.slice(4)}` <= data.made).length;
-
-function paper() {
-  const r = data.result, rows = data.cases;
-  const tr = (c) => `<tr class="${c.band === 'holdout' ? 'is-hold' : ''}"><td>${esc(c.name)}</td><td>${esc(c.announced.slice(0, 7))}</td><td>${c.ratio.toFixed(2)}</td><td>${c.call === 'LASTS' ? 'Lasts' : 'Fades'}</td><td>${c.band === 'check back 2027' ? 'Not scored' : esc(OUT[c.outcome])}</td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a></td></tr>`;
-  const band = (b, h) => `<h3>${h}</h3><div class="tbl-wrap"><table><thead><tr><th>Comeback</th><th>Announced</th><th>Ratio</th><th>Rule</th><th>What happened</th><th></th></tr></thead><tbody>${rows.filter((c) => c.band === b).map(tr).join('')}</tbody></table></div>`;
-  return `
-    <summary><h2>The study</h2></summary>
-    <p><b>Question.</b> When fans are already looking a product up before a brand says it's coming back, does the comeback last?</p>
-    <p><b>Cases.</b> ${r.sourced} US comebacks from 2014 to 2025 in food and drink, beauty and sportswear, each with a sourced announcement date and a sourced outcome for those from 2014 to 2023. The rules left 2024 and 2025 out of the score before any data was pulled, so those get a dated call only. I went looking for flops on purpose, so this isn't a list of winners. ${rows.length} had enough search data to measure; the rest are listed with the reason in the study files.</p>
-    <p><b>Outcome</b>, from what the company did in the 24 months after announcing: still on sale (lasted), back only for limited runs, or gone again. I wrote these rules down and dated them before pulling any case's curve.</p>
-    <p><b>Signal.</b> Weekly Google search interest in the US for the 12 months before the news. The last 3 months divided by the 9 before, then divided by the same number for the parent brand, so a brand that's growing anyway doesn't count. Wikipedia pageviews stand in where search is too thin to read. This measures attention, not sales.</p>
-    <p><b>Test.</b> I set the line (${data.threshold.toFixed(2)}x) on the ${r.train_n} comebacks from 2014 to 2020, then scored it once on the ${r.holdout_n} from 2021 to 2023 without changing it.</p>
-    <ul class="lcds lcds--sm">
-      <li><b>${r.rule_hits}/${r.holdout_n}</b><span>Her rule, held-out cases</span></li>
-      <li><b>${r.base_hits}/${r.holdout_n}</b><span>Always "${said(r.majority_call === 'LASTS').toLowerCase()}"</span></li>
-      <li><b>${r.holdout_n - r.base_hits}/${r.holdout_n}</b><span>Always "${said(r.majority_call !== 'LASTS').toLowerCase()}"</span></li>
-      <li><b>${pct(r.rule_ci[0])}-${pct(r.rule_ci[1])}</b><span>95% bootstrap range</span></li>
-    </ul>
-    <p class="verdict">${esc(method(r))} ${esc(finding(r))} ${esc(otherLine(r))} With ${r.holdout_n} held-out cases, one comeback moves the hit rate by ${Math.round(100 / r.holdout_n)} points, so read it with its range.</p>
-    <p>Of the ${r.train_n} older cases, ${r.train_lasted} lasted${r.train_lasted * 2 === r.train_n ? `, an even split, so the base call came from a tie rule set in advance: a tie means "${said(false).toLowerCase()}"` : ''}.</p>
-    <h3>What did show up (exploratory)</h3>
-    <p>${esc(risingLine(data))} Found after the test, so it's a lead to check, not a result. Only comebacks that happened were studied, so it can't say whether a rise means one is coming; leaks and teasers before the official date may add to it.</p>
-    ${band('holdout', 'Held out, 2021 to 2023')}
-    ${band('train', 'Used to set the line, 2014 to 2020')}
-    ${band('check back 2027', `Dated calls, 2024 and 2025, never scored`)}
-    <p>The rules fixed these as unscored before any data, so they never count toward the result. ${past(rows)} of the ${r.forward_n} are now past their 24-month mark.</p>
-    <p class="note">The dated rules, every source, the weekly data and the script that rebuilds these numbers are in the study files. Made ${esc(data.made)}.</p>`;
+function hoverAt(e) {
+  const svg = $('bb-screen').querySelector('svg'), r = svg.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * W;
+  hover = Math.max(0, Math.min(d.months.length - 1, Math.round((fx - L) / (W - L - R) * (d.months.length - 1))));
+  draw();
 }
 
 export async function init() {
@@ -164,39 +65,54 @@ export async function init() {
   try {
     const res = await fetch($('bringback').dataset.src);
     if (!res.ok) throw new Error(res.status);
-    data = await res.json();
+    d = await res.json();
   } catch {
     ready = false;
     $('bb-root').querySelector('.insight').textContent = "The study data didn't load. Close this window and try again.";
     return;
   }
-  // Held-out cases first: the rule never saw them, so its score on them is the honest one. Then the rest, shuffled.
-  const shuffle = (a) => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
-  const scored = data.cases.filter((c) => c.band !== 'check back 2027');
-  deck = [...shuffle(scored.filter((c) => c.band === 'holdout')), ...shuffle(scored.filter((c) => c.band === 'train'))];
+  const b = d.binet, pend = d.pending, ad = d.som_cc.adidas, yi = (yr) => d.years.indexOf(yr);
+  const up24 = p1(ad[yi(2024)] - ad[yi(2023)]), up25 = p1(ad[yi(2025)] - ad[yi(2024)]);
   $('bb-root').innerHTML = `
-    <h2 id="bb-h">Can fans call a comeback?</h2>
-    <p class="insight">${esc(finding(data.result))}</p>
-    <p>${esc(method(data.result))} Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
-    <ol class="bb__deck" id="bb-deck" aria-label="Cases"></ol>
-    <p>${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
-    <p><b>For a brand team.</b> ${esc(nextLine)}</p>
-    <div class="bb__score" id="bb-score" hidden></div>
-    <details class="bb__paper" id="bb-paper">${paper()}</details>`;
-  const list = $('bb-deck');
-  list.addEventListener('scroll', () => {   // a swipe moves the current case too
-    const [a, b] = list.children, step = b ? b.offsetLeft - a.offsetLeft : 1;
-    mark(list.children[Math.round(list.scrollLeft / step)]);
-  }, { passive: true });
-  list.addEventListener('click', (e) => {
-    const b = e.target.closest('button'), li = b?.closest('.bb__card');
-    if (!li) return;
-    if (b.dataset.pick) reveal(li, deck[+li.dataset.i], b.dataset.pick === '1');
-    else if ('next' in b.dataset) {
-      b.disabled = true;
-      if (played.length === list.children.length) { score(); $('bb-score').scrollIntoView({ behavior: still.matches ? 'auto' : 'smooth', block: 'nearest' }); ($('bb-more') || $('bb-study')).focus({ preventScroll: true }); }
-      else go(li.nextElementSibling);
-    }
+    <h2 id="bb-h">Share of search vs share of revenue</h2>
+    <p class="insight">adidas's terrace shoes went from about 1% to 20% of adidas searches. Its share of search jumped about 6 points, and its revenue share rose ${up24} points in 2024 and ${up25} more in 2025.</p>
+    <div class="bb__tools">
+      <div class="bb__seg" role="group" aria-label="Brand">${Object.keys(NAME).map((k) => `<button type="button" class="pill" data-brand="${k}">${NAME[k]}</button>`).join('')}</div>
+      <div class="bb__seg" role="group" aria-label="Currency"><button type="button" class="pill" data-cc="1">Constant currency</button><button type="button" class="pill" data-cc="0">US dollars</button></div>
+    </div>
+    <div class="bb__screen" id="bb-screen" tabindex="0" aria-label="Chart. Left and right arrows move through the months."></div>
+    <ul class="bb__key">
+      <li><svg viewBox="0 0 24 10" aria-hidden="true"><path class="bb__line" d="M1 6 L8 3 L15 7 L23 2"/></svg>Share of search, monthly</li>
+      <li><svg viewBox="0 0 24 10" aria-hidden="true"><path class="bb__steps" d="M1 7H12V3H23"/></svg>Share of revenue, yearly</li>
+      <li><svg viewBox="0 0 24 10" aria-hidden="true"><rect class="bb__band" x="1" y="2" width="22" height="7"/></svg>Retro shoes' slice of the brand's searches</li>
+    </ul>
+    <p class="note">Shares of the three brands. Retro shoes: ${Object.keys(NAME).map((k) => `${NAME[k]} ${d.franchises[k].join(', ')}`).join('; ')}. Searches from Google Trends, worldwide; revenue from annual reports and 10-Ks.</p>
+    <h3>What I found</h3>
+    <ul class="bb__finds">
+      <li><b>Search share moves with revenue share, but it isn't a forecast.</b> In constant currency, search share running ahead of revenue share was followed by revenue share rising the next year only weakly (r = ${b.cc.r.toFixed(2)}, ${b.cc.n} brand-years), and it barely beat guessing "no change": ${b.cc.loyo.toFixed(2)} against ${b.cc.naive.toFixed(2)} points of error. <span class="bb__tag">Confirmatory</span></li>
+      <li><b>One retro wave moved a brand.</b> adidas's terrace shoes reached a fifth of adidas searches in 2024, and adidas's search share and revenue share both rose. One case. <span class="bb__tag">Exploratory</span></li>
+      <li><b>Nike's classics are fading with its search share.</b> Dunk, Air Force 1 and Jordan 1 fell from 22% of Nike searches in 2021 to 11% in 2025, as Nike's share of search fell from 62% to 54%. <span class="bb__tag">Exploratory</span></li>
+    </ul>
+    <h3>The currency trap I caught</h3>
+    <p>In US dollars the test looked strong: r = ${b.usd.r.toFixed(2)}, with ${b.usd.loyo.toFixed(2)} points of error against ${b.usd.naive.toFixed(2)} for guessing "no change". But adidas and Puma report in euros. When the euro rises, their share of dollar revenue rises without one extra sale, and search doesn't follow exchange rates. With the euro held at one rate, 1.15 dollars, most of that edge went away, so I report the weaker version.</p>
+    <h3>My open call</h3>
+    <p>Puma's share of search in 2026 so far is ${p1(pend.sos_2026)}%, against a 2025 revenue share of ${p1(pend.som_2025_cc)}%. If search leads, its 2026 revenue share should rise above that. Called ${esc(pend.made)}, scored ${esc(pend.scored)}. It's a weak call: Puma is where the signal is weakest, and "puma" also catches the animal.</p>
+    <details class="bb__data"><summary>The yearly numbers</summary><p class="note" id="bb-table-cap"></p><div class="tbl-wrap"><table id="bb-table"></table></div></details>
+    <p class="note">Method, every source and the script that rebuilds these numbers: <a href="https://github.com/tahsinanan15/tahsinanan15.github.io/tree/main/_dev/share_of_search" target="_blank" rel="noopener">the study files</a>.</p>`;
+  $('bb-root').addEventListener('click', (e) => {
+    const t = e.target.closest('[data-brand], [data-cc]');
+    if (!t) return;
+    if (t.dataset.brand) brand = t.dataset.brand; else cc = t.dataset.cc === '1';
+    hover = null; draw();
+    track('bb_view', { brand, currency: cc ? 'constant' : 'usd' });
   });
-  deal(ROUND);
+  const scr = $('bb-screen');
+  scr.addEventListener('pointermove', hoverAt);
+  scr.addEventListener('pointerleave', () => { hover = null; draw(); });
+  scr.addEventListener('keydown', (e) => {
+    const step = { ArrowLeft: -1, ArrowRight: 1, PageUp: -12, PageDown: 12 }[e.key];
+    if (!step) return;
+    e.preventDefault(); hover = Math.max(0, Math.min(d.months.length - 1, (hover ?? d.months.length - 1) + step)); draw();
+  });
+  draw();
 }

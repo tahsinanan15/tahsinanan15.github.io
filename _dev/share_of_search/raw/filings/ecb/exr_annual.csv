@@ -1,0 +1,18 @@
+KEY,FREQ,CURRENCY,CURRENCY_DENOM,EXR_TYPE,EXR_SUFFIX,TIME_PERIOD,OBS_VALUE,OBS_STATUS,OBS_CONF,OBS_PRE_BREAK,OBS_COM,TIME_FORMAT,BREAKS,COLLECTION,COMPILING_ORG,DISS_ORG,DOM_SER_IDS,PUBL_ECB,PUBL_MU,PUBL_PUBLIC,UNIT_INDEX_BASE,COMPILATION,COVERAGE,DECIMALS,NAT_TITLE,SOURCE_AGENCY,SOURCE_PUB,TITLE,TITLE_COMPL,UNIT,UNIT_MULT
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2009,1.394782421875,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2010,1.3257166666667,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2011,1.3919552529183,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2012,1.284788671875,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2013,1.3281180392157,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2014,1.3285007843137,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2015,1.109512890625,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2016,1.1069031128405,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2017,1.1296811764706,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2018,1.1809545098039,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2019,1.1194745098039,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2020,1.1421961089494,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2021,1.1827403100775,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2022,1.0530486381323,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2023,1.081268627451,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2024,1.08238046875,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0
+EXR.A.USD.EUR.SP00.A,A,USD,EUR,SP00,A,2025,1.1299831372549,A,F,,,P1Y,,A,,,,,,,,,,4,,4F0,,US dollar/Euro ECB reference exchange rate,"ECB reference exchange rate, US dollar/Euro, 2.15 pm (C.E.T.)",USD,0

@@ -3,3 +3,8 @@ _dev/check.mjs
 _dev/hooks/
 .impeccable/
 .claude/
+_dev/share_of_search/.venv/
+# share of search: original filings are re-downloadable from the URLs in revenue.csv; their text extracts are kept
+_dev/share_of_search/raw/filings/**/*.htm
+_dev/share_of_search/raw/filings/**/*.pdf
+_dev/share_of_search/raw/filings/*.json
