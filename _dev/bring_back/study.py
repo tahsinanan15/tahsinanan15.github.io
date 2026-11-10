@@ -21,6 +21,7 @@ SITE_JSON = HERE.parent.parent / 'assets' / 'data' / 'bring_back.json'
 UA = 'BringBackStudy/1.0 (portfolio analysis; contact via github.com/tahsinanan15)'
 TRAIN, HOLD = (2014, 2020), (2021, 2023)
 EMPTY = {'reebok_aztrek', 'nike_air_max_1_86_big_bubble'}   # Google Trends exported no rows at all for these terms (too little search)
+UNMEASURED = {'cajun_rice': "the hand export came back for the wrong term ('cajun rice'), so it was not used; unmeasured (RUBRIC addendum 2026-11-10)"}
 
 
 def announce_day(s):
@@ -200,8 +201,10 @@ def main():
         status, why = c['status'], c['drop_reason']
         if status == 'in' and not m.get('source'):
             got = (RAW / f"{c['id']}.own_p.csv").exists() or c['id'] in EMPTY
-            status, why = 'dropped', ('attention series too thin: Google Trends had too little data and there is no Wikipedia article for the product (RUBRIC data rule)'
-                                      if got else 'the Google Trends series for the planned search term could not be downloaded (rate limit); not yet measured')
+            wiki = (f"the Wikipedia article '{c['wiki_article']}' had no pageviews for the window" if c['wiki_article']
+                    else 'there is no Wikipedia article for the product')
+            status, why = 'dropped', (f'attention series too thin: Google Trends had too little data and {wiki} (RUBRIC data rule)' if got
+                                      else UNMEASURED.get(c['id'], 'the Google Trends series for the planned search term was not downloaded; not yet measured'))
         rows.append({**c, 'status': status, 'drop_reason': why, 'band': band, **{k: v for k, v in m.items() if k != 'curve'}, '_curve': m.get('curve'),
                      'lasted': None if c['outcome'] == 'CHECK BACK 2027' else int(c['outcome'] == 'PERMANENT')})
     use = [r for r in rows if r['status'] == 'in']
@@ -242,6 +245,7 @@ def write_outputs(rows, use, res):
         w = csv.writer(f); w.writerow(['id', 'source'] + [f'w{i - 52}' for i in range(52)])
         for r in use: w.writerow([r['id'], r['source']] + [int(x) for x in r['_curve']])
     P = lambda x: f'{x * 100:.0f}%'
+    sj = res['sensitivity_joint']
     lines = [f"# BRING_BACK results (computed {date.today()})", '',
              f"Threshold chosen on {res['train_n']} cases announced 2014-2020: call LASTS when the pre-trend ratio is at least {res['threshold']:.3f} "
              f"({P(res['train_acc'])} correct in training; {res['train_lasted']} of {res['train_n']} lasted, so the base call is {res['majority_call']}).", '',
@@ -250,7 +254,9 @@ def write_outputs(rows, use, res):
              f"| Her rule | {res['rule_hits']}/{res['holdout_n']} | {P(res['rule_rate'])} | {P(res['rule_ci'][0])} to {P(res['rule_ci'][1])} |",
              f"| Base rate (always {res['majority_call']}) | {res['base_hits']}/{res['holdout_n']} | {P(res['base_rate'])} | |",
              f"| Difference | | {res['rule_rate'] * 100 - res['base_rate'] * 100:+.0f} points | {res['diff_ci'][0] * 100:+.0f} to {res['diff_ci'][1] * 100:+.0f} points |", '',
-             f"Sensitivity (same-request Trends version): threshold {res['sensitivity_joint']['threshold']}, holdout hit rate {res['sensitivity_joint']['hit_rate']} on n = {res['sensitivity_joint']['holdout_n']}.", '',
+             f"Always calling the other outcome ({'FADES' if res['majority_call'] == 'LASTS' else 'LASTS'}) would have scored {res['holdout_n'] - res['base_hits']}/{res['holdout_n']} on the holdout.", '',
+             (f"Sensitivity (same-request Trends version): threshold {sj['threshold']:.3f}, holdout hit rate {P(sj['hit_rate'])} on n = {sj['holdout_n']}." if sj['holdout_n']
+              else 'Sensitivity (same-request Trends version): not run (see RUBRIC addendum 2026-11-10).'), '',
              f"{res['forward_n']} cases from 2024-2025 have dated calls, check back 2027. {res['dropped']} candidates dropped, reasons in the CSV.", '',
              '| case | announced | band | ratio | call | outcome | correct |', '|---|---|---|---|---|---|---|']
     lines += [f"| {r['product']} | {r['announced']} | {r['band']} | {r['ratio']:.2f} | {r['call']} | {r['outcome']} | {r['correct']} |" for r in sorted(use, key=lambda r: r['announced'])]
@@ -266,11 +272,11 @@ def write_outputs(rows, use, res):
         lines.append(f"| {name} ({g[0]['ratio']:.2f} to {g[-1]['ratio']:.2f}) | {sum(r['lasted'] for r in g)} | {len(g)} |")
     (HERE / 'results.md').write_text('\n'.join(lines) + '\n')
     site = dict(made=str(date.today()), threshold=round(res['threshold'], 3), result={k: res[k] for k in
-                ('train_n', 'holdout_n', 'holdout_lasted', 'rule_hits', 'base_hits', 'majority_call', 'forward_n', 'sourced')} |
+                ('train_n', 'train_lasted', 'holdout_n', 'holdout_lasted', 'rule_hits', 'base_hits', 'majority_call', 'forward_n', 'sourced')} |
                 {'rule_ci': [round(x, 2) for x in res['rule_ci']], 'diff_ci': [round(x, 2) for x in res['diff_ci']]},
                 rising={k: [int(sum(r['ratio'] > 1 for r in g)), len(g)] for k, g in (('lasted', [r for r in use if r['lasted'] == 1]), ('faded', [r for r in use if r['lasted'] == 0]))},
                 cases=[dict(id=r['id'], name=r['product'], brand=r['brand'], cat=r['category'], announced=r['announced'], band=r['band'],
-                            outcome=r['outcome'], note=r['outcome_note'], url=r['outcome_url'], src=r['source'], ratio=round(r['ratio'], 2), call=r['call'],
+                            outcome=r['outcome'], note=r['outcome_note'], url=r['outcome_url'], src=r['source'], wiki=r['wiki_article'] if r['source'] == 'Wikipedia pageviews' else None, ratio=round(r['ratio'], 2), call=r['call'],
                             w=[int(round(x / max(r['_curve'].max(), 1) * 99)) for x in r['_curve']]) for r in sorted(use, key=lambda r: r['announced'])])
     SITE_JSON.write_text(json.dumps(site, separators=(',', ':'), ensure_ascii=False))
 

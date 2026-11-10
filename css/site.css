@@ -344,7 +344,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__card:only-child { flex-basis: 100%; }
 .bb__screen { padding: 8px 10px 6px; background: var(--lcd-bg); border: 1px solid #03101f; border-radius: 6px; box-shadow: inset 0 1px 4px rgba(0, 0, 0, .8), 0 1px var(--rule); }
 .bb__lcd { display: flex; justify-content: space-between; gap: 8px; color: var(--lcd-fg); font: 400 16px/20px var(--pixel); text-shadow: 0 0 6px var(--lcd-glow); }
-.bb__lcd--axis { color: var(--lcd-sub); font-size: 8px; line-height: 12px; }
+.bb__lcd--axis { color: var(--lcd-sub); font: 400 13px/16px var(--body); text-shadow: none; }
+:root[data-theme=aero] .bb__lcd--axis { font: 400 8px/12px var(--pixel); }   /* 8px only in Silkscreen; the other OSes' --pixel faces blur that small */
+.bb__card:not(.is-current) > :not(.bb__screen) { opacity: 0; transition: opacity .2s; }   /* only the next case's screen peeks in */
 .bb__curve { width: 100%; height: auto; margin: 4px 0 2px; overflow: visible; }
 .bb__line { fill: none; stroke: var(--lcd-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--lcd-glow)); vector-effect: non-scaling-stroke; }
 .bb__last { fill: color-mix(in srgb, var(--lcd-fg) 10%, transparent); }

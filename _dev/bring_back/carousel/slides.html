@@ -8,12 +8,12 @@
 <style>
   html, body { width: 540px; height: 675px; margin: 0; overflow: hidden; }
   html.js body { position: relative; background: #2f8fe0 var(--wall) center/cover; }
-  .slide { position: absolute; inset: 0 0 34px; display: grid; align-content: center; padding: 22px 20px 18px; }
+  .slide { position: absolute; inset: 0 0 34px; display: grid; align-content: start; padding: 40px 20px 18px; }   /* same top on every slide, so the title bar doesn't jump on a swipe */
   .slide .win { position: relative; display: flex; flex-direction: column; box-shadow: var(--win-shadow-on); }
   .slide .win__bar { height: 30px; }
   .slide .win__file { font-size: 16px; }
   .slide .win__body { padding: 16px 16px 14px; }
-  .slide .win__status { font-size: 11px; }
+  .slide .win__status { font-size: 13px; }
   .dots { margin-left: auto; display: flex; gap: 4px; }
   .dots i { width: 7px; height: 7px; background: rgba(255, 255, 255, .45); border-radius: 50%; }
   .dots i.on { background: #fff; }
@@ -21,10 +21,10 @@
   h2.s { margin: 0 0 8px; color: var(--heading); font: 700 26px/1.1 var(--display); text-wrap: balance; }
   .lede { margin: 0 0 10px; color: var(--ink); font: 400 15.5px/1.45 var(--body); text-wrap: pretty; }
   .lede b { color: var(--heading); }
-  .small { margin: 8px 0 0; color: var(--ink-2); font: 400 11.5px/1.35 var(--body); }
+  .small { margin: 8px 0 0; color: var(--ink-2); font: 400 13px/1.35 var(--body); }
   .scr { padding: 8px 10px 6px; background: var(--lcd-bg); border: 1px solid #03101f; border-radius: 6px; box-shadow: inset 0 1px 4px rgba(0, 0, 0, .8); }
   .lcdrow { display: flex; justify-content: space-between; gap: 8px; color: var(--lcd-fg); font: 400 16px/20px var(--pixel); text-shadow: 0 0 6px var(--lcd-glow); }
-  .lcdrow.sub { color: var(--lcd-sub); font-size: 8px; line-height: 12px; }
+  .lcdrow.sub { color: var(--lcd-sub); font-size: 16px; line-height: 20px; }
   .curve { display: block; width: 100%; height: auto; margin: 4px 0 2px; overflow: visible; }
   .curve .ln { fill: none; stroke: var(--lcd-fg); stroke-width: 2.2; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--lcd-glow)); }
   .curve .last { fill: color-mix(in srgb, var(--lcd-fg) 12%, transparent); }
@@ -35,7 +35,7 @@
   .lcds span { font-size: 12.5px; }
   .calls { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 10px 0 0; }
   .calls div { padding: 7px 10px 6px; background: var(--tint); border-radius: 5px; }
-  .calls dt { color: var(--ink-2); font-size: 11.5px; line-height: 1.2; }
+  .calls dt { color: var(--ink-2); font-size: 13px; line-height: 1.2; }
   .calls dd { margin: 2px 0 0; color: var(--heading); font: 700 17px/1.15 var(--display); }
   .steps { display: grid; gap: 8px; margin: 10px 0 0; padding: 0; list-style: none; counter-reset: s; }
   .steps li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; align-items: start; font: 400 14px/1.35 var(--body); }

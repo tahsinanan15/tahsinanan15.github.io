@@ -60,7 +60,7 @@ function reveal(li, c, pick) {
       <div><dt>You said</dt><dd>${said(pick)}</dd><dd class="bb__mark">${right ? 'Right' : 'Wrong'}</dd></div>
       <div><dt>Her rule said</dt><dd>${said(rule)}</dd><dd class="bb__mark">${ruleRight ? 'Right' : 'Wrong'}</dd></div>
     </dl>
-    <p class="note">Interest in the last 3 months ran at ${c.ratio.toFixed(2)}x the 9 before, against its brand${c.src === 'Wikipedia pageviews' ? ', from Wikipedia pageviews' : ''}. The rule says bring it back at ${data.threshold.toFixed(2)}x or more.${c.band === 'train' ? ' This case helped set that line.' : ' This case was held out: the line was set without it.'}
+    <p class="note">Interest in the last 3 months ran at ${c.ratio.toFixed(2)}x the 9 before, against its brand${c.wiki ? `, from Wikipedia views of the "${esc(c.wiki)}" article${c.wiki !== c.name ? ', which covers the whole line, not just this model' : ''}` : ''}. The rule says bring it back at ${data.threshold.toFixed(2)}x or more.${c.band === 'train' ? ' This case helped set that line.' : ' This case was held out: the line was set without it.'}
       <span class="bb__crowd" data-id="${esc(c.id)}"></span> <a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a></p>
     <div class="actions"><button class="gel gel--go" type="button" data-next>${played.length === $('bb-deck').children.length ? 'See the score' : 'Next case'}</button></div>`;
   crowd(box.querySelector('.bb__crowd'), c.id);
@@ -100,21 +100,27 @@ function deal(n) {
   go(list.children[from]);
 }
 
+const mark = (li) => { for (const c of $('bb-deck').children) c.classList.toggle('is-current', c === li); };
 function go(li) {
   if (!li) return;
   const list = $('bb-deck');
+  mark(li);
   list.scrollTo({ left: li.offsetLeft - list.offsetLeft, behavior: still.matches ? 'auto' : 'smooth' });
   li.querySelector('[data-pick], [data-next]')?.focus({ preventScroll: true });
 }
 
+// The base call is named, and so is the opposite guess, because an interviewer will ask about both.
+const baseGuess = (r) => `always saying "${said(r.majority_call === 'LASTS').toLowerCase()}"`;
+const otherGuess = (r) => `always saying "${said(r.majority_call !== 'LASTS').toLowerCase()}"`;
 function finding(r) {
   const [lo, hi] = r.rule_ci.map(pct);
-  const verb = r.rule_hits > r.base_hits ? 'beat' : r.rule_hits === r.base_hits ? 'tied with' : 'lost to';
-  return `Rising fan interest didn't predict which comebacks last: ${r.rule_hits} of ${r.holdout_n} held-out calls right, ${verb} guessing (range ${lo} to ${hi}).`;
+  const vs = r.rule_hits > r.base_hits ? 'more than' : r.rule_hits === r.base_hits ? 'the same as' : 'fewer than';
+  return `The rules were dated before any data was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Buzz before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right, ${vs} ${baseGuess(r)} (range ${lo} to ${hi}).`;
 }
+const otherLine = (r) => `${r.holdout_lasted} of those ${r.holdout_n} lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits}.`;
 const risingLine = (d) => {
   const [a, n1] = d.rising.lasted, [b, n2] = d.rising.faded;
-  return `Interest rose before ${a + b} of ${n1 + n2} comebacks: ${a} of the ${n1} that lasted, and ${b} of the ${n2} that didn't. It tells you a comeback is coming, not whether it stays.`;
+  return `Interest was already rising, compared with the brand, before ${a + b} of ${n1 + n2} comebacks: ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is normal, so on its own it doesn't separate them (exploratory).`;
 };
 
 function paper() {
@@ -131,11 +137,13 @@ function paper() {
     <ul class="lcds lcds--sm">
       <li><b>${r.rule_hits}/${r.holdout_n}</b><span>Her rule, held-out cases</span></li>
       <li><b>${r.base_hits}/${r.holdout_n}</b><span>Always "${said(r.majority_call === 'LASTS').toLowerCase()}"</span></li>
+      <li><b>${r.holdout_n - r.base_hits}/${r.holdout_n}</b><span>Always "${said(r.majority_call !== 'LASTS').toLowerCase()}"</span></li>
       <li><b>${pct(r.rule_ci[0])}-${pct(r.rule_ci[1])}</b><span>95% bootstrap range</span></li>
     </ul>
-    <p class="verdict">${esc(finding(r))} With ${r.holdout_n} held-out cases, one comeback moves the hit rate by ${Math.round(100 / r.holdout_n)} points, so this is directional.</p>
+    <p class="verdict">${esc(finding(r))} ${esc(otherLine(r))} With ${r.holdout_n} held-out cases, one comeback moves the hit rate by ${Math.round(100 / r.holdout_n)} points, so read it with its range.</p>
+    <p>Of the ${r.train_n} older cases, ${r.train_lasted} lasted${r.train_lasted * 2 === r.train_n ? `, an even split, so the base call came from a tie rule set in advance: a tie means "${said(false).toLowerCase()}"` : ''}.</p>
     <h3>What did show up (exploratory)</h3>
-    <p>${esc(risingLine(data))} Found after the test, so it's a lead to check, not a result.</p>
+    <p>${esc(risingLine(data))} Found after the test, so it's a lead to check, not a result. Only comebacks that happened were studied, so it can't say whether a rise means one is coming; leaks and teasers before the official date may add to it.</p>
     ${band('holdout', 'Held out, 2021 to 2023')}
     ${band('train', 'Used to set the line, 2014 to 2020')}
     ${band('check back 2027', 'Called now, scored in 2027')}
@@ -161,12 +169,16 @@ export async function init() {
   $('bb-root').innerHTML = `
     <h2 id="bb-h">Can fans call a comeback?</h2>
     <p class="insight">${esc(finding(data.result))}</p>
-    <p>${esc(risingLine(data))}</p>
+    <p>${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
     <p>Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
     <ol class="bb__deck" id="bb-deck" aria-label="Cases"></ol>
     <div class="bb__score" id="bb-score" hidden></div>
     <details class="bb__paper" id="bb-paper">${paper()}</details>`;
   const list = $('bb-deck');
+  list.addEventListener('scroll', () => {   // a swipe moves the current case too
+    const [a, b] = list.children, step = b ? b.offsetLeft - a.offsetLeft : 1;
+    mark(list.children[Math.round(list.scrollLeft / step)]);
+  }, { passive: true });
   list.addEventListener('click', (e) => {
     const b = e.target.closest('button'), li = b?.closest('.bb__card');
     if (!li) return;

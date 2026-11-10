@@ -10,7 +10,9 @@ Holdout, 10 cases announced 2021-2023 (6 lasted):
 | Base rate (always FADES) | 4/10 | 40% | |
 | Difference | | +0 points | -50 to +50 points |
 
-Sensitivity (same-request Trends version): threshold None, holdout hit rate None on n = 0.
+Always calling the other outcome (LASTS) would have scored 6/10 on the holdout.
+
+Sensitivity (same-request Trends version): not run (see RUBRIC addendum 2026-11-10).
 
 4 cases from 2024-2025 have dated calls, check back 2027. 65 candidates dropped, reasons in the CSV.
 
