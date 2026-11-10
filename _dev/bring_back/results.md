@@ -14,7 +14,7 @@ Always calling the other outcome (LASTS) would have scored 6/10 on the holdout.
 
 Sensitivity (same-request Trends version): not run (see RUBRIC addendum 2026-11-10).
 
-4 cases from 2024-2025 have dated calls, check back 2027. 65 candidates dropped, reasons in the CSV.
+4 cases from 2024-2025 have dated calls; the rubric fixed them as unscored, so they are never added to the result. 65 candidates dropped, reasons in the CSV.
 
 | case | announced | band | ratio | call | outcome | correct |
 |---|---|---|---|---|---|---|

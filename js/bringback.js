@@ -46,7 +46,7 @@ function card(c, i) {
 
 function reveal(li, c, pick) {
   const right = pick === lasted(c), rule = c.call === 'LASTS', ruleRight = rule === lasted(c);
-  played.push({ right, ruleRight, base: (data.result.majority_call === 'LASTS') === lasted(c) });
+  played.push({ right, ruleRight, base: (data.result.majority_call === 'LASTS') === lasted(c), other: (data.result.majority_call !== 'LASTS') === lasted(c) });
   track('bb_guess', { case: c.id, said: pick ? 'back' : 'leave', right });
   countOnce(`bb_${c.id}_${pick ? 'y' : 'n'}`);
   const box = li.querySelector('.bb__reveal');
@@ -76,13 +76,14 @@ async function crowd(el, id) {
 }
 
 function score() {
-  const k = played.length, you = played.filter((p) => p.right).length, rule = played.filter((p) => p.ruleRight).length, base = played.filter((p) => p.base).length;
+  const k = played.length, you = played.filter((p) => p.right).length, rule = played.filter((p) => p.ruleRight).length, base = played.filter((p) => p.base).length, other = played.filter((p) => p.other).length;
   const left = deck.length - k;
   $('bb-score').innerHTML = `
     <ul class="lcds">
       <li><b>${you}/${k}</b><span>You</span></li>
       <li><b>${rule}/${k}</b><span>Her rule</span></li>
       <li><b>${base}/${k}</b><span>Saying "${said(data.result.majority_call === 'LASTS').toLowerCase()}" every time</span></li>
+      <li><b>${other}/${k}</b><span>Saying "${said(data.result.majority_call !== 'LASTS').toLowerCase()}" every time</span></li>
     </ul>
     <div class="actions">${left > 0 ? `<button class="gel" type="button" id="bb-more">${Math.min(MORE, left)} more</button>` : ''}<button class="gel" type="button" id="bb-study">Read the study</button></div>`;
   $('bb-score').hidden = false;
@@ -115,7 +116,7 @@ const otherGuess = (r) => `always saying "${said(r.majority_call !== 'LASTS').to
 function finding(r) {
   const [lo, hi] = r.rule_ci.map(pct);
   const vs = r.rule_hits > r.base_hits ? 'more than' : r.rule_hits === r.base_hits ? 'the same as' : 'fewer than';
-  return `The rules were dated before any case's curve was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Buzz before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
+  return `The rules were dated before any case's curve was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Search before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
 }
 const otherLine = (r) => `${r.holdout_lasted} of those ${r.holdout_n} lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits}.`;
 const risingLine = (d) => {
@@ -123,14 +124,17 @@ const risingLine = (d) => {
   return `Interest was at least a little higher, compared with the brand, before ${a + b} of ${n1 + n2} comebacks (${m} of ${n1 + n2} by more than 15%): ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is common, so on its own it doesn't separate them (exploratory).`;
 };
 
+// How many dated (unscored) calls have passed 24 months by the day the data was made.
+const past = (rows) => rows.filter((c) => c.band === 'check back 2027' && `${+c.announced.slice(0, 4) + 2}${c.announced.slice(4)}` <= data.made).length;
+
 function paper() {
   const r = data.result, rows = data.cases;
-  const tr = (c) => `<tr class="${c.band === 'holdout' ? 'is-hold' : ''}"><td>${esc(c.name)}</td><td>${esc(c.announced.slice(0, 7))}</td><td>${c.ratio.toFixed(2)}</td><td>${c.call === 'LASTS' ? 'Lasts' : 'Fades'}</td><td>${c.band === 'check back 2027' ? 'Check back 2027' : esc(OUT[c.outcome])}</td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a></td></tr>`;
+  const tr = (c) => `<tr class="${c.band === 'holdout' ? 'is-hold' : ''}"><td>${esc(c.name)}</td><td>${esc(c.announced.slice(0, 7))}</td><td>${c.ratio.toFixed(2)}</td><td>${c.call === 'LASTS' ? 'Lasts' : 'Fades'}</td><td>${c.band === 'check back 2027' ? 'Not scored' : esc(OUT[c.outcome])}</td><td><a href="${esc(c.url)}" target="_blank" rel="noopener">Source</a></td></tr>`;
   const band = (b, h) => `<h3>${h}</h3><div class="tbl-wrap"><table><thead><tr><th>Comeback</th><th>Announced</th><th>Ratio</th><th>Rule</th><th>What happened</th><th></th></tr></thead><tbody>${rows.filter((c) => c.band === b).map(tr).join('')}</tbody></table></div>`;
   return `
     <summary><h2>The study</h2></summary>
     <p><b>Question.</b> When fans are already looking a product up before a brand says it's coming back, does the comeback last?</p>
-    <p><b>Cases.</b> ${r.sourced} US comebacks from 2014 to 2025 in food and drink, beauty and sportswear, each with a sourced announcement date and a sourced outcome, or, for 2024 and 2025, a dated call to score in 2027. I went looking for flops on purpose, so this isn't a list of winners. ${rows.length} had enough search data to measure; the rest are listed with the reason in the study files.</p>
+    <p><b>Cases.</b> ${r.sourced} US comebacks from 2014 to 2025 in food and drink, beauty and sportswear, each with a sourced announcement date and a sourced outcome for those from 2014 to 2023. The rules left 2024 and 2025 out of the score before any data was pulled, so those get a dated call only. I went looking for flops on purpose, so this isn't a list of winners. ${rows.length} had enough search data to measure; the rest are listed with the reason in the study files.</p>
     <p><b>Outcome</b>, from what the company did in the 24 months after announcing: still on sale (lasted), back only for limited runs, or gone again. I wrote these rules down and dated them before pulling any case's curve.</p>
     <p><b>Signal.</b> Weekly Google search interest in the US for the 12 months before the news. The last 3 months divided by the 9 before, then divided by the same number for the parent brand, so a brand that's growing anyway doesn't count. Wikipedia pageviews stand in where search is too thin to read. This measures attention, not sales.</p>
     <p><b>Test.</b> I set the line (${data.threshold.toFixed(2)}x) on the ${r.train_n} comebacks from 2014 to 2020, then scored it once on the ${r.holdout_n} from 2021 to 2023 without changing it.</p>
@@ -146,7 +150,8 @@ function paper() {
     <p>${esc(risingLine(data))} Found after the test, so it's a lead to check, not a result. Only comebacks that happened were studied, so it can't say whether a rise means one is coming; leaks and teasers before the official date may add to it.</p>
     ${band('holdout', 'Held out, 2021 to 2023')}
     ${band('train', 'Used to set the line, 2014 to 2020')}
-    ${band('check back 2027', 'Called now, scored in 2027')}
+    ${band('check back 2027', `Dated calls, 2024 and 2025, never scored`)}
+    <p>The rules fixed these as unscored before any data, so they never count toward the result. ${past(rows)} of the ${r.forward_n} are now past their 24-month mark.</p>
     <p class="note">The dated rules, every source, the weekly data and the script that rebuilds these numbers are in the study files. Made ${esc(data.made)}.</p>`;
 }
 
@@ -169,10 +174,9 @@ export async function init() {
   $('bb-root').innerHTML = `
     <h2 id="bb-h">Can fans call a comeback?</h2>
     <p class="insight">${esc(finding(data.result))}</p>
-    <p class="bb__also--top">${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
     <p>Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
     <ol class="bb__deck" id="bb-deck" aria-label="Cases"></ol>
-    <p class="bb__also--low">${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
+    <p>${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
     <div class="bb__score" id="bb-score" hidden></div>
     <details class="bb__paper" id="bb-paper">${paper()}</details>`;
   const list = $('bb-deck');

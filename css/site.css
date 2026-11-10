@@ -353,8 +353,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__card:not(.is-shown) .bb__line { animation: bb-draw 1.2s var(--ease-out) both; }   /* a wipe, not a dash: a dash is measured in screen px under non-scaling-stroke and stops short */
 @keyframes bb-draw { from { clip-path: inset(-8px 100% -8px -8px); } to { clip-path: inset(-8px); } }
 @media (prefers-reduced-motion: reduce) { .bb__card:not(.is-shown) .bb__line { animation: none; } }
-.bb__also--low, .phone .bb__also--top { display: none; }   /* on a phone the first case comes before the second paragraph */
-.phone .bb__also--low { display: block; }
+.phone #bringback .win__status span + span { display: none; }   /* one-line status bar on phones; the credit stays */
 .bb__ask { margin: 10px 0 0 !important; font-weight: 600; }
 .bb__pick { margin-top: 8px; }
 .bb__reveal h3 { margin-top: 12px; }
@@ -364,6 +363,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__calls .bb__mark { margin-top: 4px; color: var(--ink-2); font: 400 16px/1.2 var(--pixel); }
 .bb__crowd:empty { display: none; }
 .bb__score .lcds li { flex-basis: 110px; }
+.phone .bb__score .lcds li { flex-basis: calc(50% - 4px); }   /* four tiles, two by two */
 .bb__paper { margin-top: 18px; }
 .bb__paper summary { cursor: inherit; }
 .bb__paper summary h2 { display: inline; margin: 0 !important; }

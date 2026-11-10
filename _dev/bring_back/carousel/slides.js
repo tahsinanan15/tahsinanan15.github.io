@@ -73,7 +73,7 @@ const SLIDES = {
       <li><span>Divide by the same number for the brand, so a brand that's growing anyway doesn't count.</span></li>
       <li><span>Set the cut-off on 2014 to 2020. Test it once on 2021 to 2023.</span></li>
     </ol>
-    <p class="small">Rules written and dated before any case's curve was pulled. "Lasted" means still on sale two years later.</p>`),
+    <p class="small">Rules written and dated before any case's curve was pulled. "Lasted" means still sold as a regular item two years later; repeat limited runs don't count.</p>`),
   4: () => caseSlide(byId[picks.cases[0]], 1),
   5: () => caseSlide(byId[picks.cases[1]], 2),
   6: () => caseSlide(byId[picks.cases[2]], 3),
@@ -85,8 +85,8 @@ const SLIDES = {
   8: () => win('SO_WHAT.TXT', picks.sowhat.replace('STRONG', `${data.rising15.lasted[0] + data.rising15.faded[0]}`).replace('RISE', `${data.rising.lasted[0] + data.rising.faded[0]} of ${data.rising.lasted[1] + data.rising.faded[1]}`).replace('FADED', `${data.rising.faded[0]} of ${data.rising.faded[1]}`)),
   9: () => win('BRING_BACK.EXE', `
     <h1 class="s">Your turn</h1>
-    <p class="lede">Call three comebacks blind against the rule, then read the whole study: every case, every source, and the ${r.forward_n} the rule has called for 2027.</p>
-    <p class="lede"><b>The rule's sportswear calls:</b> ${later.filter((c) => c.cat === 'sportswear').map((c) => `${esc(c.name)}, ${said(c.call === 'LASTS').toLowerCase()}`).join('. ')}. Check back in 2027.</p>
+    <p class="lede">Call three comebacks blind against the rule, then read the whole study: every case, every source, and the rule's ${r.forward_n} dated calls on 2024 and 2025 comebacks.</p>
+    <p class="lede"><b>The rule's sportswear calls:</b> ${later.filter((c) => c.cat === 'sportswear').map((c) => `${esc(c.name)}, ${said(c.call === 'LASTS').toLowerCase()}`).join('. ')}. Not scored: the rules left 2024 and 2025 out before any data, and ${later.filter((c) => `${+c.announced.slice(0, 4) + 2}${c.announced.slice(4)}` <= data.made).length} of the ${r.forward_n} have now passed 24 months. Trade press said in February 2026 that the Speedcat relaunch fell short.</p>
     <p class="lede"><b>Slide 1 was ${esc(hook.name)}.</b> ${OUT[hook.outcome]}.</p>
     <p class="url">TAHSINANAN15.GITHUB.IO</p>
     <p class="small">Sportswear is only ${scored.filter((c) => c.cat === 'sportswear').length} of the ${scored.length} scored comebacks: several sneaker returns were too thin in search data to measure, and others couldn't be dated. Start menu, then Comeback study. Study by Tahsin Anan, with research and build support.</p>`),

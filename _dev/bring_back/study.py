@@ -257,7 +257,7 @@ def write_outputs(rows, use, res):
              f"Always calling the other outcome ({'FADES' if res['majority_call'] == 'LASTS' else 'LASTS'}) would have scored {res['holdout_n'] - res['base_hits']}/{res['holdout_n']} on the holdout.", '',
              (f"Sensitivity (same-request Trends version): threshold {sj['threshold']:.3f}, holdout hit rate {P(sj['hit_rate'])} on n = {sj['holdout_n']}." if sj['holdout_n']
               else 'Sensitivity (same-request Trends version): not run (see RUBRIC addendum 2026-11-10).'), '',
-             f"{res['forward_n']} cases from 2024-2025 have dated calls, check back 2027. {res['dropped']} candidates dropped, reasons in the CSV.", '',
+             f"{res['forward_n']} cases from 2024-2025 have dated calls; the rubric fixed them as unscored, so they are never added to the result. {res['dropped']} candidates dropped, reasons in the CSV.", '',
              '| case | announced | band | ratio | call | outcome | correct |', '|---|---|---|---|---|---|---|']
     lines += [f"| {r['product']} | {r['announced']} | {r['band']} | {r['ratio']:.2f} | {r['call']} | {r['outcome']} | {r['correct']} |" for r in sorted(use, key=lambda r: r['announced'])]
     # Exploratory only: looked at after the holdout was scored, never used to set or change the rule.

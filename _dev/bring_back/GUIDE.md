@@ -12,7 +12,7 @@ The scripts below are written in the first person as a starting point. Say only 
 |---|---|---|
 | `RUBRIC.md` | The rules, written and committed to git before any case's curve was pulled (one three-week library test is disclosed inside) | "How do I know you didn't tune this after?" |
 | `cases.csv` | Every candidate: dates, outcomes, sources, quotes, and why any were dropped | "Where does this date come from?" |
-| `sourcing/` | The raw research notes behind `cases.csv`, plus every correction made before pulling data, with its reason | "Did you change anything?" |
+| `sourcing/` | The raw research notes behind `cases.csv`, plus every correction, with its reason. One (naming the two Wikipedia articles) was made after the Trends downloads, and it's disclosed | "Did you change anything?" |
 | `raw/` | Every Google Trends and Wikipedia download (script pulls and hand exports, filed by `study.py import`) | "Can I see the data?" |
 | `study.py` | One script that rebuilds every number from `cases.csv` and `raw/` | "Is it reproducible?" |
 | `bring_back_study.csv` | The spreadsheet: one row per case with the ratio, the rule's call, the outcome and whether the call was right. It opens in Excel or Google Sheets | Any case-level question |
@@ -28,7 +28,7 @@ The scripts below are written in the first person as a starting point. Say only 
 ## Walking through the method, step by step
 
 ### 1. Which comebacks count
-A product, flavour, menu item, shade or shoe that was stopped or left to fade, then publicly brought back, announced between 2014 and 2025, sold in the US, in food and drink, beauty or sportswear. I deliberately went looking for flops, so the list isn't just famous wins. Every case needs a sourced announcement date and a sourced outcome (or, for 2024 and 2025, a dated call to score in 2027), or it's dropped, and the reason is written down in `cases.csv`.
+A product, flavour, menu item, shade or shoe that was stopped or left to fade, then publicly brought back, announced between 2014 and 2025, sold in the US, in food and drink, beauty or sportswear. I deliberately went looking for flops, so the list isn't just famous wins. Every case needs a sourced announcement date and a sourced outcome (for 2014 to 2023; 2024 and 2025 cases get a dated call only, never scored), or it's dropped, and the reason is written down in `cases.csv`.
 
 *If asked "why these categories?"*: they're the ones where companies bring things back most often, and where people search for products by name.
 
@@ -45,7 +45,7 @@ Coded from what the company did in the 24 months after the announcement:
 - **Recurring limited**: only came back for more limited runs.
 - **Gone again**: not sold any more, or for shoes, the company said it was cutting supply or the relaunch disappointed.
 
-The last two count as **did not last**. These rules were written down and dated before any case's curve was pulled. Cases from 2024 and 2025 haven't had 24 months yet, so they get a prediction now and get scored in 2027.
+The last two count as **did not last**. These rules were written down and dated before any case's curve was pulled. The rubric left cases from 2024 and 2025 out of the score before any data was pulled, because they hadn't had 24 months then. They get a dated call from the rule and are never added to the result. Of the 4 that could be measured, 3 have now passed their 24-month mark (Puma Speedcat OG, Nike T90, the Naked palette); only Snack Wrap's runs to December 2026.
 
 *If asked "isn't 'recurring limited' a success?"*: "Maybe for a stunt, but the question was whether the comeback lasts. A product the company keeps as a regular item is the clearest sign demand held up. I decided that before seeing any data."
 
@@ -67,6 +67,9 @@ Before averaging, 1 is added to every week, because Google reports tiny interest
 - Rule: if the pre-trend ratio is at or above the cut-off, call **lasts** ("bring it back"). Otherwise call **fades** ("leave it").
 - The cut-off is the value that gets the most 2014 to 2020 cases right. That's the only place any fitting happens.
 - Then it's applied, unchanged, to the 2021 to 2023 cases. That score is the result.
+- The cut-off came out at 0.91, just below 1, because the two training flops with the lowest ratios (Crystal Pepsi 0.69, Double Down 0.79) set it. So in practice the rule says "bring it back" unless interest fell against the brand. It said yes to 8 of the 10 held-out cases, almost the same as always saying yes, and its two no's (the potato items and Nike Shox TL) both lasted.
+
+*If asked "why does a buzz rule say yes when interest fell?"*: "Because the cut-off was set by the data, not by me, and the older cases put it just under 1. That's one reason the result is close to always saying 'bring it back'."
 
 *If asked "why split by time?"*: "That's how it would be used: you learn from past comebacks and apply what you learned to the next one. Splitting by time also stops later trends leaking backwards."
 
@@ -94,13 +97,14 @@ A bootstrap: resample the held-out cases with replacement 10,000 times and recom
 ## Questions you might get, and short answers
 - *"So should a brand team use this?"* "Not as a go/no-go signal. Search was already rising before most comebacks, keepers and flops alike, and on 10 held-out cases the rule did no better than always saying 'leave it' (4 of 10) and worse than always saying 'bring it back' (6 of 10). What I'd test next is whether demand holds after launch, with a limited run or a few regions."
 - *"What if you'd just said 'bring it back' every time?"* "You'd have got 6 of 10, better than the rule. The older cases split 6 and 6, so the base call came from a tie rule I set in advance, and it went to 'leave it'. In the holdout more lasted than not, which is one more reason the rule isn't useful."
-- *"What would you do with more time?"* "Add more held-out cases, have a second person code the outcomes independently and check agreement, and score the 2024 and 2025 predictions in 2027."
+- *"What would you do with more time?"* "Add more held-out cases, have a second person code the outcomes independently and check agreement, and look at the 2024 and 2025 calls as they pass 24 months, reported on their own, never added to the result."
+- *"So did the Speedcat last?"* "It's mixed. Puma still sells it and is adding variants, but in February 2026, covering Puma's 2025 results, FashionUnited reported that the Speedcat relaunch didn't go as hoped. That's a trade outlet's wording, not Puma's. The rule said 'bring it back'. The rubric left 2024 and 2025 out of the score before the data, so it doesn't change the result, and I wouldn't count it either way."
 - *"What surprised you?"* "How common the pre-announcement rise is: 18 of 22, faded ones included. My guess is that brands bring things back when people are already talking about them, and leaks and teasers before the official date could also push the numbers up. Either way, buzz alone didn't separate the keepers." Say it's exploratory and a guess: only products that did come back were studied, so it can't say whether a rise means a comeback is coming.
 - *"So the study failed?"* "The rule did. The study did its job: it stopped me trusting a signal that looks convincing on a chart. The next thing I'd test is whether demand holds after the first spike, measured after launch, and I'd have a second person code the outcomes."
 - *"What counts as rising?"* "A ratio above 1, with no margin. With a 15% margin it's 12 of 22, and it still doesn't separate keepers from flops: 7 of the 12 that lasted and 5 of the 10 that didn't."
 - *"Did you see any data before freezing the rules?"* "One thing, and it's written in the rubric: while checking the Google Trends library worked, a test printed three weeks of 'crystal pepsi' against 'pepsi'. That's why each term is pulled in its own request. No case's curve was pulled before the rules were dated. The Wikipedia articles for two thin cases were named after the Trends downloads, and that's disclosed too."
 - *"Why did data collection change?"* "Google Trends blocked the script partway through, so the rest was exported by hand from the Trends website with the same terms and dates. It's logged in the rubric file."
-- *"Did you change anything after seeing the results?"* "No. The rules were committed to git before the data, and every correction made before pulling the data is logged with its reason. The git history shows the order."
+- *"Did you change anything after seeing the results?"* "No rule or result, no. The rules were committed to git before the data, and every correction is logged with its reason. The one change after the Trends pull was naming two Wikipedia articles for thin cases, and that's disclosed in the rubric. The git history shows the order."
 
 ## The credit line
 The study was designed and run with research and build support. The site says "Study by Tahsin Anan, with research and build support". Be ready to say what you did yourself, and be honest about the support.
