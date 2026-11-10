@@ -294,6 +294,7 @@ function lazy(id, tab) {
   if (id === 'bubblepop') (loaded.bp ||= import('./bubblepop.js')).then((m) => m.init());
   if (id === 'paint') (loaded.pt ||= import('./paint.js')).then((m) => m.init());
   if (id === 'panopticon') (loaded.pan ||= import('./panopticon.js')).then((m) => m.init(open));
+  if (id === 'bringback') (loaded.bb ||= import('./bringback.js')).then((m) => m.init());
 }
 
 /* ---------- Play along: the star in the player's screen turns the bars into a game ---------- */

@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=96af613f", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=92d75dc4", "./js/beatworlds.js": "./js/beatworlds.js?v=8497192b", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=22839011", "./js/observe.js": "./js/observe.js?v=ebdbe8fa", "./js/paint.js": "./js/paint.js?v=0e55c193", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
-<link rel="stylesheet" href="css/site.css?v=1458d552">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=beb52665", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=92d75dc4", "./js/beatworlds.js": "./js/beatworlds.js?v=8497192b", "./js/bringback.js": "./js/bringback.js?v=1c3324db", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=0987d35e", "./js/observe.js": "./js/observe.js?v=ebdbe8fa", "./js/paint.js": "./js/paint.js?v=0e55c193", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
+<link rel="stylesheet" href="css/site.css?v=cce967ac">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
@@ -210,7 +210,18 @@
         <div role="tabpanel" id="obs-ab" aria-labelledby="tab-ab" tabindex="0" hidden></div>
         <div role="tabpanel" id="obs-art" aria-labelledby="tab-art" tabindex="0" hidden></div>
       </div>
-      <div class="win__status">Your event log stays in this browser. Only anonymous totals are counted.</div>
+      <div class="win__status"><span>Your event log stays in this browser. Only anonymous totals are counted.</span><a href="#bringback" data-open="bringback">BRING_BACK.EXE: can fans call a comeback?</a></div>
+    </div>
+  </section>
+
+  <section class="win" id="bringback" data-file="BRING_BACK.EXE" data-icon="i-chart" data-size="doc" data-src="assets/data/bring_back.json" aria-labelledby="bb-h">
+    <div class="win__bar"><svg class="win__ico"><use href="#i-chart"/></svg><span class="win__file">BRING_BACK.EXE</span></div>
+    <div class="win__main">
+      <div class="win__body prose bb" id="bb-root">
+        <h2 id="bb-h">Can fans call a comeback?</h2>
+        <p class="insight">My study of brand comebacks. It needs JavaScript.</p>
+      </div>
+      <div class="win__status"><span id="bb-credit">Study by Tahsin Anan, with research and build support.</span><span>Attention, not sales.</span></div>
     </div>
   </section>
 
@@ -549,6 +560,7 @@
       <li><a href="#portrait" data-open="portrait"><svg><use href="#i-person"/></svg>My photo</a></li>
       <li><a href="#case" data-open="case"><svg><use href="#i-chart"/></svg>Case study</a></li>
       <li><a href="#observe" data-open="observe"><svg><use href="#i-eye"/></svg>Live analytics</a></li>
+      <li><a href="#bringback" data-open="bringback"><svg><use href="#i-chart"/></svg>Comeback study</a></li>
       <li><a href="#design" data-open="design"><svg><use href="#i-folder-design"/></svg>Design work</a></li>
       <li><a href="#art" data-open="art"><svg><use href="#i-folder-art"/></svg>My art</a></li>
       <li><a href="#player" data-open="player"><svg><use href="#i-cd"/></svg>Music</a></li>
@@ -608,7 +620,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=22839011"></script>
+<script type="module" src="js/main.js?v=0987d35e"></script>
 <script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
 </body>
 </html>

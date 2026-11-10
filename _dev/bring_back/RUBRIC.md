@@ -46,3 +46,9 @@ The question is whether a comeback lasts, so the scored outcome is binary: LASTE
 - That test is the reason for one change. In a shared request the small term is rounded to whole numbers on the big term's scale, so a product at 1 or 2 out of 100 moves in 50% steps, and the ratio is noise. The ratio only compares a series with its own past, so it does not need the two terms on one scale. So each term is pulled in its own request, on its own 0-100 scale, over the same dates, and the product's ratio is divided by the control's as before. The same-request version is also computed and reported as a sensitivity check, never as the result.
 - An announcement known only to the month is dated to the 1st of that month, so the window can only end early, never late.
 - Weeks are Google's Sunday-start weeks. The window is the 52 weeks whose last day falls before the announcement date. Wikipedia daily pageviews are summed into the same weeks.
+
+## Added 2026-11-10, during data collection (no rule changed)
+- Google Trends rate-limited the script after 25 files. The remaining series were exported by hand from the Google Trends website, from links that set the same term, the same US region and the same dates; `study.py import` filed each export by the term and dates written inside it. Same source, same rules.
+- One export came back for "cajun rice" instead of the planned "popeyes cajun rice". It was not used, so Popeyes Cajun Rice is unmeasured, not dropped on its data. It can be added by exporting the planned term and rerunning; the threshold would not change, because it was set on 2014-2020 cases only.
+- The same-request sensitivity check needs a third download per case and was not run for the hand-exported cases, so it is not reported.
+- The base-rate tie rule (a 50/50 training split calls "did not last") was in `study.py` when it was committed with the case list, before any ratio was computed. The 2014-2020 split came out 6 and 6, so it applied.
