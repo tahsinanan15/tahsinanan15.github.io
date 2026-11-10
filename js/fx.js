@@ -1,4 +1,7 @@
 // The reactive layer: each OS draws its own world on the canvas behind the windows, driven by the song's live levels.
+// It's drawn from js/bubbles.js, on the frame clock's calm 30 frames a second.
+import { lite } from './clock.js';
+
 const BUBBLES = { vapor: .5, baroque: .6, ghost: .7, ray: .55, metro: .85 };
 const rand = (a, b) => a + Math.random() * (b - a);
 let kind = 'bubbles', theme = null, spots = [], fade = 1, floor = 0;
@@ -128,14 +131,15 @@ const wall = document.getElementById('wall');
 const warp = document.getElementById('warp');
 const warpG = warp.getContext('2d', { alpha: false });
 const WARPED = new Set(['bubbles', 'ghost']);
-let lastLvl = -1, lastWarp = 0, slips = [], px = 0, py = 0, tx = 0, ty = 0;
+let lastLvl = -1, slips = [], px = 0, py = 0, tx = 0, ty = 0, vw = innerWidth, vh = innerHeight;   // the window's size, kept, since asking for it mid-frame can make the browser lay out
 export const quake = { on: true };
-addEventListener('pointermove', (e) => { tx = (e.clientX / innerWidth - .5) * -14; ty = (e.clientY / innerHeight - .5) * -9; }, { passive: true });
+addEventListener('resize', () => { vw = innerWidth; vh = innerHeight; });
+addEventListener('pointermove', (e) => { tx = (e.clientX / vw - .5) * -14; ty = (e.clientY / vh - .5) * -9; }, { passive: true });
 
 function drawWarp(now, beat) {
   const img = document.querySelector('.wall img.is-on');
   if (!img?.naturalWidth) return;
-  const W = innerWidth, H = innerHeight;
+  const W = vw, H = vh;   // full size: at half, the detailed wallpapers went visibly soft the moment the music started
   if (warp.width !== W || warp.height !== H) { warp.width = W; warp.height = H; }
   const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.max(W / iw, H / ih), sw = W / s, sh = H / s, sx0 = (iw - sw) / 2, sy0 = (ih - sh) / 2;
   const t = now / 1000, strip = kind === 'ghost' ? 22 : 8, rows = Math.ceil(H / strip);
@@ -151,16 +155,18 @@ function drawWarp(now, beat) {
   }
 }
 
-export function reactSite(beat, now = 0) {
+// Every write here happens in the clock's write step. dt is the milliseconds since the last frame, slowed as the clock dozes off.
+export function reactSite(beat, now = 0, dt = 16.7) {
   const live = quake.on && beat.playing;
-  const useWarp = live && WARPED.has(kind) && innerHeight <= innerWidth * 1.1 && !document.documentElement.classList.contains('phone');
+  // The ripple is the first thing a slow screen gives up, and phones never have it: their wallpaper only breathes.
+  const useWarp = live && !lite && WARPED.has(kind) && vh <= vw * 1.1 && !document.documentElement.classList.contains('phone');
   if (useWarp) {
-    if (now - lastWarp > 33) { drawWarp(now, beat); lastWarp = now; }
+    drawWarp(now, beat);
     if (warp.hidden) warp.hidden = false;
   } else if (!warp.hidden) warp.hidden = true;
 
-  const t = now / 1000;
-  px += ((quake.on ? tx : 0) - px) * .05; py += ((quake.on ? ty : 0) - py) * .05;
+  const t = now / 1000, k = 1 - .95 ** (dt / 16.7);   // the parallax eases the way it did at 60 frames a second
+  px += ((quake.on ? tx : 0) - px) * k; py += ((quake.on ? ty : 0) - py) * k;
   let scale = 1.035, rot = 0, ox = 0, oy = 0;
   if (live) {
     if (kind === 'baroque') { scale += .012 + Math.sin(t * .55) * .012 + beat.pulse * .004; rot = Math.sin(t * .31) * .18; }

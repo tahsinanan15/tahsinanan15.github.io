@@ -1,11 +1,12 @@
 // BUBBLE_POP.EXE: pop groups of matching bubbles. Calm, no timer, like a console's home menu.
 import { sfx } from './audio.js';
 import { track } from './analytics.js';
+import { once } from './clock.js';
 
 const COLS = 9, ROWS = 10, CELL = 40;
 const HUES = [['#d4f6ff', '#27a4ec', '#07458f'], ['#e4ffc4', '#55c236', '#14691f'], ['#fff3b0', '#f7b91f', '#a45f06'], ['#ffd2ef', '#e54db2', '#8c0f66'], ['#e6dcff', '#8a66e8', '#3e1f9c']];
 const $ = (id) => document.getElementById(id);
-let g, canvas, board, score, best, cursor, hover = [], anim = [], raf = 0, ready = false;
+let g, canvas, board, score, best, cursor, hover = [], anim = [], queued = false, ready = false;
 
 const NAMES = ['blue', 'green', 'gold', 'pink', 'purple'];
 const say = (pre = '') => {
@@ -112,7 +113,7 @@ function draw() {
   }
 }
 function step() {
-  raf = 0;
+  queued = false;
   let busy = false;
   for (const col of board) for (const b of col) if (b) {
     if (Math.abs(b.y) > .5) { b.y *= .78; busy = true; } else b.y = 0;
@@ -123,7 +124,7 @@ function step() {
   draw();
   if (busy) kick();
 }
-function kick() { if (!raf) raf = requestAnimationFrame(step); }
+function kick() { if (!queued) { queued = true; once(step); } }   // a frame from the clock, at full rate, for as long as something is still moving
 
 function at(e) {
   const r = canvas.getBoundingClientRect();

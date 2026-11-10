@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512">
+  <title>vapor.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M132 172 L328 172 L328 200 L132 200 Z" fill="#ff71ce"/>
+    <path d="M104 200 L356 200 L356 228 L104 228 Z" fill="#ff71ce"/>
+    <path d="M76 228 L384 228 L384 256 L76 256 Z" fill="#ff71ce"/>
+    <path d="M48 256 L412 256 L412 284 L48 284 Z" fill="#ff71ce"/>
+    <path d="M48 284 L412 284 L412 312 L48 312 Z" fill="#ff71ce"/>
+    <path d="M48 312 L412 312 L412 340 L48 340 Z" fill="#ff71ce"/>
+    <path d="M48 340 L412 340 L412 368 L48 368 Z" fill="#ff71ce"/>
+    <path d="M48 368 L412 368 L412 396 L48 396 Z" fill="#ff71ce"/>
+    <path d="M76 396 L384 396 L384 424 L76 424 Z" fill="#ff71ce"/>
+    <path d="M104 424 L356 424 L356 452 L104 452 Z" fill="#ff71ce"/>
+    <path d="M132 452 L328 452 L328 480 L132 480 Z" fill="#ff71ce"/>
+    <path d="M244 144 L328 144 L328 172 L244 172 Z" fill="#ff71ce"/>
+    <path d="M272 116 L328 116 L328 144 L272 144 Z" fill="#ff71ce"/>
+    <path d="M156 172 L352 172 L352 200 L156 200 Z" fill="#01cdfe"/>
+    <path d="M128 200 L380 200 L380 228 L128 228 Z" fill="#01cdfe"/>
+    <path d="M100 228 L408 228 L408 256 L100 256 Z" fill="#01cdfe"/>
+    <path d="M72 256 L436 256 L436 284 L72 284 Z" fill="#01cdfe"/>
+    <path d="M72 284 L436 284 L436 312 L72 312 Z" fill="#01cdfe"/>
+    <path d="M72 312 L436 312 L436 340 L72 340 Z" fill="#01cdfe"/>
+    <path d="M72 340 L436 340 L436 368 L72 368 Z" fill="#01cdfe"/>
+    <path d="M72 368 L436 368 L436 396 L72 396 Z" fill="#01cdfe"/>
+    <path d="M100 396 L408 396 L408 424 L100 424 Z" fill="#01cdfe"/>
+    <path d="M128 424 L380 424 L380 452 L128 452 Z" fill="#01cdfe"/>
+    <path d="M156 452 L352 452 L352 480 L156 480 Z" fill="#01cdfe"/>
+    <path d="M268 144 L352 144 L352 172 L268 172 Z" fill="#01cdfe"/>
+    <path d="M296 116 L352 116 L352 144 L296 144 Z" fill="#01cdfe"/>
+    <path d="M144 172 L340 172 L340 200 L144 200 Z" fill="#16092e"/>
+    <path d="M116 200 L368 200 L368 228 L116 228 Z" fill="#16092e"/>
+    <path d="M88 228 L396 228 L396 256 L88 256 Z" fill="#16092e"/>
+    <path d="M60 256 L424 256 L424 284 L60 284 Z" fill="#16092e"/>
+    <path d="M60 284 L424 284 L424 312 L60 312 Z" fill="#16092e"/>
+    <path d="M60 312 L424 312 L424 340 L60 340 Z" fill="#16092e"/>
+    <path d="M60 340 L424 340 L424 368 L60 368 Z" fill="#16092e"/>
+    <path d="M60 368 L424 368 L424 396 L60 396 Z" fill="#16092e"/>
+    <path d="M88 396 L396 396 L396 424 L88 424 Z" fill="#16092e"/>
+    <path d="M116 424 L368 424 L368 452 L116 452 Z" fill="#16092e"/>
+    <path d="M144 452 L340 452 L340 480 L144 480 Z" fill="#16092e"/>
+    <path d="M256 144 L340 144 L340 172 L256 172 Z" fill="#16092e"/>
+    <path d="M284 116 L340 116 L340 144 L284 144 Z" fill="#16092e"/>
+    <path d="M396 284 L424 284 L424 312 L396 312 Z" fill="#5b1a9c"/>
+    <path d="M368 312 L396 312 L396 340 L368 340 Z" fill="#5b1a9c"/>
+    <path d="M340 340 L368 340 L368 368 L340 368 Z" fill="#5b1a9c"/>
+    <path d="M396 340 L424 340 L424 368 L396 368 Z" fill="#5b1a9c"/>
+    <path d="M312 368 L340 368 L340 396 L312 396 Z" fill="#5b1a9c"/>
+    <path d="M368 368 L396 368 L396 396 L368 396 Z" fill="#5b1a9c"/>
+    <path d="M284 396 L312 396 L312 424 L284 424 Z" fill="#5b1a9c"/>
+    <path d="M340 396 L368 396 L368 424 L340 424 Z" fill="#5b1a9c"/>
+    <path d="M256 424 L284 424 L284 452 L256 452 Z" fill="#5b1a9c"/>
+    <path d="M312 424 L340 424 L340 452 L312 452 Z" fill="#5b1a9c"/>
+    <path d="M228 452 L256 452 L256 480 L228 480 Z" fill="#5b1a9c"/>
+    <path d="M284 452 L312 452 L312 480 L284 480 Z" fill="#5b1a9c"/>
+    <path d="M116 256 L144 256 L144 284 L116 284 Z" fill="#ffffff"/>
+    <path d="M116 284 L144 284 L144 312 L116 312 Z" fill="#ffffff"/>
+    <path d="M144 228 L172 228 L172 256 L144 256 Z" fill="#ffffff"/>
+    <path d="M144 256 L172 256 L172 284 L144 284 Z" fill="#b8f5ff"/>
+    <path d="M340 88 L368 88 L368 116 L340 116 Z" fill="#fffb96"/>
+    <path d="M368 60 L396 60 L396 88 L368 88 Z" fill="#fffb96"/>
+    <path d="M396 60 L424 60 L424 88 L396 88 Z" fill="#fffb96"/>
+  </g>
+</svg>

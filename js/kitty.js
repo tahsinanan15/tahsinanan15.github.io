@@ -9,11 +9,12 @@
 // cycles stay in place in the sheet; this file moves the sprite exactly one stride per cycle, so the paws don't slide.
 // It is cheap to keep: nothing of it loads before the page is up, then only the sheet it needs first, the idle one when the
 // page is idle, and the play one when it is first wanted. It draws only when its picture changes (8 times a second while
-// it sits) and reads no layout while it moves; sitting still with nothing to show, it stops altogether until something
-// happens.
+// it sits), on the site's one frame clock (js/clock.js), and reads no layout while it moves; holding still with nothing to
+// show, it asks for no frames at all until something happens, and it holds still while the clock sleeps.
 // It makes no sound. Under reduced motion it sits still, and can still be carried and asked for help.
 import { track } from './analytics.js';
 import { beat } from './audio.js';
+import { join, wake as rouse, CALM, FULL } from './clock.js';
 
 const root = document.documentElement, still = matchMedia('(prefers-reduced-motion: reduce)');
 const $ = (id) => document.getElementById(id);
@@ -58,7 +59,7 @@ function sheet(name, coat = coatId()) {
   if (!sheets[k]) {
     const img = new Image(), s = sheets[k] = { img, ok: false };
     img.src = `assets/kitty/${M.file.replace('{coat}', coat).replace('{sheet}', name)}`;
-    s.ready = img.decode().then(() => { s.ok = true; wake(); }, () => {});
+    s.ready = img.decode().then(() => { s.ok = true; wake(); rouse(); }, () => {});
   }
   return sheets[k];
 }
@@ -80,7 +81,7 @@ let el, canvas, g, bubble, bubbles, wins, W = innerWidth, H = innerHeight;
 let x = 0, y = 0, vx = 0, vy = 0, face = 1, state = 'sit', act = null, until = 0, idleAt = 0, strolls = 0;
 let clip = { name: 'sit', at: 0, rate: 1, then: null }, leap = null, walk = null, pounce = null, fade = null, chained = false;
 let swing = 0, swingV = 0, grab = null, pointer = null, trail = [], petting = false, swatAt = -1e9, swatHit = true;
-let guide = null, showing = null, last = 0, visible = false, dust = [], raf = 0, timer = 0;
+let guide = null, showing = null, visible = false, dust = [], rate = 0, again = false, timer = 0;
 let arcade = false, floorY = null, barY = innerHeight, drawn = '', shown = null, placed = '', said = null, ink = '#fff', coat = '', inked = '';
 
 const scale = () => (phone() ? 80 : 100) / SIT;   // sheet pixels to CSS pixels
@@ -102,14 +103,17 @@ function relayout() { floorY = null; if (guide) guide.p = null; wake(); }
 // On a phone a window is a sheet over everything, so the kitty steps aside, except while it is showing them around.
 const hidden = () => root.classList.contains('is-rundown') || (root.classList.contains('has-sheet') && !showing) || root.classList.contains('booting') || arcade;
 
-// It runs its next moment on the next frame while it moves, at the next change of picture while it only animates,
-// and not at all while nothing changes. Anything that changes what it does calls wake().
+// It runs on the frame clock (js/clock.js): every frame while it flies or is carried, at the clock's calm 30 a second while
+// its picture changes, and not at all while nothing changes, so a cat holding still costs nothing and the clock can sleep.
+// Anything that changes what it does calls wake().
 function wake() {
-  if (!el || raf) return;
+  if (!el) return;
   clearTimeout(timer);
-  raf = requestAnimationFrame(step);
+  again = true;
+  if (!rate) rate = CALM;
+  rouse();
 }
-function nextIn(ms) { clearTimeout(timer); timer = setTimeout(wake, ms); }
+function nextIn(ms) { clearTimeout(timer); timer = setTimeout(wake, ms); }   // only for a nap's end under reduced motion, when nothing is drawn till then
 
 function say(html, ms = 0) {
   bubble.innerHTML = html;
@@ -314,10 +318,9 @@ function endShow(why, target) {
   if (why) track('kitty', { act: `show_${why}` });
 }
 
-function step(now) {
-  raf = 0;
-  const dt = Math.min(.05, (now - last) / 1000 || 0), calm = still.matches;
-  last = now;
+function step(now, ms) {
+  again = false;
+  const dt = Math.min(.05, ms / 1000), calm = still.matches;
   if (showing && root.classList.contains('is-rundown')) endShow('stop');
   const show = !hidden() && !document.hidden;
   if (show !== visible) {
@@ -325,7 +328,7 @@ function step(now) {
     if (!show) say('');
     else if (!['held', 'fall', 'leap'].includes(state) && !guide?.arrived) y = floor();   // it comes back on its floor, never in mid-air
   }
-  if (!show) { if (!document.hidden) nextIn(500); return; }   // out of sight: look again in a while
+  if (!show) { rate = 0; return; }   // out of sight: what brings it back (the page's classes, the arcade, the tab) wakes it
   const ground = floor(), h = tall(), edge = (v) => clamp(v, h / 2, W - h / 2), x0 = x, y0 = y;
 
   if (state === 'held') {   // hanging from the cursor by the head, swinging with it
@@ -383,16 +386,10 @@ function step(now) {
   if (x !== x0 || y !== y0) placeBubble();
 
   // when to look again
-  if (raf) return;   // something it did this moment already asked for the next frame
   const a = M.actions[clip.name], per = 1000 / (a.fps * clip.rate), done = !a.loop && (now - clip.at) / per >= a.frames - 1 && !clip.then;
-  if (MOVING.has(state) || dust.length) raf = requestAnimationFrame(step);
-  else if (!calm && (!done || fade)) {   // the next new picture, or the end of a walk
-    const there = state === 'walk' ? Math.abs(walk.x - x) / pace() * 1000 + 1 : Infinity;
-    nextIn(Math.min(fade ? 84 : per - ((now - clip.at) % per) + 1, there));   // a crossfade steps every 84 ms
-  }
-  else if (calm && state === 'sleep') nextIn(until - now + 10);
-  else if (clip.then || (guide && !guide.arrived)) nextIn(84);
-  // else: nothing will change until something happens, and whatever happens wakes it
+  if (MOVING.has(state) || dust.length) rate = FULL;
+  else if (again || (!calm && (!done || fade)) || clip.then || (guide && !guide.arrived)) rate = CALM;   // a new picture to come, or a move under way
+  else { rate = 0; if (calm && state === 'sleep') nextIn(until - now + 10); }   // nothing will change until something happens, and whatever happens wakes it
 }
 function stand() { state = 'sit'; }
 function hop() { fall(x < W / 2 ? 90 : -90, -320); }   // off a perch, toward the open middle of the screen
@@ -568,6 +565,7 @@ export async function initKitty(pond, windows) {
   if (still.matches) { x = W * .38; settle(now); }
   else { x = -tall() * .6; face = 1; walkTo(W * .38, true); }
   wire();
+  join({ rate: () => rate, read: () => el && !floorY && floor(), write: step });
   wake();
   return {
     guide(icon) {
@@ -590,13 +588,11 @@ export async function initKitty(pond, windows) {
 // and cue() has it point, purr or nod. A looping cue plays for ms and then it sits again; point holds its last frame.
 export function dockKitty(cvs) {
   const c = cvs.getContext('2d');
-  let cue = 'sit', at = 0, stop = 0, timer = 0, drawn = '';
-  // It draws at the clip's own rate, and once a held pose is up (or its sheet is still on the way) it waits for the next cue,
-  // or for the end of this one, or for its sheet.
-  const frame = () => {
-    timer = 0;
-    if (cvs.closest('[hidden]') || !cvs.isConnected) return;   // the dock is closed: rest until the next cue
-    const now = performance.now();
+  let cue = 'sit', at = 0, stop = 0, on = false, drawn = '';
+  // On the frame clock at its calm rate while the clip moves (or its sheet is still on the way). Once a held pose is up it
+  // stops, until the next cue or the end of this one.
+  const frame = (now) => {
+    if (cvs.closest('[hidden]') || !cvs.isConnected) { on = false; return; }   // the dock is closed: rest until the next cue
     if (stop && now >= stop) { cue = 'sit'; at = now; stop = 0; }
     const a = M.actions[cue], d = Math.min(devicePixelRatio || 1, 2), w = Math.round(cvs.clientWidth * d);
     if (w && cvs.width !== w) { cvs.width = w; cvs.height = Math.round(w * M.cell[1] / M.cell[0]); cvs.style.aspectRatio = `${M.cell[0]} / ${M.cell[1]}`; }
@@ -607,18 +603,18 @@ export function dockKitty(cvs) {
     if (key !== drawn) {
       c.setTransform(cvs.width / M.cell[0], 0, 0, cvs.width / M.cell[0], 0, 0);
       c.clearRect(0, 0, M.cell[0], M.cell[1]);
-      if (blit(c, cue, i, -1)) drawn = key;
-      else return sheet(a.sheet).ready.then(() => sheet(a.sheet).ok && !timer && (timer = setTimeout(frame)));
+      if (!blit(c, cue, i, -1)) return;   // its sheet is on the way: try again next frame
+      drawn = key;
     }
-    if (!held) timer = setTimeout(frame, 1000 / a.fps);
-    else if (stop) timer = setTimeout(frame, stop - now);
+    if (held && !stop) on = false;
   };
+  join({ rate: () => (on ? CALM : 0), write: frame });
   return {
     cue(name, ms = 0) {
       meta().then(() => {
         cue = name; at = performance.now(); stop = ms ? at + ms : 0;
         sheet(M.actions.sit.sheet); sheet(M.actions[name].sheet);
-        clearTimeout(timer); timer = setTimeout(frame);
+        on = true; rouse();
       });
     },
   };

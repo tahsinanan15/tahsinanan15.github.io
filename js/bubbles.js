@@ -2,6 +2,7 @@
 import { sfx, beat } from './audio.js';
 import { drawFx, bubbleAlpha, reactSite, spritesFor, bubbleKind } from './fx.js';
 import { track } from './analytics.js';
+import { join, keep, lite, CALM } from './clock.js';
 
 const R = 128;
 export function soap() {
@@ -31,19 +32,23 @@ export function initBubbles() {
   const canvas = document.getElementById('bubbles'), g = canvas.getContext('2d');
   const still = matchMedia('(prefers-reduced-motion: reduce)');
   const img = soap();
-  let W = 0, H = 0, dpr = 1, list = [], sparks = [], raf = 0, last = 0, dtNow = 0, well = null, joinIn = 0;
+  let W = 0, H = 0, dpr = 1, list = [], sparks = [], age = 0, dtNow = 0, well = null, box = null, drawnAt = 0;
 
   const small = () => document.documentElement.classList.contains('phone');   // fewer, smaller, and a tighter orbit
   const spawn = (fresh) => {
     const r = (14 + Math.random() * Math.random() * 46) * (small() ? .7 : 1), left = W < 980 ? 0 : 250;   // clear of the desktop icons
     return { slot: null, pull: 0, pick: Math.floor(Math.random() * 60), r, x: left + Math.random() * (W - left), y: fresh ? H + r + Math.random() * H * .5 : Math.random() * H, v: 7 + Math.random() * 11 + (60 - r) * .08, sway: 10 + Math.random() * 22, ph: Math.random() * 7, f: .2 + Math.random() * .35 };
   };
-  const count = () => (small() ? 7 : Math.round(Math.min(18, W * H / 90000))) + (well ? (small() ? 12 : 24) : 0);   // extra bubbles while they're falling into the icon
+  const count = () => { const n = (small() ? 7 : Math.round(Math.min(18, W * H / 90000))) + (well ? (small() ? 12 : 24) : 0); return lite > 1 ? Math.ceil(n / 2) : n; };   // extra bubbles while they're falling into the icon, and half as many on a screen that can't keep up
   const recycle = (b) => { if (list.length > count()) list.splice(list.indexOf(b), 1); else Object.assign(b, spawn(true)); };
-  const resize = () => {
-    dpr = Math.min(devicePixelRatio || 1, 1.5);
-    W = innerWidth; H = innerHeight;
+  const size = () => {
+    drawnAt = lite;
+    dpr = Math.min(devicePixelRatio || 1, 1.5) * (lite > 1 ? .75 : 1);
     canvas.width = W * dpr; canvas.height = H * dpr;
+  };
+  const resize = () => {
+    W = innerWidth; H = innerHeight; box = null;
+    size();
     list = Array.from({ length: count() }, () => spawn(false));
     if (still.matches) paint(0);
   };
@@ -67,15 +72,12 @@ export function initBubbles() {
       g.globalAlpha = 1;
     }
   };
-  const tick = (now) => {
-    raf = requestAnimationFrame(tick);
-    if (document.hidden) { last = now; return; }
-    reactSite(beat, now);
-    if (document.documentElement.classList.contains('has-sheet')) { last = now; return; }   // a sheet covers all of this
-    if (now - last < 30) return;   // about 30 fps for the canvas: slow bubbles need no more, and laptops stay cool
-    const dt = Math.min(.08, (now - last) / 1000 || 0); last = now; dtNow = dt;
-    const box = well?.getBoundingClientRect();
-    if (box?.width) {   // everything falls toward the icon on a slow spiral. The first few stay in orbit, the rest are absorbed and start over.
+  // On the frame clock, at its calm 30 frames a second: slow bubbles need no more, and laptops stay cool.
+  const tick = (now, ms) => {
+    reactSite(beat, now, ms);
+    if (drawnAt !== lite) size();   // the clock found this screen slow: the bubbles that leave now aren't replaced, and the canvas gets coarser
+    const dt = Math.min(.08, ms / 1000); dtNow = dt; age += dt;
+    if (well && box?.width) {   // everything falls toward the icon on a slow spiral. The first few stay in orbit, the rest are absorbed and start over.
       const cx = box.left + box.width / 2, cy = box.top + box.height * .36, cap = Math.min(12, list.length - 8);
       let held = list.filter((b) => b.slot).length;
       for (const b of list) {
@@ -100,7 +102,7 @@ export function initBubbles() {
       if (b.y < -b.r * 2) recycle(b);
     }
     for (const s of sparks) { s.life -= dt * 2.6; if (!s.ring) { s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 240 * dt; } }
-    paint(now / 1000);
+    paint(age);
   };
 
   const pop = (b, quiet) => {
@@ -120,17 +122,26 @@ export function initBubbles() {
     if (still.matches) { sparks = []; paint(0); }
   });
   addEventListener('resize', resize);
+  // Where the tape's icon is, measured once and kept until a resize or the layout changes with a new look or the phone line.
+  new MutationObserver(() => { box = null; }).observe(document.documentElement, { attributes: true, attributeFilter: ['class', 'data-theme'] });
   resize();
-  if (still.matches) paint(0); else raf = requestAnimationFrame(tick);
+  if (still.matches) paint(0);
+  else join({
+    rate: () => (document.documentElement.classList.contains('has-sheet') ? 0 : CALM),   // a sheet covers all of this
+    read() { if (well && !box) box = well.getBoundingClientRect(); },
+    write: tick,
+  });
   return {
     swat(x, y, r, look) { const b = list.find((o) => !o.slot && Math.hypot((o.cx ?? o.x) - x, o.y - y) < r + o.r); if (b && !look) pop(b, true); return !!b; },   // the kitty's paw: look only checks for one in reach; a pop by the paw is silent
     gather(el) {
       if (still.matches) return;
-      well = el;
+      well = el; box = null;
       while (list.length < count()) list.push(spawn(false));
+      keep('hook', true);   // a stream of bubbles stopped halfway to the tape would look like the page had hung, so the clock stays up until they're let go
     },
     release(burst) {
       well = null;
+      keep('hook', false);
       list.filter((b) => b.slot).forEach((b, i) => { b.slot = null; if (burst) setTimeout(() => pop(b), i * 30); });
       list.splice(count()).forEach((b) => sparks.push({ ring: 1, x: b.cx ?? b.x, y: b.y, r: b.r, life: .7 }));   // the swarm's extras go now, not a minute later
     },

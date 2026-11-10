@@ -398,7 +398,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .off { position: fixed; inset: 0; z-index: 9998; display: grid; place-content: center; gap: 18px; justify-items: center; padding: 20px; color: #ffb545; background: #000; font: 400 16px/1.5 var(--pixel); text-align: center; }
 .off p { margin: 0; font-size: 24px; line-height: 1.3; }
 
-.taskbar::before { content: ""; position: absolute; inset: -2px 0 auto; height: 2px; background: linear-gradient(90deg, transparent, var(--beat-col) 30%, var(--beat-col) 70%, transparent); opacity: var(--beat, 0); pointer-events: none; }
+/* The song's level, set on the taskbar many times a second. It reaches only this line, not everything else on the taskbar. */
+@property --beat { syntax: "<number>"; inherits: false; initial-value: 0; }
+.taskbar::before { --beat: inherit; content: ""; position: absolute; inset: -2px 0 auto; height: 2px; background: linear-gradient(90deg, transparent, var(--beat-col) 30%, var(--beat-col) 70%, transparent); opacity: var(--beat, 0); pointer-events: none; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-new(root) { z-index: 2; }
 .wall.is-cut img { transition: none; }
@@ -533,6 +535,11 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+/* The frame clock (js/clock.js) is asleep, so the CSS loops hold still too. A blink or a sweep caught halfway would look stuck,
+   so the clock lets those finish moving and pauses them itself. The first visit's call to the tape keeps going through its minute. */
+.is-asleep *, .is-asleep *::before, .is-asleep *::after { animation-play-state: paused !important; }
+.is-asleep .start .eye, .is-asleep .ico .eye__iris, .is-asleep .win__bar::after { animation-play-state: running !important; }
+.os.hook .ico[data-rundown] > svg, .os.hook .ico[data-rundown]::before, .os.hook .pss svg { animation-play-state: running !important; }
 @media print {
   .wall, .bubbles, .taskbar, .icons, .boot, .balloon, .tour, .tourspot { display: none !important; }
   .os, .os body { height: auto; overflow: visible; }
@@ -800,17 +807,27 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 
 @media (prefers-reduced-motion: reduce) { #sting { display: none; } }
 
-/* PLAY_ME.EXE sits at the top of the last column with open desktop beside it. Until someone plays it, it bounces and glows and the kitty points at it. */
+/* PLAY_ME.EXE sits at the top of the last column with open desktop beside it. Until someone plays it, it bounces and glows and the kitty points at it,
+   or, with the kitty off, a note does. */
+@font-face { font-family: "Caveat"; src: url(../assets/fonts/caveat-pss.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
 .os .ico[data-rundown] { position: relative; grid-area: 1 / 2; }
+.pss { display: none; }
+.os.hook .pss { position: absolute; top: -4px; left: calc(100% + 4px); display: grid; grid-template-columns: auto auto; column-gap: 8px; align-items: center; justify-content: start; width: 350px; color: #fff; font: 400 25px/1 "Caveat", cursive; text-align: left; text-shadow: 0 1px 2px #001a44, 0 0 5px rgba(0, 20, 60, .95), 0 0 14px rgba(0, 20, 60, .85); opacity: 0; transition: opacity .9s ease; }
+.os.hook .pss.is-on { opacity: 1; }
+.os.hook .pss svg { grid-row: span 2; width: 58px; height: 38px; fill: none; stroke: currentColor; stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 2px rgba(0, 20, 60, .9)); }
+.pss b { font-size: 43px; font-weight: 700; }
+.pss small { font-size: inherit; }
 .os.hook .ico[data-rundown] > svg { filter: drop-shadow(0 0 8px #fff3a0) drop-shadow(0 0 20px #ffd23c); }
 .os.hook .ico[data-rundown]::before { content: ""; position: absolute; top: -24px; left: 50%; z-index: -1; width: 104px; height: 104px; translate: -50% 0; border-radius: 50%; background: radial-gradient(circle, rgba(255, 240, 150, .95), rgba(255, 215, 70, .5) 42%, transparent 70%); pointer-events: none; }
 @media (prefers-reduced-motion: no-preference) {
   .os.hook .ico[data-rundown] > svg { animation: tape-bounce 1.7s ease-in-out infinite, tape-glow 1.7s ease-in-out infinite; }
+  .os.hook .pss svg { animation: pss-point 1.7s ease-in-out infinite; }
   .os.hook .ico[data-rundown]::before { animation: halo-pulse 1.7s ease-in-out infinite; }
 }
 @keyframes tape-bounce { 0%, 48%, 100% { transform: translateY(0) scale(1); } 6% { transform: scale(1.08, .92); } 16% { transform: translateY(-14px) scale(.97, 1.04); } 28% { transform: translateY(0) scale(1.05, .95); } 36% { transform: translateY(-6px); } 44% { transform: translateY(0); } }
 @keyframes tape-glow { 0%, 100% { filter: drop-shadow(0 0 6px #fff3a0) drop-shadow(0 0 14px #ffd23c); } 50% { filter: drop-shadow(0 0 12px #fff3a0) drop-shadow(0 0 30px #ffb400); } }
 @keyframes halo-pulse { 0%, 100% { opacity: .65; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.12); } }
+@keyframes pss-point { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-8px); } }
 
 /* Resizing: invisible grips on every edge and corner, with the classic ridges in the bottom right so people know they can. */
 .grip { display: none; }
@@ -1064,6 +1081,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone:has(#startmenu:not([hidden])) .crt__osd, .phone:has(#startmenu:not([hidden])) .crt__track { visibility: hidden; }   /* the VCR text belongs on the dock's title bar, which the menu covers */
 
   /* The hook: the note sits in its own band above the top row, with the arrow coming down to the tape. */
+  .os.phone.hook .pss { top: auto; bottom: calc(100% + 2px); left: 6px; width: max-content; column-gap: 2px; font-size: 19px; line-height: .95; }
+  .os.phone.hook .pss svg { width: 40px; height: 34px; rotate: -42deg; }
+  .phone .pss b { font-size: 31px; }
   .os.phone.hook .ico[data-rundown]::before { top: calc(var(--ico) / 2 - 52px + 3px); }
   .os.phone.hook .ico[data-rundown] > svg { width: var(--ico); height: var(--ico); }
 
@@ -1104,6 +1124,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
     .phone #portrait:not(.is-sheet) { right: var(--gutter); bottom: calc(var(--mp-h) + 12px); left: auto; width: 116px; height: auto; }
     .phone #player:not(.is-sheet) { left: auto; width: 284px; }
     @media (min-width: 760px) { .phone { --side: calc(348px + var(--gutter)); } .phone #player:not(.is-sheet) { width: 340px; } }
+    .os.phone.hook .pss { display: flex; align-items: center; gap: 8px; white-space: nowrap; }
+    .os.phone.hook .pss svg { width: 30px; height: 26px; }
+    .phone .pss b { font-size: 26px; }
     .phone .win.is-touring { right: calc(320px + env(safe-area-inset-right, 0px)); bottom: 0; }
     .phone .tour { top: 0; right: env(safe-area-inset-right, 0px); left: auto; width: 320px; max-height: none; }
     .phone.is-rundown .tour__text h2 { font-size: 22px; }
