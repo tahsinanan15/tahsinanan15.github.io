@@ -1,7 +1,9 @@
 {
  "New Balance 550": {
   "announced": "2020-09-30",
-  "edit_note": "Moved earlier from 2020-11-25 before any curve was pulled: the Aime Leon Dore 550s were listed from 2020-09-30 and released 2020-10-09 (Stadium Goods, Sole Retriever), and the earlier date can only cut the window short, never let news leak in."
+  "edit_note": "Moved earlier from 2020-11-25 before any curve was pulled: the Aime Leon Dore 550s were listed from 2020-09-30 and released 2020-10-09 (Stadium Goods, Sole Retriever), and the earlier date can only cut the window short, never let news leak in.",
+  "wiki_article": "New Balance 550",
+  "wiki_control": "New Balance"
  },
  "Nike Dunk Low": {
   "status": "dropped",
@@ -42,5 +44,10 @@
  "Mtn Dew Pitch Black": {
   "search_term": "mountain dew pitch black",
   "edit_note": "Search term made specific before any curve was pulled: 'pitch black' alone is a common phrase."
+ },
+ "Nike Shox TL": {
+  "wiki_article": "Nike Shox",
+  "wiki_control": "Nike, Inc.",
+  "edit_note": "Wikipedia fallback per RUBRIC: Google Trends was too thin for the planned term; product article and brand article named mechanically."
  }
 }

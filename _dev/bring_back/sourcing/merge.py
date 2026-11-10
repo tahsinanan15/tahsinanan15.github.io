@@ -24,7 +24,7 @@ for f in sorted((f for f in D.glob('*.json') if f.name != 'fixes.json')):
         rows.append(r)
     for x in drops:
         name = x.get('product') or x.get('name') or str(x)[:40]
-        rows.append({'id': re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')[:28], 'product': name, 'category': f.stem,
+        rows.append({'id': 'x_' + re.sub(r'[^a-z0-9]+', '_', name.lower()).strip('_')[:26], 'product': name, 'category': f.stem,
                      'status': 'dropped', 'drop_reason': x.get('reason', '') if isinstance(x, dict) else '', 'announced': x.get('announcement_date', '') if isinstance(x, dict) else ''})
 with open(OUT, 'w', newline='', encoding='utf-8') as fh:
     w = csv.DictWriter(fh, cols, extrasaction='ignore'); w.writeheader(); w.writerows(rows)

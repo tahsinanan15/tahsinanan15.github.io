@@ -20,6 +20,7 @@ RAW = HERE / 'raw'
 SITE_JSON = HERE.parent.parent / 'assets' / 'data' / 'bring_back.json'
 UA = 'BringBackStudy/1.0 (portfolio analysis; contact via github.com/tahsinanan15)'
 TRAIN, HOLD = (2014, 2020), (2021, 2023)
+EMPTY = {'reebok_aztrek', 'nike_air_max_1_86_big_bubble'}   # Google Trends exported no rows at all for these terms (too little search)
 
 
 def announce_day(s):
@@ -77,12 +78,37 @@ def pull(cases):
             f = RAW / f"{c['id']}.{kind}.csv"
             if f.exists(): continue
             print(c['id'], kind, terms)
-            trends(terms, start, end).to_csv(f); time.sleep(25)
+            trends(terms, start, end).to_csv(f); time.sleep(45)
         for kind, art in (('wiki_p', c.get('wiki_article')), ('wiki_c', c.get('wiki_control'))):
             f = RAW / f"{c['id']}.{kind}.csv"
             if not art or f.exists() or weeks[0] < date(2015, 7, 1): continue
             print(c['id'], kind, art)
             pageviews(art, weeks[0], weeks[-1] + timedelta(days=6)).rename('views').to_csv(f); time.sleep(1.5)
+
+
+def import_exports(folder, cases):
+    """Read Google Trends 'Download CSV' files (multiTimeline*.csv, any names) and file each under its case, matched by term and dates."""
+    RAW.mkdir(exist_ok=True)
+    want = {}
+    for c in cases:
+        w0 = window_weeks(announce_day(c['announced']))[0]
+        for kind, term in (('own_p', c['search_term']), ('own_c', c['control_term'])):
+            want.setdefault(term.lower(), []).append((w0, RAW / f"{c['id']}.{kind}.csv"))
+    done = 0
+    for f in sorted(Path(folder).glob('multiTimeline*.csv')):
+        lines = [l for l in f.read_text(encoding='utf-8-sig').splitlines() if l.strip()]
+        head = next((i for i, l in enumerate(lines) if l.lower().startswith(('week,', 'day,', 'month,'))), None)
+        if head is None: print('skip, not a Trends export:', f.name); continue
+        term = lines[head].split(',', 1)[1].rsplit(':', 1)[0].strip().strip('"').lower()
+        rows = [l.split(',') for l in lines[head + 1:]]
+        if not rows: print('empty export (Google had too little data):', term, f.name); continue
+        d0 = date.fromisoformat(rows[0][0])
+        match = [(w0, out) for w0, out in want.get(term, []) if abs((d0 - (w0 - timedelta(days=7))).days) <= 3]   # the export starts one week before the window
+        if not match: print('skip, no case wants', repr(term), d0, f.name); continue
+        for _, out in match:   # rarely, two cases share a term and window
+            pd.DataFrame({term: [0 if v.strip() == '<1' else int(v) for _, v in rows]}, index=pd.to_datetime([d for d, _ in rows])).rename_axis('date').to_csv(out)
+            done += 1
+    print(done, 'series filed')
 
 
 # ---------- computing ----------
@@ -165,13 +191,17 @@ def main():
     if sys.argv[1:] == ['test']: return selftest()
     cases = list(csv.DictReader(open(HERE / 'cases.csv', encoding='utf-8')))
     if sys.argv[1:] == ['pull']: return pull([c for c in cases if c['status'] in ('in', 'pending')])
+    if sys.argv[1:2] == ['import']: return import_exports(sys.argv[2], [c for c in cases if c['status'] in ('in', 'pending')])
     rows = []
     for c in cases:
         m = measure(c) if c['status'] == 'in' else {}
         yr = announce_day(c['announced']).year if c['announced'][:4].isdigit() else 0
         band = 'train' if TRAIN[0] <= yr <= TRAIN[1] else 'holdout' if HOLD[0] <= yr <= HOLD[1] else 'check back 2027' if yr >= 2024 else ''
         status, why = c['status'], c['drop_reason']
-        if status == 'in' and not m.get('source'): status, why = 'dropped', 'attention series too thin in both Google Trends and Wikipedia (RUBRIC data rule)'
+        if status == 'in' and not m.get('source'):
+            got = (RAW / f"{c['id']}.own_p.csv").exists() or c['id'] in EMPTY
+            status, why = 'dropped', ('attention series too thin: Google Trends had too little data and there is no Wikipedia article for the product (RUBRIC data rule)'
+                                      if got else 'the Google Trends series for the planned search term could not be downloaded (rate limit); not yet measured')
         rows.append({**c, 'status': status, 'drop_reason': why, 'band': band, **{k: v for k, v in m.items() if k != 'curve'}, '_curve': m.get('curve'),
                      'lasted': None if c['outcome'] == 'CHECK BACK 2027' else int(c['outcome'] == 'PERMANENT')})
     use = [r for r in rows if r['status'] == 'in']
@@ -194,7 +224,7 @@ def main():
     res = dict(threshold=T, train_n=len(tr), train_acc=train_acc, train_lasted=int(yt.sum()), majority_call='LASTS' if majority else 'FADES',
                holdout_n=len(ho), holdout_lasted=int(yh.sum()), rule_hits=int(hit_rule.sum()), base_hits=int(hit_base.sum()),
                rule_rate=float(hit_rule.mean()), base_rate=float(hit_base.mean()), rule_ci=ci_rule, diff_ci=ci_diff,
-               forward_n=len(fw), dropped=sum(r['status'] != 'in' for r in rows),
+               forward_n=len(fw), sourced=sum(c['status'] in ('in', 'pending') for c in cases), dropped=sum(r['status'] != 'in' for r in rows),
                sensitivity_joint=dict(threshold=Tj, holdout_n=len(sjh), hit_rate=joint_hit))
     write_outputs(rows, use, res)
     print(json.dumps(res, indent=1))
@@ -224,10 +254,21 @@ def write_outputs(rows, use, res):
              f"{res['forward_n']} cases from 2024-2025 have dated calls, check back 2027. {res['dropped']} candidates dropped, reasons in the CSV.", '',
              '| case | announced | band | ratio | call | outcome | correct |', '|---|---|---|---|---|---|---|']
     lines += [f"| {r['product']} | {r['announced']} | {r['band']} | {r['ratio']:.2f} | {r['call']} | {r['outcome']} | {r['correct']} |" for r in sorted(use, key=lambda r: r['announced'])]
+    # Exploratory only: looked at after the holdout was scored, never used to set or change the rule.
+    sc = [r for r in use if r['lasted'] is not None]
+    lines += ['', '## Exploratory (after the test; not used to set anything)', '', 'Share that lasted, all scored cases 2014-2023:', '', '| group | lasted | n |', '|---|---|---|']
+    for cat in sorted({r['category'] for r in sc}):
+        g = [r for r in sc if r['category'] == cat]; lines.append(f"| {cat} | {sum(r['lasted'] for r in g)} | {len(g)} |")
+    for name, g in (('lasted', [r for r in sc if r['lasted']]), ('did not last', [r for r in sc if not r['lasted']])):
+        lines.append(f"| {name}: interest rising before the news (ratio above 1) | {sum(r['ratio'] > 1 for r in g)} | {len(g)} |")
+    rs = sorted(sc, key=lambda r: r['ratio']); k = len(rs) // 3
+    for name, g in (('lowest third of ratios', rs[:k]), ('middle third', rs[k:len(rs) - k]), ('highest third', rs[len(rs) - k:])):
+        lines.append(f"| {name} ({g[0]['ratio']:.2f} to {g[-1]['ratio']:.2f}) | {sum(r['lasted'] for r in g)} | {len(g)} |")
     (HERE / 'results.md').write_text('\n'.join(lines) + '\n')
     site = dict(made=str(date.today()), threshold=round(res['threshold'], 3), result={k: res[k] for k in
-                ('train_n', 'holdout_n', 'holdout_lasted', 'rule_hits', 'base_hits', 'majority_call', 'forward_n')} |
+                ('train_n', 'holdout_n', 'holdout_lasted', 'rule_hits', 'base_hits', 'majority_call', 'forward_n', 'sourced')} |
                 {'rule_ci': [round(x, 2) for x in res['rule_ci']], 'diff_ci': [round(x, 2) for x in res['diff_ci']]},
+                rising={k: [int(sum(r['ratio'] > 1 for r in g)), len(g)] for k, g in (('lasted', [r for r in use if r['lasted'] == 1]), ('faded', [r for r in use if r['lasted'] == 0]))},
                 cases=[dict(id=r['id'], name=r['product'], brand=r['brand'], cat=r['category'], announced=r['announced'], band=r['band'],
                             outcome=r['outcome'], note=r['outcome_note'], url=r['outcome_url'], src=r['source'], ratio=round(r['ratio'], 2), call=r['call'],
                             w=[int(round(x / max(r['_curve'].max(), 1) * 99)) for x in r['_curve']]) for r in sorted(use, key=lambda r: r['announced'])])
