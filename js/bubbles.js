@@ -6,7 +6,7 @@ import { drawFx, bubbleAlpha, reactSite, spritesFor, bubbleKind } from './fx.js'
 import { track } from './analytics.js';
 import { join, keep, wake, lite, CALM } from './clock.js';
 
-const R = 128, DRAG = 1.5, BLOWN = 12;   // a push slows by DRAG a second; at most BLOWN blown bubbles at once, the oldest pops first
+const R = 128, DRAG = 1.5, BLOWN = 40;   // a push slows by DRAG a second; at most BLOWN blown bubbles at once, the oldest pops first
 export function soap() {
   const c = document.createElement('canvas'); c.width = c.height = R * 2;
   const g = c.getContext('2d');
@@ -139,7 +139,8 @@ export function initBubbles() {
     if (e.target.closest('.win, .taskbar, .startmenu, .ico, .balloon, .boot, dialog, .off, .tour, .kitty, .kitty__say')) return;
     const b = hitAt(e.clientX, e.clientY);
     if (!b) {   // the wand: open desktop, nothing to pop there
-      if (wandOn && !e.button && e.isPrimary && !e.target.closest('.arcade')) blowing = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, n: 0, at: 0, lx: e.clientX, ly: e.clientY, touch: e.pointerType !== 'mouse' };
+      if (wandOn && !e.button && e.isPrimary && !e.target.closest('.arcade')) { if (e.pointerType === 'mouse') e.preventDefault(); } else return;
+      blowing = { id: e.pointerId, x: e.clientX, y: e.clientY, t: performance.now(), vx: 0, vy: 0, n: 0, at: 0, lx: e.clientX, ly: e.clientY, touch: e.pointerType !== 'mouse' };
       return;
     }
     pop(b);
@@ -154,17 +155,18 @@ export function initBubbles() {
     const now = performance.now(), dt = Math.max(8, now - s.t);
     s.vx += ((e.clientX - s.x) / dt * 1000 - s.vx) * .5; s.vy += ((e.clientY - s.y) / dt * 1000 - s.vy) * .5;
     s.x = e.clientX; s.y = e.clientY; s.t = now;
-    if (s.n < 7 && now - s.at > 55 && Math.hypot(s.x - s.lx, s.y - s.ly) > 16) { puff(s.x, s.y, s.vx, s.vy); s.n++; s.at = now; s.lx = s.x; s.ly = s.y; }
+    if (s.n < 30 && now - s.at > 28 && Math.hypot(s.x - s.lx, s.y - s.ly) > 9) { puff(s.x, s.y, s.vx, s.vy); if (Math.random() < .5) puff(s.x, s.y, s.vx * .8, s.vy * .8); s.n++; s.at = now; s.lx = s.x; s.ly = s.y; }
   }, { passive: true });
   const blown = (e) => {
     const s = blowing;
     if (!s || e.pointerId !== s.id) return;
     blowing = null;
     if (e.type === 'pointercancel') return;
-    if (!s.n) { if (!s.touch) { puff(s.x, s.y, 0, -60); if (Math.random() < .5) puff(s.x + 8, s.y - 4, 30, -90); } }
+    if (!s.n) { if (!s.touch) { puff(s.x, s.y, 0, -60); puff(s.x + 8, s.y - 4, 30, -90); puff(s.x - 8, s.y - 2, -30, -80); if (Math.random() < .5) puff(s.x + 2, s.y - 10, 10, -120); } }
     else if (Math.hypot(s.vx, s.vy) > 500 && performance.now() - s.t < 80) puff(s.x, s.y, s.vx, s.vy);
   };
   addEventListener('pointerup', blown);
+  addEventListener('dragstart', (e) => { if (wandOn && !e.target.closest('.win')) e.preventDefault(); });   // the wand drags bubbles, never the wallpaper's picture
   addEventListener('pointercancel', blown);
   addEventListener('resize', resize);
   // Where the tape's icon is, measured once and kept until a resize or the layout changes with a new look or the phone line.
