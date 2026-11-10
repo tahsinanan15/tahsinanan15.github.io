@@ -302,6 +302,7 @@ function lazy(id, tab) {
   if (id === 'bubblepop') (loaded.bp ||= import('./bubblepop.js')).then((m) => m.init());
   if (id === 'paint') (loaded.pt ||= import('./paint.js')).then((m) => m.init());
   if (id === 'panopticon') (loaded.pan ||= import('./panopticon.js')).then((m) => m.init(open));
+  if (id === 'bringback') (loaded.bb ||= import('./bringback.js')).then((m) => m.init());
 }
 
 /* ---------- Play along: the star in the player's screen turns the bars into a game ---------- */
@@ -396,7 +397,7 @@ tickClock(); setInterval(tickClock, 15000);
 /* ---------- The song is the OS: wallpaper, skin, icons and world all follow it. A picked painting stays until the next song. ---------- */
 const SCENES = { hills: 'day', sunset: 'sunset', 'night-street': 'night', sunflowers: 'day', 'hay-cart': 'day' };
 // Each OS draws its own objects (assets/icons/<os>.svg), fetched the first time that OS appears. If a set can't load, the Aero set stays up.
-const ICON_NAMES = { 'i-person': 'person', 'i-rundown': 'rundown', 'i-chart': 'chart', 'i-eye': 'eye', 'i-pdf': 'pdf', 'i-folder-design': 'design', 'i-folder-art': 'art', 'i-cd': 'cd', 'i-bubbles': 'bubbles', 'i-paint': 'paint', 'i-wall': 'wall', 'i-folder-love': 'love', 'i-mail': 'mail', 'i-bin': 'bin', 'i-txt': 'txt', 'i-bowl': 'bowl' };
+const ICON_NAMES = { 'i-person': 'person', 'i-rundown': 'rundown', 'i-chart': 'chart', 'i-sos': 'sos', 'i-eye': 'eye', 'i-pdf': 'pdf', 'i-folder-design': 'design', 'i-folder-art': 'art', 'i-cd': 'cd', 'i-bubbles': 'bubbles', 'i-paint': 'paint', 'i-wall': 'wall', 'i-folder-love': 'love', 'i-mail': 'mail', 'i-bin': 'bin', 'i-txt': 'txt', 'i-bowl': 'bowl' };
 const iconSets = { aero: Promise.resolve(false) };
 const loadIcons = (id) => iconSets[id] ||= fetch(`assets/icons/${id}.svg`).then((r) => (r.ok ? r.text() : Promise.reject())).then((svg) => {
   const box = document.createElement('div');

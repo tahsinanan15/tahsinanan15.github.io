@@ -91,7 +91,8 @@ function renderVisit() {
     </div>
     <h3>Site totals</h3>
     <div id="funnel">${$('funnel')?.innerHTML || '<p class="note">Loading the totals.</p>'}</div>
-    <p class="note">An engaged session adapts the GA4 rule: over 10 seconds in view, a conversion, or two or more windows opened.</p>`;
+    <p class="note">An engaged session adapts the GA4 rule: over 10 seconds in view, a conversion, or two or more windows opened.</p>
+    <p class="note">More analysis: <a href="#bringback" data-open="bringback">BRING_BACK.EXE, share of search vs share of revenue</a></p>`;
   panel.querySelector('.log').scrollTop = scroll;
   renderFunnel();
 }

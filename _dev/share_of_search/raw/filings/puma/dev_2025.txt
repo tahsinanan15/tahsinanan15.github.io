@@ -1,0 +1,98 @@
+PUMA group development | PUMA Annual Report 2025 (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start': new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0], j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src= 'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f); })(window,document,'script','dataLayer','GTM-P7HRW6CQ'); (function (cl) { cl.remove('no-js'); cl.add('js'); })(document.documentElement.classList); Skip to main content
+To our shareholders Back To our shareholders
+CEO Letter Report by the Supervisory Board
+Combined Management Report Back Combined Management Report
+Disclaimer The financial year 2025 at a glance PUMA Group essential information Back PUMA Group essential information
+Commercial activities and organisational structure Strategic priorities Product development and design Management system
+Economic report Back Economic report
+Economic conditions Sales development Results of operations Development of the segments Dividends and repurchase of treasury shares Net assets and financial position Cash flows Statement regarding the business development and overall situation of the group
+Comments on the financial statements of PUMA SE in accordance with the german commercial code (German GAAP, HGB) Back Comments on the financial statements of PUMA SE in accordance with the german commercial code (German GAAP, HGB)
+Preamble Results of operations Net assets Financial position Outlook
+Sustainability Statement Back Sustainability Statement
+General information Back General information
+Preamble Strategy, business model and value chain (SBM-1) Impact, risk, and opportunity management Governance Basis for preparation
+Environmental information Back Environmental information
+Preamble E1 Climate change E2 Pollution E3 Water and marine resources E4 Biodiversity and ecosystems E5 Resource use and circular economy EU Taxonomy Regulation
+Social information Back Social information
+Preamble S1 Own workforce S2 Workers in the value chain S4 Consumers and end-users
+Governance information Back Governance information
+Preamble G1 Business conduct
+Information concerning takeovers Corporate governance statement in accordance with section 289F and 315d HGB Risk and opportunity report Outlook report
+Consolidated Financial Statements Back Consolidated Financial Statements
+Consolidated statement of financial position Consolidated income statement Consolidated statement of comprehensive income Consolidated statement of cash flows Consolidated statement of changes in equity Notes to the consolidated financial statements Notes to the consolidated statement of financial position Notes to the consolidated income statement Other disclosures Members of the Management Board and Supervisory Board and their mandates Declaration by the legal representatives
+Additional Information Back Additional Information
+Independent auditor’s report Assurance report of the independent german public auditor on a limited assurance engagement in relation to the group sustainability statement1 The PUMA share PUMA-year-on-year comparison PUMA group development
+Downloads Archive Back Archive
+Annual Report 2024 Annual Report 2023 Annual Report 2022 Annual Report 2021
+Highlights 2025
+Annual Report 2025
+Archive Archive Back Archive
+Annual Report 2024 Annual Report 2023 Annual Report 2022 Annual Report 2021
+EN Language selection DE
+What are you looking for? Quick Links The financial year 2025 at a glance Strategic priorities Product development and design Outlook report To our shareholders
+0 Results
+Home Additional Information PUMA group development
+PUMA group development
+Show Chapters Hide Chapters
+Share
+PUMA group development T.03 PUMA Group Development (in € million)
+2025 | 20241 | 2023 | 2022 | 2021 | 2020 | 2019 | 2018 | 2017 | 2016
+Sales
+Consolidated sales | 7.296,2 | 8.398,0 | 8.601,7 | 8.465,1 | 6.805,4 | 5.234,4 | 5.502,2 | 4.648,3 | 4.135,9 | 3.626,7
+- Change in % | –13,1% | –2,4% | 1,6% | 24,4% | 30,0% | –4,9% | 18,4% | 12,4% | 14,0% | 7,1%
+- Footwear | 4.113,8 | 4.733,6 | 4.583,4 | 4.317,9 | 3.163,6 | 2.367,6 | 2.552,5 | 2.184,7 | 1.974,5 | 1.627,0
+- Apparel | 2.328,5 | 2.703,7 | 2.763,0 | 2.896,3 | 2.517,3 | 1.974,1 | 2.068,7 | 1.687,5 | 1.441,4 | 1.333,2
+- Accessories | 853,9 | 960,7 | 1.255,3 | 1.251,0 | 1.124,5 | 892,7 | 881,1 | 776,1 | 719,9 | 666,5
+Result of operations
+Gross profit | 3.279,6 | 3.997,8 | 3.986,6 | 3.902,7 | 3.257,8 | 2.458,0 | 2.686,4 | 2.249,4 | 1.954,3 | 1.656,4
+- Gross profit margin | 45,0% | 47,6% | 46,3% | 46,1% | 47,9% | 47,0% | 48,8% | 48,4% | 47,3% | 45,7%
+Royalty and commission income | 92,4 | 88,5 | 38,5 | 33,8 | 23,9 | 16,1 | 25,1 | 16,3 | 15,8 | 15,7
+Operating result (EBIT) | –357,2 | 548,7 | 621,6 | 640,6 | 557,1 | 209,2 | 440,2 | 337,4 | 244,6 | 127,6
+- EBIT margin | –4,9% | 6,5% | 7,2% | 7,6% | 8,2% | 4,0% | 8,0% | 7,3% | 5,9% | 3,5%
+Loss/Earnings before taxes (EBT) | –522,9 | 399,7 | 478,3 | 551,7 | 505,3 | 162,3 | 417,6 | 313,4 | 231,2 | 118,9
+- EBT margin | –7,2% | 4,8% | 5,6% | 6,5% | 7,4% | 3,1% | 7,6% | 6,7% | 5,6% | 3,3%
+Net earnings attributable to shareholders of PUMA SE | –645,5 | 281,6 | 304,9 | 353,5 | 309,6 | 78,9 | 262,4 | 187,4 | 135,8 | 62,4
+- Net margin | –8,8% | 3,4% | 3,5% | 4,2% | 4,5% | 1,5% | 4,8% | 4,0% | 3,3% | 1,7%
+Expenses
+Marketing/retail | 1.607,9 | 1.736,4 | 1.643,2 | 1.578,5 | 1.309,1 | 1.050,2 | 1.112,1 | 931,2 | 822,9 | 732,3
+Personnel | 1.002,5 | 985,3 | 900,6 | 846,5 | 712,4 | 583,7 | 640,5 | 553,8 | 549,1 | 493,1
+Balance sheet
+Total assets | 6.454,6 | 7.140,6 | 6.640,4 | 6.772,7 | 5.728,3 | 4.684,1 | 4.378,2 | 3.207,2 | 2.853,8 | 2.765,1
+Total equity | 1.760,9 | 2.828,6 | 2.582,3 | 2.538,8 | 2.278,5 | 1.763,9 | 1.902,3 | 1.722,2 | 1.656,7 | 1.722,2
+- Equity ratio | 27,3% | 39,6% | 38,9% | 37,5% | 39,8% | 37,7% | 43,4% | 53,7% | 58,1% | 62,3%
+Working capital | 1.536,6 | 1.278,2 | 1.177,3 | 1.086,8 | 727,9 | 465,8 | 549,4 | 503,9 | 493,9 | 536,6
+- thereof: inventories | 2.060,0 | 2.013,7 | 1.804,4 | 2.245,1 | 1.492,2 | 1.138,0 | 1.110,2 | 915,1 | 778,5 | 718,9
+Cash flow
+Free cash flow | –530,3 | 464,3 | 369,0 | 177,5 | 276,2 | 276,0 | 330,0 | 172,9 | 128,5 | 49,7
+Investments (incl. acquisitions) | 206,3 | 263,0 | 300,4 | 263,6 | 202,4 | 151,0 | 218,4 | 130,2 | 122,9 | 91,1
+Profitability
+Return on equity (ROE) | –36,7% | 10,0% | 11,8% | 13,9% | 13,6% | 4,5% | 13,8% | 10,9% | 8,2% | 3,6%
+Return on capital employed (ROCE) | –12,3% | 20,3% | 25,1% | 28,4% | 31,9% | 15,1% | 29,6% | 25,8% | 20,7% | 10,3%
+Additional information
+Number of employees (year-end) | 18.488 | 19.599 | 18.681 | 18.071 | 16.125 | 14.374 | 14.332 | 12.894 | 11.787 | 11.495
+Number of employees (annual average) | 18.503 | 18.668 | 18.023 | 16.669 | 14.846 | 13.016 | 13.348 | 12.192 | 11.389 | 11.128
+PUMA share2
+Share price (in €) | 22,30 | 44,36 | 50,52 | 56,70 | 107,50 | 92,28 | 68,35 | 42,70 | 36,30 | 24,97
+Earnings per share (in €) | –4,38 | 1,89 | 2,03 | 2,36 | 2,07 | 0,53 | 1,76 | 1,25 | 0,91 | 0,42
+Average outstanding shares (in million) | 147,41 | 149,32 | 149,85 | 149,65 | 149,59 | 149,56 | 149,52 | 149,47 | 149,43 | 149,40
+Number of shares outstanding as of 31 December‎(in million shares) | 147,21 | 148,82 | 149,84 | 149,76 | 149,61 | 149,58 | 149,55 | 149,51 | 149,46 | 149,40
+Market capitalisation | 3.283 | 6.602 | 7.570 | 8.491 | 16.083 | 13.804 | 10.222 | 6.384 | 5.426 | 3.730
+1 Includes adjustments in 2024 in connection with the discontinued operation PUMA United, see Note 24 to the consolidated financial statements.
+2 Disclosures for the prior periods were adjusted retroactively to the 1:10 stock split carried out in the second quarter of 2019
+Share
+Previous page PUMA-year-on-year comparison
+Download Complete Report Download
+approx. 9.07 MB
+Legal Back Legal
+Privacy Cookie settings Legal Imprint
+Our Socials Back Our Socials
+Instagram YouTube Facebook LinkedIn Glassdoor
+All rights reserved © PUMA SE 2026
+This site uses tracking technologies from various providers This site uses third party website tracking technologies to provide and continuously improve its services and display advertisements according to users' interests. Our cookie banner allows users to choose between three options. Until he confirms the banner, the scripts for statistics and marketing cookies will not be executed. I agree and can withdraw or change my consent at any time with effect for the future.
+Functional – Basic website functions require this cookie, it is needed and cannot be deselected.
+Statistics – Tracking services for the collection of user statistics.
+Marketing – Cookies from third-party services that collect data on the website and merge it with your own data.
+Functional
+Statistic
+Marketing
+Save selected Accept all
