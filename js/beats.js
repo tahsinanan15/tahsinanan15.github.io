@@ -391,7 +391,7 @@ function frame(g, now, bars, strip) {
           if (now - (n.tick || 0) > 130) { n.tick = now; deck.sound((voice) => voice(n.hz * 2 * (1 + clamp((t - n.t) / n.hold)), 0, .07, { gain: .05 })); }
         }
       }
-      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
+      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade[hand]; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
       g.globalAlpha = show;
       const img = sprite(s.id, hand, n.kind, n.v);
       if (n.kind === 2) { g.save(); g.translate(nx, 0); g.scale(-1, 1); g.drawImage(img, -iw / 2, topY, iw, sz); g.restore(); } else g.drawImage(img, nx - iw / 2, topY, iw, sz);

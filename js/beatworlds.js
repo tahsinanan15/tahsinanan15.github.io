@@ -1,6 +1,7 @@
 // The six worlds PLAY ALONG is played in, one for each OS. A world paints its sky once, keeps a few things moving in it,
 // lays its road, and gives the blocks their shape, their sparks and their voice. js/beats.js runs the game and calls in here.
 // Everything a world is handed sits on f: W and H are the canvas in pixels, d is pixels to a CSS pixel, hz the horizon,
+// Each hand has its colours (hands) and the shadow its notes cast on the road (shade), left then right.
 // cx the middle, time in seconds (it stands still under reduced motion), energy 0 to 1 as a streak builds, pulse the bass,
 // lite when the screen is struggling and the costly touches should be left out.
 // For the road: f.at(u, r) places a point, f.quad(u0, u1) and f.line(u) trace along it, f.rows(gap, draw) calls draw(r) for
@@ -86,7 +87,7 @@ function dolphin(g, L) {
 }
 const aero = {
   hands: [['#d9fbff', '#19b9f6', '#0563c4'], ['#f3ffc8', '#84e02b', '#2c961c']],
-  ink: '#ffffff', glow: 'rgba(0,50,130,.9)', shade: 'rgba(0,50,120,.4)', fall: .9, ride: [.5, 1.7, .5],
+  ink: '#ffffff', glow: 'rgba(0,50,130,.9)', shade: ['rgba(0,50,120,.4)', 'rgba(20,100,30,.4)'], fall: .9, ride: [.5, 1.7, .5],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(7), u = H / 100, sx = W * .74, sy = hz * .42;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#04329a', '#0a6fd8', '#38b6ff', '#c9f3ff'); g.fillRect(0, 0, W, hz);
@@ -160,7 +161,7 @@ function column(g, x, base, h, w, broken) {
 }
 const vapor = {
   hands: [['#ffd1f1', '#ff71ce', '#b0218f'], ['#d6fbff', '#01cdfe', '#0a6aa8']],
-  shade: 'rgba(255,113,206,.45)', fall: .3, ride: [.7, 1.3, .7],
+  shade: ['rgba(255,113,206,.45)', 'rgba(1,205,254,.45)'], fall: .3, ride: [.7, 1.3, .7],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(11), u = H / 100, r = u * 15, sy = hz - r * .25;
     g.fillStyle = lin(g, 0, 0, 0, hz, ...DUSK); g.fillRect(0, 0, W, hz);
@@ -266,7 +267,7 @@ function bat(g, s, flap) {
 }
 const baroque = {
   hands: [['#ffb3bd', '#d81e3a', '#6d0a1a'], ['#fff0b8', '#f0c055', '#8a6414']],
-  shade: 'rgba(0,0,0,.6)', fall: -.35, ride: [1.3, .7, 1.6],
+  shade: ['rgba(0,0,0,.6)', 'rgba(0,0,0,.6)'], fall: -.35, ride: [1.3, .7, 1.6],
   sky(g, f) {
     const { W, H, hz, cx } = f, u = H / 100, ry = hz - u * 13, rr = u * 10, span = Math.max(W * .5, u * 55);
     g.fillStyle = lin(g, 0, 0, 0, H, '#050203', '#150809', '#1d0c0c', '#0a0405'); g.fillRect(0, 0, W, H);
@@ -355,7 +356,7 @@ function sign(g, x, y, s, R) {   // a neon sign in writing nobody reads
 }
 const ghost = {
   hands: [['#c9fdff', '#19f7ff', '#0a7f8c'], ['#ffd0f6', '#ff2bd6', '#8a0f72']],
-  shade: 'rgba(25,247,255,.35)', fall: 0, ride: [.9, .85, 1.2],
+  shade: ['rgba(25,247,255,.35)', 'rgba(255,43,214,.35)'], fall: 0, ride: [.9, .85, 1.2],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(23), u = H / 100;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#020405', '#07100f', '#2a2208', '#7a5a12'); g.fillRect(0, 0, W, hz);   // toxic amber, thickest at the horizon
@@ -417,7 +418,7 @@ const ghost = {
 let plume = null;
 const ray = {
   hands: [['#fffaf0', '#f4ecd8', '#b9ad92'], ['#5b574e', '#1d1b18', '#000000']],
-  shade: 'rgba(0,0,0,.45)', fall: .7, mono: true, letters: true, ride: [.5, 1.5, .45],
+  shade: ['rgba(0,0,0,.45)', 'rgba(0,0,0,.45)'], fall: .7, mono: true, letters: true, ride: [.5, 1.5, .45],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(41), u = H / 100;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#2b2a27', '#5e5b54', '#a39e90', '#d9d3c2'); g.fillRect(0, 0, W, hz);
@@ -491,7 +492,7 @@ const ray = {
 /* ---------- Concrete Jungle: an avenue at dusk, the sun going down the end of it ---------- */
 const metro = {
   hands: [['#fff3cf', '#ffc247', '#c27a0a'], ['#eafaff', '#8fdcff', '#2a7fb8']],
-  shade: 'rgba(255,190,90,.3)', fall: 0, ride: [1, 1, 1.1],
+  shade: ['rgba(255,190,90,.3)', 'rgba(143,220,255,.3)'], fall: 0, ride: [1, 1, 1.1],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(57), u = H / 100, step = Math.max(W * .058, u * 5);
     g.fillStyle = lin(g, 0, 0, 0, hz, '#141c27', '#2b3a4d', '#7a6a66', '#f0a35a', '#ffd9a0'); g.fillRect(0, 0, W, hz);
