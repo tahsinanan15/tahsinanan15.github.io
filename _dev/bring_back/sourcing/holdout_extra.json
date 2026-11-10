@@ -1,0 +1,167 @@
+{
+ "cases": [
+  {
+   "product": "Cheesy Fiesta Potatoes / Spicy Potato Soft Taco (potato items)",
+   "brand": "Taco Bell",
+   "category": "food & drink",
+   "announcement_date": "2021-01-14",
+   "announce_url": "https://prnewswire.com/news-releases/potatoes-are-returning-the-first-in-taco-bells-vegetarian-plans-to-make-this-year-better-than-last-301208212.html",
+   "announce_quote": "kicking the year off with the return of potatoes",
+   "outcome": "PERMANENT",
+   "outcome_url": "https://www.tacobell.com/newsroom/taco-bell-enters-new-value-era-with-launch-of-new-cravings-value-menu",
+   "outcome_quote": "Cheesy Bean & Rice Burrito at $1.49* and Cheesy Fiesta Potatoes at $2.49*",
+   "outcome_note": "Potatoes came back on 11 March 2021 and were still a standing value-menu item in Taco Bell's January 2024 release.",
+   "search_term": "cheesy fiesta potatoes",
+   "control_term": "taco bell",
+   "confidence": "medium",
+   "confidence_reason": "Announcement is a dated company press release; the outcome source is from 8 Jan 2024, about 12 months after the 24-month mark (14 Jan 2023), and shows the item is still regular, so it was continuous but not checked at the exact date."
+  },
+  {
+   "product": "Waffle Crisp cereal",
+   "brand": "Post Consumer Brands",
+   "category": "food & drink",
+   "announcement_date": "2021-01",
+   "announce_url": "https://clickorlando.com/features/2021/01/18/posts-waffle-crisp-cereal-back-in-stores",
+   "announce_quote": "the cereal is being sold at select Walmart stores",
+   "outcome": "PERMANENT",
+   "outcome_url": "https://www.broadwayworld.com/bwwfood-wine/article/WAFFLE-CRISP-Cereal-is-Back-20220627",
+   "outcome_quote": "proud to re-launch the beloved brand",
+   "outcome_note": "The January 2021 return was a short limited run that sold out, and in June 2022 Post re-launched Waffle Crisp as a regular cereal; coded on that later action.",
+   "search_term": "waffle crisp",
+   "control_term": "post cereal",
+   "confidence": "medium",
+   "confidence_reason": "The announce source is a retailer-availability report dated 18 Jan 2021 that quotes no one from Post (Wikipedia: 'In January 2021, Post Foods decided to return Waffle Crisp'). The 2022 relaunch is sourced, but no page shows it still on national shelves at Jan 2023. Mixed evidence: coded on the most recent company action. The control term 'post' alone is too ambiguous, hence 'post cereal'."
+  },
+  {
+   "product": "Mtn Dew Pitch Black",
+   "brand": "Mountain Dew (PepsiCo)",
+   "category": "food & drink",
+   "announcement_date": "2022-11-15",
+   "announce_url": "https://www.foodnetwork.com/fn-dish/news/when-will-mtn-dew-pitch-black-come-back",
+   "announce_quote": "for a limited time beginning January 2023",
+   "outcome": "RECURRING LIMITED",
+   "outcome_url": "https://sporked.com/article/mountain-dew-pitch-black-back-news",
+   "outcome_quote": "now it's actually back and will actually be available to purchase",
+   "outcome_note": "After the limited January 2023 retail run, PepsiCo ran an eclipse sweepstakes in April 2024, which was not a sale. From Sept 2024 Pitch Black returned as a fountain-only drink at Speedway and 7-Eleven.",
+   "search_term": "pitch black",
+   "control_term": "mountain dew",
+   "confidence": "medium",
+   "confidence_reason": "The brand's own statement to Food Network dates the signal to its 15 Nov 2022 social post (article 16 Nov). The Sept 2024 chain-exclusive fountain run (Sporked, 26 Sep 2024) falls inside 24 months. It is not a national regular item, though Sporked says it is not a limited-time release at those chains. A search term of 'pitch black' alone may pick up unrelated searches; consider 'mountain dew pitch black'."
+  },
+  {
+   "product": "Cajun Rice",
+   "brand": "Popeyes",
+   "category": "food & drink",
+   "announcement_date": "2022-06-21",
+   "announce_url": "https://foodsided.com/2022/06/21/popeyes-cajun-rice-new-dessert-50th-anniversary",
+   "announce_quote": "bringing back Cajun Rice for a limited time",
+   "outcome": "GONE AGAIN",
+   "outcome_url": "https://www.mashed.com/1564554/discontinued-popeyes-menu-items-desperately-missing",
+   "outcome_quote": "shortly after the promotion, it went missing once again",
+   "outcome_note": "Popeyes brought Cajun Rice back only for its 50th-anniversary promotion. It then vanished, and its next sourced return was in select locations in Feb 2025, outside the window.",
+   "search_term": "popeyes cajun rice",
+   "control_term": "popeyes",
+   "confidence": "medium",
+   "confidence_reason": "The announcement is the same-day 21 Jun 2022 coverage of the Popeyes anniversary release; Audacy (22 Jun 2022) says 'if for a limited time only'. The Mashed outcome piece (28 Apr 2024) is inside 24 months but is a listicle; Fast Food Post (6 Feb 2025) dates the next return. The search term needs the brand because 'cajun rice' is a generic dish."
+  }
+ ],
+ "dropped": [
+  {
+   "product": "The Big New Yorker",
+   "brand": "Pizza Hut",
+   "reason": "Announcement sourced (Fortune, 2023-01-10: 'bringing it back for a limited time'), but no source found for what happened next, either an exit or a further run, by Jan 2025. No outcome source."
+  },
+  {
+   "product": "Pretzel Bacon Pub Cheeseburger",
+   "brand": "Wendy's",
+   "reason": "Announcement sourced (Wendy's IR release 2022-09-07), but nothing found on whether it was still sold or had left by Sep 2024. The next sourced action is a 2026 return. No outcome source."
+  },
+  {
+   "product": "New Balance 1906R",
+   "brand": "New Balance",
+   "reason": "Came back in 2022, but the first public signal could not be dated to the month from a non-retailer source (Sneaker Freaker's Nov 2022 piece is sponsored and not the first signal)."
+  },
+  {
+   "product": "ASICS GEL-Kayano 14",
+   "brand": "ASICS",
+   "reason": "Re-release was Dec 2020 (reports of an 18 Dec drop; French outlet 21 Dec 2020), which is outside the 2021-2023 holdout."
+  },
+  {
+   "product": "adidas Forum 84 / Forum Low",
+   "brand": "adidas",
+   "reason": "The revival started in late 2020, outside the window, and the model had been retro'd before, so it is not clearly discontinued."
+  },
+  {
+   "product": "Lancome Juicy Tubes",
+   "brand": "Lancome",
+   "reason": "Relaunched May 2020, outside the window."
+  },
+  {
+   "product": "Urban Decay Naked palette (original)",
+   "brand": "Urban Decay",
+   "reason": "Relaunched Aug 2024, outside the holdout (would be check back 2027)."
+  },
+  {
+   "product": "MAC Fleshpot (Lipstick Bringbacks)",
+   "brand": "MAC",
+   "reason": "Re-release is dated Jul 2024 (Dazed), outside the window."
+  },
+  {
+   "product": "Crystal Pepsi 30th anniversary",
+   "brand": "PepsiCo",
+   "reason": "2022 return was a 300-winner sweepstakes, not a sale, so it fails inclusion."
+  },
+  {
+   "product": "Marc Jacobs Beauty",
+   "brand": "Coty / Marc Jacobs",
+   "reason": "2023 return is a whole brand relaunched under licence, not a product, flavour or shade."
+  },
+  {
+   "product": "Bourjois Healthy Skin Tint etc.",
+   "brand": "Bourjois",
+   "reason": "2022 return was UK high street only, not US."
+  },
+  {
+   "product": "Nike Zoom Vomero 5",
+   "brand": "Nike",
+   "reason": "Revived in 2018 with in-line versions after, so it was not discontinued before the 2022 'Oatmeal' drop."
+  },
+  {
+   "product": "Gap Dream fragrance",
+   "brand": "Gap",
+   "reason": "Relaunched Jul 2026, outside the window."
+  },
+  {
+   "product": "Bath & Body Works retired scents",
+   "brand": "Bath & Body Works",
+   "reason": "Could not find a datable 2021-2023 US return of a named scent; returns found were 2016-2018 or undated."
+  },
+  {
+   "product": "Beefy Crunch Burrito (second researcher)",
+   "reason": "Duplicate of the food & drink case for the same comeback; the earlier first-signal date (2023-03-30) is kept."
+  }
+ ],
+ "resolved": {
+  "glossier_you_solid_2024_01": {
+   "status": "ON SALE (regular, not limited)",
+   "url": "http://web.archive.org/web/20240123142800/https://www.glossier.com/products/Glossier-You-solid",
+   "snapshot": "2024-01-23",
+   "quote": "\"price\":3200,...\"available\":true",
+   "note": "In the Wayback snapshot's product JSON, You Solid is listed at $32, available:true, tagged 'Shop All', with data-available=\"true\" and an inventory field of 80218. Nothing on the page marks it limited edition; the only limited-edition item on the page is a hoodie in the footer.",
+   "confidence": "high"
+  },
+  "lush_king_of_skin_us": {
+   "status": "IN STOCK on lush.com US in every archived snapshot from 2023-12-04 to 2025-08-13",
+   "url": "http://web.archive.org/web/20231204133847/https://www.lush.com/us/en_us/p/king-of-skin-body-butter",
+   "other_snapshots": [
+    "20240305041702",
+    "20241005131728",
+    "20250420004825",
+    "20250813012539"
+   ],
+   "quote": "\"availability\":\"https://schema.org/InStock\",\"price\":14,\"priceCurrency\":\"USD\"",
+   "note": "The page sells the 75g body butter at $14 with InStock in all five snapshots. No snapshot exists before Dec 2023, so the status at exactly 24 months depends on the announcement date the other researcher used; if that is 2021-12 or later, these snapshots cover the 24-month mark.",
+   "confidence": "medium"
+  }
+ }
+}
