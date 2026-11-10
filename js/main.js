@@ -583,6 +583,16 @@ function setKitty(on) {
   }
 }
 $('tray-kitty').addEventListener('click', () => setKitty(!kittyOn()));
+// The bubble wand beside it: off unless this browser turned it on. On, the cursor over the open desktop is the OS's wand, and
+// a drag there blows bubbles (js/bubbles.js); on a phone a finger drag on the wallpaper does. Not tracked.
+const wandOn = () => store.get('tahsin.wand') === 'on';
+function syncWand() {
+  const on = wandOn();
+  root.classList.toggle('wand-on', on);
+  $('tray-wand').setAttribute('aria-pressed', String(on));
+  bubbles?.wand(on);
+}
+$('tray-wand').addEventListener('click', () => { store.set('tahsin.wand', wandOn() ? 'off' : 'on'); syncWand(); });
 $('kitty-toggle').addEventListener('click', () => { closeStart(); setKitty(!kittyOn()); });
 const pss = () => setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
 const hooked = () => root.classList.contains('hook');
@@ -789,6 +799,7 @@ syncLook();
 syncPaw();
 initAudio();
 bubbles = initBubbles();
+syncWand();
 addEventListener('load', () => kittyOn() && (window.requestIdleCallback || setTimeout)(() => kitty().catch(() => {}), { timeout: 3000 }), { once: true });   // the kitty comes once the page is up and idle, never before its first paint
 boot();
 syncHistory();   // a reload leaves no sheets open, so it drops back to the entry they came in on

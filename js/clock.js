@@ -141,6 +141,7 @@ addEventListener('tahsin:rundown', (e) => keep('tour', e.detail.active));
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) { poke(); return wake(); }
   cancelAnimationFrame(raf); clearTimeout(timer);   // a hidden tab asks for nothing
-  raf = timer = 0; rested = true;
+  raf = timer = 0; rested = true; levelsAt = 0;
+  for (const m of movers) m.at = null;   // and coming back, each mover's first dt is 0, not the time it was hidden
 });
 dozing = setTimeout(doze, IDLE);
