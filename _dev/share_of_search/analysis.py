@@ -67,14 +67,15 @@ som_all = pd.read_csv(SOM_CSV)
 FX_FIXED = 1.15   # USD per EUR, held constant for every year (the sceptical review's choice; see review/check.py)
 
 
-def som(measure, cc=True):
+def som(measure, cc=True, rate=None):
     """Three-company revenue share. cc=True: euro revenues at a fixed 1.15 USD/EUR (primary); False: as-published USD."""
+    rate = rate or FX_FIXED
     d = som_all[som_all.measure == measure].set_index("calendar_year")
     if not cc:
         return d[[f"{b}_share" for b in BRANDS]].set_axis(BRANDS, axis=1)
     u = d[[f"{b}_usd" for b in BRANDS]].set_axis(BRANDS, axis=1).copy()
     for b in ("adidas", "puma"):
-        u[b] = u[b] / d.usd_per_eur * FX_FIXED
+        u[b] = u[b] / d.usd_per_eur * rate
     return u.div(u.sum(axis=1), axis=0)
 
 
@@ -165,6 +166,10 @@ if __name__ == "__main__":
                 for k in [0, 1, 2]:
                     print(f"{measure:24s} {'demeaned' if dm else 'raw     '} k={k}  "
                           f"{fmt(evaluate(panel(som(measure, cc), k), dm))}")
+    print("\n== 3a. Does the constant-currency result depend on the fixed rate? (primary measure, raw, k=1)")
+    for rate in (1.05, 1.15, 1.186, 1.25, 1.35):
+        e = evaluate(panel(som("revenue_adidas_ex_reebok", True, rate), 1), False)
+        print(f"   {rate:.3f} USD/EUR: r={e['r']:+.2f}  LOYO MAE {e['loyo']:.2f} vs naive {e['naive']:.2f}")
     print("\n== 3b. Is it search, or just revenue share reverting to its mean? (k=1, LOYO MAE, pt)")
     print("   ESOS_t contains -SOM_t, and so does SOM_{t+1}-SOM_t: noise alone gives a positive slope.")
     for measure, cc in [(m, c) for c in (True, False) for m in ["revenue_adidas_ex_reebok", "revenue", "footwear"]]:
@@ -242,6 +247,17 @@ if __name__ == "__main__":
     sc, su = som("revenue_adidas_ex_reebok"), som("revenue_adidas_ex_reebok", False)
     years = [int(y) for y in sc.index]
     res = {k: evaluate(panel(som("revenue_adidas_ex_reebok", c), 1), False) for k, c in (("cc", True), ("usd", False))}
+
+    def perm_search_only(sm, n=5000, seed=0):
+        """Shuffle which year's share of search goes with each year; revenue share stays, so the -SOM_t link survives."""
+        yrs = list(range(2010, 2025)); S = np.array([[sos_y.at[t, b] for t in yrs] for b in BRANDS])
+        M = np.array([[sm.at[t, b] for t in yrs] for b in BRANDS]); Y = np.array([[sm.at[t + 1, b] - sm.at[t, b] for t in yrs] for b in BRANDS]).ravel()
+        r0 = np.corrcoef((S - M).ravel(), Y)[0, 1]; rng = np.random.default_rng(seed)
+        return float(np.mean([np.corrcoef((S[:, rng.permutation(15)] - M).ravel(), Y)[0, 1] >= r0 for _ in range(n)]))
+    for k, c in (("cc", True), ("usd", False)):
+        res[k]["p"] = perm_search_only(som("revenue_adidas_ex_reebok", c))
+    ecb = evaluate(panel(som("revenue_adidas_ex_reebok", True, 1.186), 1), False)
+    print(f"search-only permutation p: constant currency {res['cc']['p']:.3f}, USD {res['usd']['p']:.3f}")
     data = dict(
         note="Shares in per mille. sos: monthly share of search among nike/adidas/puma (Google Trends, worldwide). "
              "som_cc: revenue share with euro revenue at a fixed 1.15 USD/EUR (primary); som_usd: as published in USD. "
@@ -255,8 +271,8 @@ if __name__ == "__main__":
         sos_year={b: [pm(sos_y.at[y, b]) for y in years] + [pm(sos_y.at[2026, b])] for b in BRANDS},   # last entry: 2026 to date
         som_cc={b: [pm(sc.at[y, b]) for y in years] for b in BRANDS},
         som_usd={b: [pm(su.at[y, b]) for y in years] for b in BRANDS},
-        binet={k: dict(n=v["n"], slope=round(v["slope"], 2), r=round(v["r"], 2), loyo=round(v["loyo"], 2), naive=round(v["naive"], 2))
-               for k, v in res.items()},
+        binet={k: dict(n=v["n"], slope=round(v["slope"], 2), r=round(v["r"], 2), loyo=round(v["loyo"], 2), naive=round(v["naive"], 2), p=round(v["p"], 2))
+               for k, v in res.items()} | {"cc_at_ecb_average": dict(rate=1.186, loyo=round(ecb["loyo"], 2), naive=round(ecb["naive"], 2))},
         pending=dict(made="2026-11-10", brand="puma",
                      sos_2026=pm(sos_y.at[2026, "puma"]), som_2025_cc=pm(sc.at[2025, "puma"]), som_2025_usd=pm(su.at[2025, "puma"]),
                      call="Puma's 2026 revenue share rises above its 2025 share",

@@ -40,14 +40,24 @@ Does ESOS in year t predict the change in SOM over the next year? Pooled over th
 | **Constant currency (primary)** | **+0.30** | **+0.38** | **1.32** | **1.35** | **64%** | **1.60 vs 1.73** |
 | As-published USD | +0.43 | +0.63 | 1.08 | 1.46 | 80% | 1.43 vs 1.79 |
 
-- **In constant currency the one-year lead is suggestive and weak.** The slope stays positive and the relationship points the way Binet says, but the forecast error is barely below guessing "no change" (1.32 against 1.35), and the year-shuffled permutation test gives p = 0.056 (`review/check.py`).
+- **In constant currency the one-year lead is suggestive and weak.** The slope stays positive, the way Binet says, but the forecast error is 1.32 points against 1.35 for guessing "no change", and that edge depends on the fixed rate chosen (table below). A permutation test that shuffles only share of search across years gives p = 0.22 (`review/check.py`). Shuffling the outcomes instead gives p = 0.056, but that version is too generous: the gap and next year's change both contain this year's revenue share, which builds in a positive link.
 - **Much of the US-dollar result is currency translation.** When the euro rises, euro-reporting adidas and Puma gain dollar share without selling more, and search doesn't move with the exchange rate. That is why the dollar fit looks stronger.
-- Same-year and two-year leads show nothing in either currency (constant currency: r = +0.22 and −0.24).
+- In constant currency, same-year and two-year leads show nothing (r = +0.22 and −0.24; neither beats guessing). In US dollars the same-year link also beats guessing (r = +0.39, 1.34 vs 1.46), which is more currency.
 - Robustness, constant currency, one-year lead: total revenue r = +0.37 (error 1.46 vs 1.38 naive); footwear r = +0.46 (1.66 vs 1.69). None clearly beats guessing.
 - By brand (constant currency): Nike r = +0.36, adidas r = +0.46, Puma r = +0.04. Puma shows no signal.
 - Mean reversion check (constant currency): change in SOS alone gives error 1.31, ESOS 1.37, naive 1.43 on the 42 brand-years with a prior year. The search term adds a little; neither is decisive.
 
-**Verdict.** Search share and revenue share move together in the direction Binet describes, but once currency is held fixed, 15 years of three brands can't show that search share forecasts revenue share better than assuming no change. Directional, not proven.
+**Does the fixed rate matter?** Yes. Constant currency, one-year lead:
+
+| Fixed rate (USD per EUR) | r | Error | Guessing "no change" |
+|---|---|---|---|
+| 1.05 | +0.36 | 1.26 | 1.32 |
+| **1.15 (used)** | **+0.38** | **1.32** | **1.35** |
+| 1.186 (ECB 2010–25 average) | +0.34 | 1.36 | 1.36 |
+| 1.25 | +0.25 | 1.43 | 1.38 |
+| 1.35 | +0.14 | 1.49 | 1.40 |
+
+**Verdict.** In constant currency the one-year lead points the way Binet describes (r is positive at every rate), but it doesn't beat guessing "no change" at plausible fixed rates, and it isn't significant (p = 0.22). With 15 years of three brands, share of search can't be shown to forecast revenue share. Suggestive, not proven.
 
 ## The retro shoes (exploratory)
 
@@ -75,16 +85,16 @@ Puma's share of search in 2026 so far is 12.7%, against a 2025 revenue share of 
 
 ## Findings for a brand marketer
 
-1. **Share of search moves with revenue share, but don't sell it as a forecast.** *Confirmatory (the pre-specified Binet test).* In constant currency the one-year lead is r = +0.38 and barely beats "no change" (1.32 vs 1.35 points). Suggestive; it weakens without currency translation.
-2. **Check currency before you trust a share chart.** *Confirmatory (the recheck).* In US dollars the same test looks strong (r = +0.63, error 1.08 vs 1.46), because a stronger euro lifts euro-reporting brands' dollar share with no change in sales.
-3. **A retro shoe moved the brand only when it became a large slice of its searches.** *Exploratory, one case.* adidas terrace shoes reached 20% of adidas searches in 2024, adidas SOS rose about 6.6 points, and its revenue share rose in 2024 and 2025.
+1. **Share of search pointed the right way, but don't sell it as a forecast.** *Confirmatory (the pre-specified Binet test).* In constant currency the one-year lead is r = +0.38 at 1.15 USD/EUR, the error is 1.32 against 1.35 for "no change", it ties at the ECB average rate, and p = 0.22. Suggestive; it weakens without currency translation.
+2. **Check currency before you trust a share chart.** *Exploratory (a check made after seeing the US-dollar result).* In US dollars the same test looks strong (r = +0.63, error 1.08 vs 1.46), because a stronger euro lifts euro-reporting brands' dollar share with no change in sales.
+3. **A retro shoe came with the brand's rise only when it became a large slice of its searches.** *Exploratory, one case.* adidas terrace shoes reached 20% of adidas searches in 2024, adidas SOS rose about 6.6 points, and its revenue share rose in 2024 and 2025.
 4. **Retro demand that peaks needs a successor.** *Exploratory.* Nike's classics fell from 21.8% to 11.0% of its searches, alongside Nike's share of search.
 
 ## Limits
 
 - **Small sample.** 15 years, three shares that sum to 100%, about 30 independent points. Annual revenue only, so monthly leads can't be tested.
 - **Three companies, not the category.** New Balance, Asics, On, Hoka, Skechers and others are missing.
-- **Constant currency is one fixed rate.** 1.15 USD per EUR for every year. Another fixed rate changes the shares' levels slightly but not the year-to-year swings, which is what the test uses.
+- **Constant currency is one fixed rate.** 1.15 USD per EUR for every year. The result is sensitive to it: it ties guessing at the ECB average (1.186) and loses above that (table above).
 - **Brand words don't match revenue scope.** "nike" misses Jordan and Converse, which are in Nike's revenue; "puma" includes the animal. adidas without Reebok before 2020 is adidas-brand sales spliced onto continuing operations (bases differ about 1.9% at the 2020 overlap).
 - **Nike calendar years** blend fiscal years 5/12 + 7/12, assuming even monthly sales.
 - **Google Trends** values are whole-number indices from one sampling day; sampling noise is unmeasured. Franchise values on the brand scale sit at 0–10, so rounding is coarse.

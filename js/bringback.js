@@ -8,8 +8,11 @@ const NAME = { nike: 'Nike', adidas: 'adidas', puma: 'Puma' };
 const p1 = (v) => (v / 10).toFixed(1);   // per mille to a percent with one decimal
 let d, brand = 'adidas', cc = true, hover = null, ready = false;
 
-const W = 640, H = 250, L = 34, R = 10, T = 12, B = 22;
+const L = 34, R = 10, T = 12, B = 22;
+let W = 640, H = 250;
 function chart() {
+  const phone = document.documentElement.classList.contains('phone');
+  W = phone ? 360 : 640; H = phone ? 220 : 250;
   const m = d.months, n = m.length, sos = d.sos[brand], retro = d.retro[brand], som = (cc ? d.som_cc : d.som_usd)[brand];
   const y0 = +m[0].slice(0, 4), x = (i) => L + i * (W - L - R) / (n - 1), xy = (yr) => x((yr - y0) * 12);
   const vals = [...sos, ...som].filter((v) => v != null);
@@ -23,7 +26,7 @@ function chart() {
   const steps = som.map((v, i) => `${i ? 'L' : 'M'}${xy(d.years[i]).toFixed(1)} ${y(v).toFixed(1)}H${xy(d.years[i] + 1).toFixed(1)}`).join('');
   const grid = [];
   for (let v = lo; v <= hi; v += 50) grid.push(`<line class="bb__grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="bb__ax" x="${L - 5}" y="${y(v) + 3.5}" text-anchor="end">${v / 10}%</text>`);
-  for (let yr = 2010; yr <= 2026; yr += 4) grid.push(`<text class="bb__ax" x="${xy(yr) + 2}" y="${H - 6}">${yr}</text>`);
+  for (let yr = 2010; yr <= 2026; yr += phone ? 8 : 4) grid.push(`<text class="bb__ax" x="${xy(yr) + 2}" y="${H - 6}">${yr}</text>`);
   let pending = '';
   if (brand === d.pending.brand) {   // the open call: Puma's 2026 revenue share against its 2025 level, not yet reported
     const base = cc ? d.pending.som_2025_cc : d.pending.som_2025_usd, x1 = xy(2026), x2 = Math.min(xy(2027), W - R);
@@ -42,8 +45,12 @@ function readout() {
   return `<span>${mo}</span><span>SEARCH ${p1(d.sos[brand][i])}%</span><span>RETRO ${r == null ? '-' : Math.round(r / 10)}%</span><span>REVENUE ${som == null ? 'NOT YET' : `${p1(som)}%`}</span>`;
 }
 
+function drawChart() {
+  $('bb-readout').innerHTML = readout();
+  $('bb-plot').innerHTML = chart();
+}
 function draw() {
-  $('bb-screen').innerHTML = `<div class="bb__lcd">${readout()}</div>${chart()}`;
+  drawChart();
   for (const b of document.querySelectorAll('#bringback [data-brand]')) b.setAttribute('aria-pressed', String(b.dataset.brand === brand));
   for (const b of document.querySelectorAll('#bringback [data-cc]')) b.setAttribute('aria-pressed', String((b.dataset.cc === '1') === cc));
   $('bb-table').innerHTML = `<thead><tr><th>Year</th><th>Search share</th><th>Revenue share, constant currency</th><th>Revenue share, US dollars</th></tr></thead><tbody>${d.years.map((yr, i) => {
@@ -53,9 +60,9 @@ function draw() {
 }
 
 function hoverAt(e) {
-  const svg = $('bb-screen').querySelector('svg'), r = svg.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * W;
+  const svg = $('bb-plot').querySelector('svg'), r = svg.getBoundingClientRect(), fx = (e.clientX - r.left) / r.width * W;
   hover = Math.max(0, Math.min(d.months.length - 1, Math.round((fx - L) / (W - L - R) * (d.months.length - 1))));
-  draw();
+  drawChart();
 }
 
 export async function init() {
@@ -71,15 +78,16 @@ export async function init() {
     return;
   }
   const b = d.binet, pend = d.pending, ad = d.som_cc.adidas, yi = (yr) => d.years.indexOf(yr);
-  const up24 = p1(ad[yi(2024)] - ad[yi(2023)]), up25 = p1(ad[yi(2025)] - ad[yi(2024)]);
+  const up24 = p1(ad[yi(2024)] - ad[yi(2023)]), up25 = p1(ad[yi(2025)] - ad[yi(2024)]), sy = (k, yr) => d.sos_year[k][yi(yr)];
+  const retroYear = (k, yr) => { const v = d.months.map((m, j) => [m, j]).filter(([m]) => +m.slice(0, 4) === yr).map(([, j]) => d.retro[k][j] ?? 0); return Math.round(v.reduce((a, c) => a + c, 0) / v.length / 10); };
   $('bb-root').innerHTML = `
     <h2 id="bb-h">Share of search vs share of revenue</h2>
-    <p class="insight">adidas's terrace shoes went from about 1% to 20% of adidas searches. Its share of search jumped about 6 points, and its revenue share rose ${up24} points in 2024 and ${up25} more in 2025.</p>
+    <p class="insight">adidas's terrace shoes went from about ${retroYear('adidas', 2022)}% to ${retroYear('adidas', 2024)}% of adidas searches. Its share of search jumped ${p1(sy('adidas', 2024) - sy('adidas', 2022))} points, and its revenue share rose ${up24} points in 2024 and ${up25} more in 2025.</p>
     <div class="bb__tools">
       <div class="bb__seg" role="group" aria-label="Brand">${Object.keys(NAME).map((k) => `<button type="button" class="pill" data-brand="${k}">${NAME[k]}</button>`).join('')}</div>
       <div class="bb__seg" role="group" aria-label="Currency"><button type="button" class="pill" data-cc="1">Constant currency</button><button type="button" class="pill" data-cc="0">US dollars</button></div>
     </div>
-    <div class="bb__screen" id="bb-screen" tabindex="0" aria-label="Chart. Left and right arrows move through the months."></div>
+    <div class="bb__screen" id="bb-screen" tabindex="0" role="group" aria-label="Chart. Left and right arrows move through the months."><div class="bb__lcd" id="bb-readout" aria-live="polite"></div><div id="bb-plot"></div></div>
     <ul class="bb__key">
       <li><svg viewBox="0 0 24 10" aria-hidden="true"><path class="bb__line" d="M1 6 L8 3 L15 7 L23 2"/></svg>Share of search, monthly</li>
       <li><svg viewBox="0 0 24 10" aria-hidden="true"><path class="bb__steps" d="M1 7H12V3H23"/></svg>Share of revenue, yearly</li>
@@ -88,12 +96,12 @@ export async function init() {
     <p class="note">Shares of the three brands. Retro shoes: ${Object.keys(NAME).map((k) => `${NAME[k]} ${d.franchises[k].join(', ')}`).join('; ')}. Searches from Google Trends, worldwide; revenue from annual reports and 10-Ks.</p>
     <h3>What I found</h3>
     <ul class="bb__finds">
-      <li><b>Search share moves with revenue share, but it isn't a forecast.</b> In constant currency, search share running ahead of revenue share was followed by revenue share rising the next year only weakly (r = ${b.cc.r.toFixed(2)}, ${b.cc.n} brand-years), and it barely beat guessing "no change": ${b.cc.loyo.toFixed(2)} against ${b.cc.naive.toFixed(2)} points of error. <span class="bb__tag">Confirmatory</span></li>
-      <li><b>One retro wave moved a brand.</b> adidas's terrace shoes reached a fifth of adidas searches in 2024, and adidas's search share and revenue share both rose. One case. <span class="bb__tag">Exploratory</span></li>
-      <li><b>Nike's classics are fading with its search share.</b> Dunk, Air Force 1 and Jordan 1 fell from 22% of Nike searches in 2021 to 11% in 2025, as Nike's share of search fell from 62% to 54%. <span class="bb__tag">Exploratory</span></li>
+      <li><b>Search share pointed the right way, but it isn't a forecast.</b> In constant currency, search share running ahead of revenue share came before revenue share rising the next year only weakly (r = ${b.cc.r.toFixed(2)}, ${b.cc.n} brand-years, p = ${b.cc.p.toFixed(2)}). Its error was ${b.cc.loyo.toFixed(2)} points against ${b.cc.naive.toFixed(2)} for guessing "no change", and at the euro's average rate it only tied. <span class="bb__tag">Confirmatory</span></li>
+      <li><b>One retro wave came before a brand's rise.</b> adidas's terrace shoes reached a fifth of adidas searches in 2024, and adidas's search share and revenue share both rose. One case, and it doesn't show cause. <span class="bb__tag">Exploratory</span></li>
+      <li><b>Nike's classics are fading with its search share.</b> Dunk, Air Force 1 and Jordan 1 fell from ${retroYear('nike', 2021)}% of Nike searches in 2021 to ${retroYear('nike', 2025)}% in 2025, as Nike's share of search fell from ${p1(sy('nike', 2021))}% to ${p1(sy('nike', 2025))}%. <span class="bb__tag">Exploratory</span></li>
     </ul>
     <h3>The currency trap I caught</h3>
-    <p>In US dollars the test looked strong: r = ${b.usd.r.toFixed(2)}, with ${b.usd.loyo.toFixed(2)} points of error against ${b.usd.naive.toFixed(2)} for guessing "no change". But adidas and Puma report in euros. When the euro rises, their share of dollar revenue rises without one extra sale, and search doesn't follow exchange rates. With the euro held at one rate, 1.15 dollars, most of that edge went away, so I report the weaker version.</p>
+    <p>In US dollars the test looked strong: r = ${b.usd.r.toFixed(2)}, with ${b.usd.loyo.toFixed(2)} points of error against ${b.usd.naive.toFixed(2)} for guessing "no change". But adidas and Puma report in euros. When the euro rises, their share of dollar revenue rises without one extra sale, and search doesn't follow exchange rates. With the euro held at one rate, 1.15 dollars, the edge all but went away (p = ${b.cc.p.toFixed(2)}, against ${b.usd.p.toFixed(2)} in dollars), so I report the weaker version.</p>
     <h3>My open call</h3>
     <p>Puma's share of search in 2026 so far is ${p1(pend.sos_2026)}%, against a 2025 revenue share of ${p1(pend.som_2025_cc)}%. If search leads, its 2026 revenue share should rise above that. Called ${esc(pend.made)}, scored ${esc(pend.scored)}. It's a weak call: Puma is where the signal is weakest, and "puma" also catches the animal.</p>
     <details class="bb__data"><summary>The yearly numbers</summary><p class="note" id="bb-table-cap"></p><div class="tbl-wrap"><table id="bb-table"></table></div></details>
@@ -107,11 +115,11 @@ export async function init() {
   });
   const scr = $('bb-screen');
   scr.addEventListener('pointermove', hoverAt);
-  scr.addEventListener('pointerleave', () => { hover = null; draw(); });
+  scr.addEventListener('pointerleave', () => { hover = null; drawChart(); });
   scr.addEventListener('keydown', (e) => {
     const step = { ArrowLeft: -1, ArrowRight: 1, PageUp: -12, PageDown: 12 }[e.key];
     if (!step) return;
-    e.preventDefault(); hover = Math.max(0, Math.min(d.months.length - 1, (hover ?? d.months.length - 1) + step)); draw();
+    e.preventDefault(); hover = Math.max(0, Math.min(d.months.length - 1, (hover ?? d.months.length - 1) + step)); drawChart();
   });
   draw();
 }

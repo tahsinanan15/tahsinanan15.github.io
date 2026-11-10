@@ -364,10 +364,11 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__lcd { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; color: var(--lcd-fg); font: 400 16px/20px var(--pixel); text-shadow: 0 0 6px var(--lcd-glow); font-variant-numeric: tabular-nums; }
 .bb__chart { display: block; width: 100%; height: auto; margin-top: 4px; overflow: visible; }
 .bb__ax { fill: var(--lcd-sub); font: 400 11px var(--body); }
-:root[data-theme=aero] .bb__ax { font: 400 8px var(--pixel); }   /* 8px only in Silkscreen; the other OSes' --pixel faces blur that small */
+.phone .bb__ax { font-size: 12px; }
+:root[data-theme=aero]:not(.phone) .bb__ax { font: 400 8px var(--pixel); }   /* 8px only in Silkscreen; the other OSes' --pixel faces blur that small */
 .bb__grid { stroke: color-mix(in srgb, var(--lcd-sub) 18%, transparent); stroke-width: 1; }
 .bb__line { fill: none; stroke: var(--lcd-fg); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; filter: drop-shadow(0 0 3px var(--lcd-glow)); vector-effect: non-scaling-stroke; }
-.bb__steps { fill: none; stroke: var(--lcd-sub); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.bb__steps { fill: none; stroke: var(--lcd-sub); stroke-width: 3; stroke-opacity: .7; vector-effect: non-scaling-stroke; }   /* thicker and dimmer than the glowing line, so the two read apart where an OS's two LCD inks are close */
 .bb__band { fill: color-mix(in srgb, var(--lcd-fg) 28%, transparent); }
 .bb__pend { fill: none; stroke: var(--lcd-sub); stroke-width: 2.5; stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
 .bb__cross { stroke: color-mix(in srgb, var(--lcd-fg) 55%, transparent); stroke-width: 1; vector-effect: non-scaling-stroke; }

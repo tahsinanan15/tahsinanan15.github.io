@@ -47,8 +47,8 @@ const SLIDES = {
     <h2 class="s">Share of search, in one line</h2>
     <p class="lede"><b>A brand's searches divided by all three brands' searches.</b> The marketing effectiveness researcher Les Binet found it tends to run ahead of a brand's share of market.</p>
     ${screen(['2025', 'SEARCH VS REVENUE'], (() => {
-      const rows = [['SEARCH', (k) => yearSearch(k, 2025)], ['REVENUE', (k) => annual(k, 'som_cc', 2025)]], C = { nike: 'var(--lcd-fg)', adidas: 'var(--lcd-sub)', puma: 'color-mix(in srgb, var(--lcd-fg) 40%, transparent)' };
-      return `<svg class="bb__chart" viewBox="0 0 320 96" aria-hidden="true">${rows.map(([lab, f], r) => { let x0 = 0; return `<text class="bb__ax" x="0" y="${r * 48 + 10}">${lab}: ${['nike', 'adidas', 'puma'].map((k) => `${k.toUpperCase()} ${p1(f(k))}%`).join('  ')}</text>` + ['nike', 'adidas', 'puma'].map((k) => { const w = f(k) / 1000 * 320, s = `<rect x="${x0}" y="${r * 48 + 16}" width="${w - 2}" height="24" fill="${C[k]}"/>`; x0 += w; return s; }).join(''); }).join('')}</svg>`;
+      const rows = [['SEARCH', (k) => yearSearch(k, 2025)], ['REVENUE', (k) => annual(k, 'som_cc', 2025)]], C = { nike: 'var(--lcd-fg)', adidas: 'var(--lcd-sub)', puma: 'color-mix(in srgb, var(--lcd-fg) 40%, transparent)' }, INK = { nike: 'var(--lcd-bg)', adidas: 'var(--lcd-bg)', puma: 'var(--lcd-fg)' };
+      return `<svg class="bb__chart" viewBox="0 0 320 96" aria-hidden="true">${rows.map(([lab, f], r) => { let x0 = 0; return `<text class="bb__ax" x="0" y="${r * 48 + 10}">${lab}</text>` + ['nike', 'adidas', 'puma'].map((k) => { const w = f(k) / 1000 * 320, s = `<rect x="${x0}" y="${r * 48 + 16}" width="${w - 2}" height="24" fill="${C[k]}"/><text class="bb__ax" x="${x0 + 3}" y="${r * 48 + 31}" style="fill:${INK[k]}">${k === 'puma' ? '' : k.toUpperCase() + ' '}${p1(f(k))}%</text>`; x0 += w; return s; }).join(''); }).join('')}</svg>`;
     })())}
     <p class="small">I tested it on Nike, adidas and Puma from 2010 to 2025: does search share running ahead of revenue share come before revenue share rising?</p>`, SRC),
   3: () => win('ADIDAS.TXT', `
@@ -59,7 +59,7 @@ const SLIDES = {
   4: () => win('CURRENCY.TXT', `
     <h2 class="s">The trap I caught: the euro</h2>
     <ul class="lcds"><li><b>r ${b.usd.r.toFixed(2)}</b><span>in US dollars</span></li><li><b>r ${b.cc.r.toFixed(2)}</b><span>in constant currency</span></li></ul>
-    <p class="lede">In dollars, search share looked like a strong one-year forecast. But adidas and Puma report in euros: when the euro rises, their dollar share rises with no extra sales. Held at one exchange rate, the forecast barely beat guessing "no change" (${b.cc.loyo.toFixed(2)} vs ${b.cc.naive.toFixed(2)} points of error).</p>
+    <p class="lede">In dollars, search share looked like a strong one-year forecast. But adidas and Puma report in euros: when the euro rises, their dollar share rises with no extra sales. Held at one exchange rate, it no longer beat guessing "no change" in any way that counts (${b.cc.loyo.toFixed(2)} vs ${b.cc.naive.toFixed(2)} points of error, p = ${b.cc.p.toFixed(2)}).</p>
     <p class="small">Correlation between search share running ahead of revenue share and the next year's change, ${b.cc.n} brand-years.</p>`, SRC),
   5: () => win('NIKE.TXT', `
     <h2 class="s">Nike's classics are fading</h2>
@@ -69,12 +69,12 @@ const SLIDES = {
   6: () => win('PUMA_CALL.TXT', `
     <h2 class="s">My open call: Puma</h2>
     ${screen(['PUMA', 'CALLED ' + d.pending.made], chart('puma', 2018, { pending: true }))}${key}
-    <p class="lede">Speedcat and Palermo pushed Puma's share of search to ${p1(d.pending.sos_2026)}% in 2026 so far, against a 2025 revenue share of ${p1(d.pending.som_2025_cc)}%. If search leads, its 2026 revenue share should rise.</p>
+    <p class="lede">Puma's share of search reached ${p1(d.pending.sos_2026)}% in 2026 so far, as Speedcat and Palermo took off, against a 2025 revenue share of ${p1(d.pending.som_2025_cc)}%. If search leads, its 2026 revenue share should rise.</p>
     <p class="small">Scored ${d.pending.scored}. A weak call: Puma is where the signal is weakest, and "puma" also catches the animal.</p>`, SRC),
   7: () => win('SO_WHAT.TXT', `
     <h2 class="s">What I'd tell a brand team</h2>
     <ul class="steps">
-      <li><span><b>Track share of search monthly, and read it as direction, not a forecast.</b> It's free and it moves with share of revenue.</span></li>
+      <li><span><b>Track share of search monthly, and read it as direction, not a forecast.</b> It's free, and it pointed the right way here.</span></li>
       <li><span><b>Check currency before trusting any share chart.</b> Most of the forecasting edge here was the euro.</span></li>
       <li><span><b>Line up the next franchise before the retro wave peaks.</b> Nike's classics faded with its search share.</span></li>
     </ul>

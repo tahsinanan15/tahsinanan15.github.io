@@ -18,7 +18,16 @@ def run(sh,label):
     for _ in range(5000):
         p=rng.permutation(yrs); Yp=np.concatenate([[Y[(T==p[i])&(np.arange(len(T))//15==j)][0] for i in range(15)] for j in range(3)])
         cnt+= np.corrcoef(X,Yp)[0,1]>=r
-    print(f"{label}: n={len(X)} slope={sl:+.3f} r={r:+.2f} LOYO MAE={100*np.mean(e):.2f} naive={100*np.mean(abs(Y)):.2f} perm p={cnt/5000:.4f}")
+    # search-only permutation: shuffle which year's share of search goes with each year, keep revenue share as is,
+    # so the built-in link (both the gap and the next change contain -SOM_t) survives in every shuffle
+    S=np.array([[sos.at[t,b] for t in range(2010,2025)] for b in ["nike","adidas","puma"]])
+    M=np.array([[sh.at[t,b] for t in range(2010,2025)] for b in ["nike","adidas","puma"]])
+    cnt2=0
+    for _ in range(5000):
+        p=rng.permutation(15); Xp=(S[:,p]-M).ravel()
+        cnt2+= np.corrcoef(Xp,Y)[0,1]>=r
+    print(f"{label}: n={len(X)} slope={sl:+.3f} r={r:+.2f} LOYO MAE={100*np.mean(e):.2f} naive={100*np.mean(abs(Y)):.2f} "
+          f"perm p (shuffle outcomes)={cnt/5000:.4f}  perm p (shuffle search only)={cnt2/5000:.4f}")
 sh=som[["nike_share","adidas_share","puma_share"]].set_axis(["nike","adidas","puma"],axis=1)
 run(sh,"as published USD")
 # constant currency: convert EUR revenues at a fixed 1.15 USD/EUR
@@ -27,4 +36,3 @@ for c in ["adidas_usd","puma_usd"]: u[c]=u[c]/som.usd_per_eur*1.15
 cc=u.div(u.sum(1),axis=0).set_axis(["nike","adidas","puma"],axis=1)
 run(cc,"constant FX 1.15")
 print("adidas share USD 2023-25:",sh.adidas.loc[2023:2025].round(4).tolist()," const FX:",cc.adidas.loc[2023:2025].round(4).tolist())
-print("drop 2016-17 rows (largest ESOS)")
