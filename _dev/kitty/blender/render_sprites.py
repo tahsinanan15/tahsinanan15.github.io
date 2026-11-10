@@ -8,6 +8,7 @@ Run it with Blender (it renders PNG frames and a meta.json into OUT; pack_sprite
       [--coats aero,baroque]          only these coats (all six by default)
       [--actions walk,sit]            only these actions (all by default)
       [--measure]                     only work out the cell and write meta.json, render nothing
+      [--remake held]                 with --blend: make these actions_interaction actions again (the rest are kept)
 
 What it does
   1. Makes every action from actions_locomotion, actions_idles and actions_interaction on the rig.
@@ -97,6 +98,10 @@ def main():
     if 'kitty_actions' in sc:           # a .blend saved by --save already has every action made
         acts = json.loads(sc['kitty_actions'])
         actions_idles.add_face_controls(arm); actions_interaction.add_eyes_shut(arm)
+        if opt('--remake'):
+            new = {a['name']: a for a in actions_interaction.build(arm, only=opt('--remake').split(','))}
+            acts = [new.get(a['name'], a) for a in acts]
+            sc['kitty_actions'] = json.dumps(acts)
     else:
         acts = actions_locomotion.build(arm) + actions_idles.build(arm) + actions_interaction.build(arm)
         sc['kitty_actions'] = json.dumps(acts)

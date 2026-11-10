@@ -13,7 +13,7 @@ moves it across the screen.
 The actions
   held    hanging by the scruff: body straight down below it, front paws dangling, hind legs and tail hanging loose,
           a little swing (loop). The scruff stays at one point (HELD_SCRUFF, also returned as the held action's
-          'scruff'), so the page can pin that point to the cursor; the hind paws hang just above the floor.
+          'scruff'), so the page can pin that point to the cursor; the hind paws hang above the floor.
   stalk   low crouch, eyes locked forward, rear end wiggling, tail tip twitching (loop, turned to travel)
   pounce  crouch, spring, a stretched leap arcing up and down in place, land with a squash, paws pinning, and up to
           standing, so sit_down follows on (turned to travel)
@@ -41,7 +41,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import cat, actions_idles
 
 FPS = 12
-HELD_SCRUFF = Vector((0.0, 0.0, 0.57))   # where the scruff hangs, in the rig's space (held() works it out)
+HELD_SCRUFF = Vector((0.0, 0.0, 1.0004375))   # where the scruff hangs, in the rig's space: fixed, so the cell and
+                                              # the page's cursor point stay put whatever the legs do
 LEGS = [f'leg.{k}.{s}' for k in ('front', 'back') for s in ('L', 'R')]
 TAIL = [f'tail.0{i}' for i in range(1, 7)]
 
@@ -229,9 +230,6 @@ def add_eyes_shut(arm):
 
 # ---------- the poses, one function per action: pose(arm, i) for frame index i = 0..frames-1 ----------
 
-HELD_LOW = 0.03       # how high the dangling hind paws stay above the floor
-
-
 def scruff_point(arm):
     """The loose skin at the back of the neck, just behind the skull, in the rig's space."""
     bpy.context.view_layer.update()
@@ -240,10 +238,10 @@ def scruff_point(arm):
 
 
 def held(arm, i, n=12):
-    """Hanging from the scruff: the body straight down below it, the front paws dangling limp in front of the chest,
-    the hind legs hanging loose, the tail hanging down with its tip curled; the whole cat swings a little about the
-    scruff and the legs and tail swing a beat behind. The scruff stays at HELD_SCRUFF in every frame."""
-    global HELD_SCRUFF
+    """Hanging from the scruff, relaxed: the body straight down below it, the front paws dangling limp in front of
+    the chest, the two hind legs hanging apart and loose (the near one a little forward, the far one a little bent),
+    the tail hanging behind them and curling out to screen-left, clear of the legs. The whole cat swings a little
+    about the scruff; the legs and tail swing a beat behind, each on its own beat. The scruff stays at HELD_SCRUFF."""
     t = i / n
     cat.pose_rest(arm)
     set_eyes(arm, 0)
@@ -259,21 +257,26 @@ def held(arm, i, n=12):
         y = 1 if s_ == 'L' else -1
         cat.aim(arm, {f'leg.front.{s_}.upper': hang((0.45, 0.08 * y, -1), 0.10 + o, 0.5),
                       f'leg.front.{s_}.lower': hang((0.25, 0.03 * y, -1), 0.14 + o, 0.7),
-                      f'leg.front.{s_}.paw': hang((0.55, 0, -0.8), 0.18 + o, 0.9),
-                      f'leg.back.{s_}.upper': hang((0.30, 0.34 * y, -1), 0.12 + o, 0.5),
-                      f'leg.back.{s_}.lower': hang((0.10, 0.16 * y, -1), 0.16 + o, 0.7),
-                      f'leg.back.{s_}.paw': hang((0.45, 0.02 * y, -1), 0.20 + o, 0.9)})
-    # behind the hind legs, the tip curling away to the far side, so both hind legs show
-    tail = [(-0.6, 0, -1), (-0.5, 0.05, -1), (-0.35, 0.15, -1), (-0.2, 0.35, -0.9), (-0.1, 0.7, -0.5), (0.0, 0.9, 0.1)]
-    for k, (name, d) in enumerate(zip(TAIL, tail)):
-        cat.aim(arm, {name: hang(d, 0.12 + 0.05 * k, 0.6 + 0.15 * k)})
-    # the scruff to HELD_SCRUFF (worked out once, on the first frame, so the paws hang HELD_LOW above the floor)
+                      f'leg.front.{s_}.paw': hang((0.55, 0, -0.8), 0.18 + o, 0.9)})
+    # hind legs: apart, hanging nearly straight; the near (R) one a touch forward, the far (L) one bent at the hock
+    for name, d, lag, amt in HIND:
+        cat.aim(arm, {name: hang(d, lag, amt)})
+    for k, (name, d) in enumerate(zip(TAIL, HELD_TAIL)):
+        cat.aim(arm, {name: hang(d, 0.30 + 0.06 * k, 0.5 + 0.12 * k)})
     s = scruff_point(arm)
-    move_root(arm, Matrix.Translation(-s))
-    if i == 0:
-        HELD_SCRUFF = Vector((0, 0, HELD_LOW - lowest_point()))
-    move_root(arm, Matrix.Translation(HELD_SCRUFF))
+    move_root(arm, Matrix.Translation(HELD_SCRUFF - s))
+    if i == 0: print(f'  held: lowest point {lowest_point():.3f} (floor {FLOOR})')
     move_root(arm, about(HELD_SCRUFF, view, 4 * wave(t)))     # the swing
+
+
+HIND = [   # bone, direction in the rig's space (x forward, y the cat's left, z up), swing lag (cycles), swing amount
+    ('leg.back.R.upper', (0.60, -0.30, -1), 0.14, 0.5), ('leg.back.R.lower', (0.30, -0.05, -1), 0.20, 0.8),
+    ('leg.back.R.paw', (0.50, -0.05, -1), 0.26, 1.0),
+    ('leg.back.L.upper', (0.30, 0.50, -1), 0.40, 0.5), ('leg.back.L.lower', (-0.05, 0.25, -1), 0.46, 0.8),
+    ('leg.back.L.paw', (0.45, 0.05, -1), 0.52, 1.0)]
+# behind the hind legs (-x is away from the camera) and out to the near side, the tip curling up: screen-left of them
+HELD_TAIL = [(-0.75, -0.7, -0.45), (-0.5, -0.75, -0.75), (-0.3, -0.75, -0.8), (-0.25, -0.85, -0.3), (-0.2, -0.8, 0.2),
+             (-0.1, -0.6, 0.6)]
 
 
 def crouch(arm, depth=1.0, rump=0.0, tread=0.0, reach=0.0, yaw=0.0):

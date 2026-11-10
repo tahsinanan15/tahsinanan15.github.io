@@ -534,6 +534,7 @@ $('balloon-x').addEventListener('click', hideBalloon);
 $('balloon-go').addEventListener('click', () => { balloon.hidden = true; open('observe'); });
 function inviteObserve() {
   if (session.counted.balloon || wins.get('observe').open || touring || hooked()) return;
+  if (document.querySelector('.kitty__say:not([hidden])')) return void setTimeout(inviteObserve, 8000);   // the kitty is talking: one balloon at a time
   if (sheets.length || $('player').classList.contains('is-beat')) { setTimeout(inviteObserve, 15000); return; }   // a sheet fills a phone's screen, and a game wants its corner, so it waits
   session.counted.balloon = 1;
   const n = session.events.length;
