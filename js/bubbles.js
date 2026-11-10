@@ -105,16 +105,16 @@ export function initBubbles() {
     paint(age);
   };
 
-  const pop = (b) => {
+  const pop = (b, quiet) => {
     sparks.push({ ring: 1, x: b.cx, y: b.y, r: b.r, life: 1 });
     for (let i = 0; i < 9; i++) { const a = Math.random() * 7, sp = 50 + Math.random() * 120; sparks.push({ x: b.cx + Math.cos(a) * b.r, y: b.y + Math.sin(a) * b.r, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 40, r: 1 + Math.random() * 2.2, life: 1 }); }
     recycle(b);
-    sfx.pop();
+    if (!quiet) sfx.pop();
   };
   // Windows and icons sit above this layer, so a hit test only runs on the open desktop.
   const hitAt = (x, y) => list.find((b) => Math.hypot((b.cx ?? b.x) - x, b.y - y) < b.r + 5);
   addEventListener('pointerdown', (e) => {
-    if (e.target.closest('.win, .taskbar, .startmenu, .ico, .balloon, .boot, dialog, .off, .tour')) return;
+    if (e.target.closest('.win, .taskbar, .startmenu, .ico, .balloon, .boot, dialog, .off, .tour, .kitty, .kitty__say')) return;
     const b = hitAt(e.clientX, e.clientY);
     if (!b) return;
     pop(b);
@@ -132,6 +132,7 @@ export function initBubbles() {
     write: tick,
   });
   return {
+    swat(x, y, r, look) { const b = list.find((o) => !o.slot && Math.hypot((o.cx ?? o.x) - x, o.y - y) < r + o.r); if (b && !look) pop(b, true); return !!b; },   // the kitty's paw: look only checks for one in reach; a pop by the paw is silent
     gather(el) {
       if (still.matches) return;
       well = el; box = null;

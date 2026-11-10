@@ -2,6 +2,7 @@
 // A spotlight moves from window to window, and on a phone the document sits above the dock. Written, never spoken: there is no synthesized voice.
 import { track } from './analytics.js';
 import { vhs } from './audio.js';
+import { dockKitty } from './kitty.js';
 
 const STEPS = [
  {
@@ -48,6 +49,7 @@ const still = matchMedia('(prefers-reduced-motion: reduce)');
 let api, opener = null, active = false, index = 0, timer = 0, running = false, hovering = false, typing = 0, stepEnd = 0, remaining = 0, paused = false, saved = [], opened = new Set();
 
 const dock = $('tour'), spot = $('tourspot');
+const kitty = dockKitty(dock.querySelector('.tour__kitty'));   // the kitty narrates from the dock: it says hello, points at each window, and nods at the end
 
 function snapshot() {
   saved = [...api.wins].map(([id, w]) => ({ id, open: w.open, min: w.min, placed: w.placed, left: w.el.style.left, top: w.el.style.top, cw: w.el.style.getPropertyValue('--w'), ch: w.el.style.getPropertyValue('--h'), z: w.el.style.zIndex, max: w.el.classList.contains('is-max'), sheet: w.el.classList.contains('is-sheet') }));
@@ -170,6 +172,7 @@ function show(i) {
   $('tour-pause').hidden = last;
   $('tour-end').hidden = !last;
   $('tour-stop').hidden = last;
+  kitty.cue(index === 0 ? 'happy' : last ? 'nod' : 'point', index === 0 || last ? 2500 : 0);
   say(s.caption);   // after those, so a phone measures it in the dock's final shape
   if (dock.contains(from) && (from.disabled || from.closest('[hidden]'))) (last ? $('tour-play') : $('tour-next')).focus({ preventScroll: true });   // the keyboard stays in the dock when its button goes away
   track('rundown_step', { step: index + 1, window: s.win || 'end' });

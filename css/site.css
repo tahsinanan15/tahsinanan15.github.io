@@ -84,6 +84,23 @@ html, body { transition: none; }
 .wall img:not([src]) { visibility: hidden; }
 .no-js .wall { display: none; }
 .bubbles { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
+/* The desktop kitty (js/kitty.js): a button over the windows and under the taskbar, and what it says, in the balloon's own paper,
+   corners and shadow (each OS re-themes both through the balloon's tokens below), with the OS's own secondary buttons.
+   Its canvas draws its nap's z and its ! in the OS's icon-label colour and display face, and its hearts in --kitty-heart.
+   No CSS filter on it: the browser would redraw one at the screen's full resolution every time the cat moves. */
+.kitty { position: fixed; top: 0; left: 0; z-index: 8990; will-change: transform; padding: 0; color: var(--ico-ink, #fff); font-family: var(--display); --kitty-heart: var(--pink); background: none; border: 0; touch-action: none; -webkit-user-select: none; user-select: none; }
+:is([data-theme=vapor], [data-theme=baroque], [data-theme=ghost]) .kitty { --kitty-heart: var(--iris-b); }
+[data-theme=ray] .kitty { --kitty-heart: var(--accent); }
+[data-theme=metro] .kitty { --kitty-heart: var(--link-hover); }
+.kitty canvas { display: block; pointer-events: none; }
+.kitty[hidden], .kitty__say[hidden] { display: none; }
+.kitty__say { position: fixed; top: 0; left: 0; z-index: 8991; display: grid; gap: 4px; width: max-content; max-width: min(230px, calc(100vw - 16px)); padding: 8px 11px 9px; font: 400 14.5px/1.3 var(--body); border: 1px solid #7a7350; border-radius: 9px; box-shadow: 0 8px 22px rgba(0, 20, 60, .45); }
+.kitty__say::after { content: ""; position: absolute; bottom: -8px; left: calc(var(--tail, 50%) - 7px); width: 14px; height: 14px; border: solid #7a7350; border-width: 0 1px 1px 0; rotate: 45deg; }
+.kitty__say[data-side=below]::after { top: -8px; bottom: auto; border-width: 1px 0 0 1px; }   /* the tail points at the kitty from whichever side the bubble is on */
+.kitty__say:is([data-side=right], [data-side=left])::after { top: calc(var(--tail, 20px) - 7px); bottom: auto; left: -8px; border-width: 0 0 1px 1px; }
+.kitty__say[data-side=left]::after { left: auto; right: -8px; border-width: 1px 1px 0 0; }
+.kitty__say b { font: 700 17px/1.2 var(--display); }
+.kitty__say .gel { min-height: 32px; padding: 3px 12px; font-size: 13.5px; }
 .no-js .bubbles { display: none; }
 
 /* ------- Windows, base (scrolling) layout ------- */
@@ -381,6 +398,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .tray__btn { display: grid; width: 32px; height: 32px; padding: 0; place-items: center; color: #fff; cursor: inherit; background: rgba(255, 255, 255, .1); border: 1px solid rgba(255, 255, 255, .25); border-radius: 6px; }
 .tray__btn svg { width: 17px; height: 17px; fill: currentColor; }
 .tray__btn:hover { background: rgba(255, 255, 255, .28); }
+.tray__btn[aria-pressed=false] svg { opacity: .45; }
 .counter { padding: 1px 5px; color: var(--lcd-fg); font: 400 16px/22px var(--pixel); font-variant-numeric: tabular-nums; background: #04101f; border: 1px solid rgba(255, 255, 255, .25); border-radius: 3px; text-shadow: 0 0 5px rgba(70, 220, 255, .6); }
 .clock { flex: none; font: 600 13.5px/1.1 var(--body); font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; text-shadow: 0 1px 2px rgba(0, 20, 60, .9); }
 .clock span { display: block; font-weight: 500; font-size: 13px; opacity: .92; }
@@ -394,7 +412,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .startmenu a:hover, .startmenu a:focus-visible { color: var(--bar-text); background: linear-gradient(180deg, var(--glass-a), var(--glass-b)); }
 .startmenu svg { flex: none; width: 26px; height: 26px; }
 .startmenu__side { background: var(--tint) !important; }
-.startmenu__foot { display: flex; justify-content: flex-end; padding: 7px 8px; }
+.startmenu__foot { display: flex; justify-content: flex-end; gap: 6px; padding: 7px 8px; }
 
 .balloon { position: fixed; right: 12px; bottom: calc(var(--taskbar) + 16px + env(safe-area-inset-bottom, 0px)); z-index: 8999; width: min(310px, calc(100vw - 24px)); padding: 10px 30px 12px 13px; font-size: 14.5px; line-height: 1.35; background: #fff9d6; border: 1px solid #7a7350; border-radius: 9px; box-shadow: 0 8px 22px rgba(0, 20, 60, .45); animation: pop .5s var(--ease-out); }
 .balloon::after { content: ""; position: absolute; right: 26px; bottom: -11px; width: 18px; height: 18px; background: #fff9d6; border: solid #7a7350; border-width: 0 1px 1px 0; transform: skewY(36deg) rotate(45deg) scale(.7); }
@@ -426,7 +444,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .tour__count { flex: none; padding-right: 6px; font: 600 13px/1 var(--body); opacity: .95; text-shadow: var(--bar-shadow); }
 .tour__main { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 14px; padding: 10px 14px 12px; color: var(--ink); background: var(--sheet); border: 1px solid var(--bar-edge); border-top: 0; border-radius: 0 0 var(--win-bot) var(--win-bot); }
 .tour__voice { display: grid; gap: 4px; justify-items: center; align-content: start; }
-.tour__eye { width: 44px; height: 44px; overflow: visible; filter: drop-shadow(0 2px 2px rgba(0, 20, 60, .35)); }
+.tour__kitty { display: block; width: 96px; aspect-ratio: 194 / 220; filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .35)); }
 .tour__wave { display: flex; align-items: center; gap: 2px; height: 14px; }
 .tour__wave i { width: 3px; height: 3px; background: var(--accent); border-radius: 2px; }
 .is-talking .tour__wave i { animation: talk .55s ease-in-out infinite alternate; }
@@ -451,7 +469,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .os:where(:not(.phone)) .tour { top: 64px; right: 12px; bottom: calc(var(--taskbar) + 12px); left: auto; display: flex; flex-direction: column; width: clamp(300px, 27vw, 400px); }
 .os:where(:not(.phone)) .tour__main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr) auto; gap: 16px; padding: 18px 18px 16px; overflow: auto; }
 .os:where(:not(.phone)) .tour__voice { grid-auto-flow: column; justify-content: start; align-items: center; gap: 12px; }
-.os:where(:not(.phone)) .tour__eye { width: 56px; height: 56px; }
+.os:where(:not(.phone)) .tour__kitty { width: 128px; margin: -18px 0 -14px; }
 .os:where(:not(.phone)) .tour__text { display: flex; flex-direction: column; gap: 10px; }
 .os:where(:not(.phone)) .tour__seg { margin-top: auto; }
 .os:where(:not(.phone)) .tour__ctl { grid-column: auto; justify-content: space-between; }
@@ -525,7 +543,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .os .icons { position: fixed; inset: 10px auto calc(var(--taskbar) + 8px) 12px; z-index: 2; display: grid; grid-auto-flow: column; grid-template-rows: repeat(auto-fill, 86px); grid-auto-columns: 100px; align-content: start; justify-content: start; gap: 2px; pointer-events: none; }
 .os .ico { display: grid; justify-items: center; align-content: start; gap: 3px; padding: 5px 1px 4px; color: var(--ico-ink); font: 600 13px/1.12 var(--body); text-align: center; border: 1px solid transparent; border-radius: 5px; pointer-events: auto; text-shadow: var(--ico-shadow); transition: background .15s, border-color .15s; }
 .os .ico svg { display: block; width: 46px; height: 46px; filter: var(--ico-filter); transition: transform .3s var(--ease-out); }
-.os .ico:hover { color: var(--ico-ink); background: color-mix(in srgb, var(--accent) 28%, transparent); border-color: color-mix(in srgb, var(--accent) 65%, #fff); }
+.os .ico:hover, .os .ico.is-shown { color: var(--ico-ink); background: color-mix(in srgb, var(--accent) 28%, transparent); border-color: color-mix(in srgb, var(--accent) 65%, #fff); }
 .os .ico:hover svg { transform: translateY(-2px) scale(1.06); }
 .os:where(:not(.phone)) .tasks { display: flex; flex: 1; gap: 3px; min-width: 0; overflow: hidden; }
 .os .task { display: flex; flex: 0 1 260px; align-items: center; gap: 6px; min-width: 42px; height: 36px; padding: 0 8px; overflow: hidden; color: #fff; font: 400 var(--file-size)/1 var(--pixel); letter-spacing: var(--file-spacing); text-align: left; text-shadow: 0 1px 2px rgba(0, 20, 60, .9); background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05)); border: 1px solid rgba(255, 255, 255, .28); border-radius: 5px; }
@@ -587,9 +605,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .ico svg, .win__ico, .task svg, .startmenu svg, .files svg, .startmenu__head .eye { fill: currentColor; }
 .win__ico, .task svg { color: var(--bar-text); }
 .startmenu svg, .files svg { color: var(--accent); }
-.balloon { color: var(--balloon-ink, var(--ink)); background: var(--balloon-bg, #fff9d6); }
-.balloon::after { background: var(--balloon-bg, #fff9d6); }
-.balloon b { color: var(--heading); }
+.balloon, .kitty__say { color: var(--balloon-ink, var(--ink)); background: var(--balloon-bg, #fff9d6); }
+.balloon::after, .kitty__say::after { background: var(--balloon-bg, #fff9d6); }
+.balloon b, .kitty__say b { color: var(--heading); }
 #g-iris stop:nth-child(1) { stop-color: var(--iris-a, #7ff1ff); }
 #g-iris stop:nth-child(2) { stop-color: var(--iris-b, #1890d8); }
 #g-iris stop:nth-child(3) { stop-color: var(--iris-c, #07366f); }
@@ -668,7 +686,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   --heading-b: #2a1408;
   --cur-arrow: url(../assets/cursors/arrow-baroque.png) 0 0, default; --cur-hand: url(../assets/cursors/hand-baroque.png) 10 0, pointer;
 }
-[data-theme=baroque] .balloon b { color: #5a0a14; }
+[data-theme=baroque] .balloon b, [data-theme=baroque] .kitty__say b { color: #5a0a14; }
 [data-theme=baroque] .win__bar { -webkit-backdrop-filter: none; backdrop-filter: none; justify-content: center; height: 40px; padding-left: 22px; }
 [data-theme=baroque] .win__file { text-align: center; }
 [data-theme=baroque] .win__main { border: 2px solid #b8923a; border-top: 1px solid #b8923a; box-shadow: inset 0 0 0 1px #000, inset 0 0 0 2px #5e4a1c; padding: 6px; }
@@ -678,7 +696,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 [data-theme=baroque] .prose h1 { font-weight: 400; font-size: 40px; }
 [data-theme=baroque] .about h1 [lang=bn] { font-family: "Baloo Da 2", sans-serif; }
 [data-theme=baroque] .prose h2 { font-weight: 400; font-size: 29px; }
-[data-theme=baroque] .prose h3, [data-theme=baroque] .headline, [data-theme=baroque] .insight, [data-theme=baroque] .vs dd, [data-theme=baroque] .cells dd, [data-theme=baroque] .balloon b { font-family: "IM Fell English SC", "Tiro Bangla", serif; font-weight: 400; }
+[data-theme=baroque] .prose h3, [data-theme=baroque] .headline, [data-theme=baroque] .insight, [data-theme=baroque] .vs dd, [data-theme=baroque] .cells dd, [data-theme=baroque] .balloon b, [data-theme=baroque] .kitty__say b { font-family: "IM Fell English SC", "Tiro Bangla", serif; font-weight: 400; }
 [data-theme=baroque] .prose p, [data-theme=baroque] .prose ul { max-width: 59ch; }   /* the same line length: ch now measures Tiro's wider 0 */
 [data-theme=baroque] .win__btn { color: #f0d98a; background: #1a0d06; border-color: #b8923a; border-radius: 50%; width: 22px; box-shadow: none; }
 [data-theme=baroque] .win__btn svg { color: #f0d98a; filter: none; }
@@ -712,7 +730,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   --balloon-bg: #fcee0a; --balloon-ink: #05070a; --iris-a: #fcee0a; --iris-b: #ff003c; --iris-c: #2a0008;
   --cur-arrow: url(../assets/cursors/arrow-ghost.png) 0 0, default; --cur-hand: url(../assets/cursors/hand-ghost.png) 10 0, pointer;
 }
-[data-theme=ghost] .balloon b { color: #05070a; }
+[data-theme=ghost] .balloon b, [data-theme=ghost] .kitty__say b { color: #05070a; }
 [data-theme=ghost] .win__bar { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%); }
 .os[data-theme=ghost] .win:not(.is-focus) .win__bar { color: #8fdcbc; --bar-text: #8fdcbc; }
 [data-theme=ghost] .win__file::before { content: "// "; opacity: .6; }
@@ -721,7 +739,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 [data-theme=ghost] .win__body { border-color: #173a30; box-shadow: none; }
 [data-theme=ghost] .prose h1 { text-transform: uppercase; letter-spacing: .01em; }
 [data-theme=ghost] .prose h2 { text-transform: uppercase; }
-[data-theme=ghost] .prose h3, [data-theme=ghost] .insight, [data-theme=ghost] .vs dd, [data-theme=ghost] .cells dd, [data-theme=ghost] .viewer__info h2, [data-theme=ghost] .balloon b { font-family: var(--body); }
+[data-theme=ghost] .prose h3, [data-theme=ghost] .insight, [data-theme=ghost] .vs dd, [data-theme=ghost] .cells dd, [data-theme=ghost] .viewer__info h2, [data-theme=ghost] .balloon b, [data-theme=ghost] .kitty__say b { font-family: var(--body); }
 [data-theme=ghost] .win__btn { color: #05070a; background: transparent; border: 1px solid #05070a; border-radius: 0; box-shadow: none; }
 [data-theme=ghost] .win__btn svg { color: #05070a; filter: none; }
 .os[data-theme=ghost] .win:not(.is-focus) .win__btn, .os[data-theme=ghost] .win:not(.is-focus) .win__btn svg { color: #8fdcbc; border-color: #8fdcbc; }
@@ -796,7 +814,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   --balloon-bg: #f7b500; --balloon-ink: #0b0b0b; --iris-a: #fff; --iris-b: #0039a6; --iris-c: #0b0b0b;
   --cur-arrow: url(../assets/cursors/arrow-metro.png) 0 0, default; --cur-hand: url(../assets/cursors/hand-metro.png) 10 0, pointer;
 }
-[data-theme=metro] .balloon b { color: #0b0b0b; }
+[data-theme=metro] .balloon b, [data-theme=metro] .kitty__say b { color: #0b0b0b; }
 /* Title bars read like station signs: black, with the thin white line near the top. */
 [data-theme=metro] .win__bar { -webkit-backdrop-filter: none; backdrop-filter: none; height: 40px; box-shadow: inset 0 4px 0 #0b0b0b, inset 0 6px 0 #fff; font-weight: 700; padding-top: 6px; }
 [data-theme=metro] .win__file { font-weight: 700; letter-spacing: -.005em; }
@@ -820,7 +838,8 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 
 @media (prefers-reduced-motion: reduce) { #sting { display: none; } }
 
-/* PLAY_ME.EXE sits at the top of the last column with open desktop beside it. Until someone plays it, it bounces and glows and a note points at it. */
+/* PLAY_ME.EXE sits at the top of the last column with open desktop beside it. Until someone plays it, it bounces and glows and the kitty points at it,
+   or, with the kitty off, a note does. */
 @font-face { font-family: "Caveat"; src: url(../assets/fonts/caveat-pss.woff2) format("woff2"); font-weight: 400 700; font-display: swap; }
 .os .ico[data-rundown] { position: relative; grid-area: 1 / 2; }
 .pss { display: none; }
@@ -883,7 +902,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .mp__showing { order: 5; }
 
 /* Small text and bright fills, per OS. */
-[data-theme=vapor] .vs dd, [data-theme=vapor] .cells dd, [data-theme=vapor] .viewer__info h2, [data-theme=vapor] .balloon b, [data-theme=vapor] .sysdlg h2, [data-theme=vapor] .startmenu__head { font: 400 24px/1.1 "VT323", monospace; }
+[data-theme=vapor] .vs dd, [data-theme=vapor] .cells dd, [data-theme=vapor] .viewer__info h2, [data-theme=vapor] .balloon b, [data-theme=vapor] .kitty__say b, [data-theme=vapor] .sysdlg h2, [data-theme=vapor] .startmenu__head { font: 400 24px/1.1 "VT323", monospace; }
 [data-theme=vapor] .mp__list button[aria-current=true], [data-theme=vapor] .startmenu a:hover, [data-theme=vapor] .startmenu a:focus-visible, [data-theme=vapor] .startmenu__btn:hover, [data-theme=vapor] .startmenu__btn:focus-visible { color: #1a0640; }
 .os[data-theme=ghost] .task[aria-pressed=true] { color: #05070a; text-shadow: none; }
 .os[data-theme=metro] .task[aria-pressed=true] { color: #0b0b0b; background: #f7b500; text-shadow: none; }
@@ -965,7 +984,8 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
     --top: calc(max(8px, env(safe-area-inset-top, 0px)) + var(--hook-band));
     -webkit-tap-highlight-color: transparent;
   }
-  .phone.hook { --hook-band: 60px; }
+  .phone.hook { --hook-band: 92px; }   /* until the tape is played the kitty sits in a band over PLAY_ME.EXE, or with the kitty off, the note does */
+  .phone.hook.no-kitty { --hook-band: 60px; }
   @media (min-height: 720px) { .phone { --row: clamp(98px, calc((100dvh - var(--tb) - var(--mp-h) - 40px) / 4.6), 124px); --ico: 56px; --mp-h: 150px; } }
   @media (min-width: 600px) { .phone { --cols: 6; --row: 104px; --ico: 54px; } }
   .phone ::-webkit-scrollbar { width: 8px; height: 8px; }
@@ -1002,6 +1022,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone[data-theme=metro] .is-sheet .win__main { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
   .phone #bin.is-sheet, .phone #contact.is-sheet { top: auto; max-height: 100%; }   /* short ones sit at the bottom, over her painting */
   .phone .win__btn:not(.win__btn--close), .phone .win:not(.is-sheet) .win__btns, .phone .is-touring .win__btns { display: none; }
+  .phone.kitty-shows .win.is-sheet { bottom: var(--kitty-band, 140px); }   /* the kitty showing them around: it and its bubble sit in the band this leaves above the taskbar */
   .phone .win__btn--close { width: 44px; height: 44px; }
   .phone .win__btn--close svg { width: 18px; height: 18px; }
   .phone .win__body { overflow-wrap: break-word; }
@@ -1107,8 +1128,10 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone .tour .win__ico, .phone .tour .win__file { display: none; }
   .phone .tour__count { padding: 0; font: 400 17px/1 "VT323", monospace; }
   .phone .is-touring .win__status { display: none; }
-  .phone .tour__main { flex: 1; min-height: 0; grid-template-columns: minmax(0, 1fr); gap: 6px; padding: 8px 12px 8px; overflow: auto; overscroll-behavior: contain; border-radius: 0; }
-  .phone .tour__voice { display: none; }
+  .phone .tour__main { flex: 1; min-height: 0; grid-template-columns: auto minmax(0, 1fr); gap: 6px; padding: 8px 12px 8px; overflow: auto; overscroll-behavior: contain; border-radius: 0; }
+  .phone .tour__voice { pointer-events: none; }   /* the kitty keeps its own column beside the text, so it covers none of the document or the buttons */
+  .phone .tour__wave { display: none; }
+  .phone .tour__kitty { width: 54px; }
   .phone.is-rundown .tour__text h2 { font-size: 25px; line-height: 1; }
   .phone.is-rundown .tour__text p:not(.vh) { min-height: 0; margin: 3px 0 6px; font-size: 21px; line-height: 1.08; }
   .phone .tour__ctl { justify-content: space-between; }
@@ -1128,7 +1151,8 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   @media (orientation: landscape) and (max-height: 539px) {
     .phone { --cols: 5; --row: 78px; --ico: 36px; --mp-h: 100px; --side: calc(292px + var(--gutter)); }
     @media (max-width: 759px) { .phone { --cols: 4; } .phone .paint__colors { display: grid; grid: repeat(2, 44px) / auto-flow 44px; min-height: 91px; overflow-x: auto; } .phone .tool { padding-inline: 6px; } .phone .paint__sep { display: none; } }
-    .phone.hook { --hook-band: 42px; }
+    .phone.hook { --hook-band: 88px; }
+    .phone.hook.no-kitty { --hook-band: 42px; }
     .os.phone .icons { right: var(--side); bottom: var(--tb); padding-bottom: 8px; }
     .phone .icons::before { display: none; }
     .phone #portrait:not(.is-sheet) { right: var(--gutter); bottom: calc(var(--mp-h) + 12px); left: auto; width: 116px; height: auto; }

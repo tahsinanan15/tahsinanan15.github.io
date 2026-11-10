@@ -8,3 +8,4 @@ _dev/share_of_search/.venv/
 _dev/share_of_search/raw/filings/**/*.htm
 _dev/share_of_search/raw/filings/**/*.pdf
 _dev/share_of_search/raw/filings/*.json
+__pycache__/

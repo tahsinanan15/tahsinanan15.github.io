@@ -123,11 +123,15 @@ function sizeFor(el) {
 
 // New windows open centered in the open desktop, like a real OS: clear of the icons and of her photo and the player when they fit
 // beside them. Each one already open nudges the next down and right so every title bar stays reachable.
-function place(el) {
-  const [w, h] = sizeFor(el), H = deskH();
+// lane: room kept clear right of the icons when the kitty opens it, for the kitty and what it says. A wide window gives up
+// some of its width for it (down to 480 px; below that the lane narrows instead).
+function place(el, lane = 0) {
+  const edge = $('icons').getBoundingClientRect().right + 12, H = deskH();
+  let [w, h] = sizeFor(el);
+  if (lane) w = Math.min(w, Math.max(480, innerWidth - 8 - edge - lane));
   el.style.setProperty('--w', `${w}px`);
   el.style.setProperty('--h', h ? `${h}px` : 'auto');
-  const left = $('icons').getBoundingClientRect().right + 12, realH = h || el.offsetHeight || 420;
+  const left = Math.max(edge, Math.min(edge + lane, innerWidth - w - 8)), realH = h || el.offsetHeight || 420;
   const beside = ['portrait', 'player'].map((id) => wins.get(id)).filter((o) => o.open && !o.min && o.el !== el).map((o) => o.el.offsetLeft - 12);
   const clear = Math.min(innerWidth - 12, ...beside), right = clear - left >= w ? clear : innerWidth - 12;
   const others = [...wins.values()].filter((o) => o.open && !o.min && o.el !== el && !['portrait', 'player'].includes(o.el.id)).length, step = others % 6 * 26;
@@ -170,7 +174,7 @@ function focus(id) {
   refreshTasks();
 }
 
-function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
+function open(id, { user = true, tab, quiet = false, delay = 0, lane = 0 } = {}) {
   const w = wins.get(id);
   if (!w) return;
   if (id === 'about' && !touring) sawHeadline();   // the tape shows both headlines, so tape watchers stay out of the test
@@ -179,7 +183,7 @@ function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
   const rising = !desktop() && !w.el.classList.contains('is-sheet') && (w.open || !START_OPEN.includes(id));
   if (user && (!w.open || rising)) { track('window_open', { window: id }); calmHook(); }
   if (user && id === 'resume') convert('resume');
-  if (w.min) return restore(id);
+  if (w.min) return restore(id, { quiet, user });
   if (rising) { w.el.classList.add('is-sheet'); balloon.hidden = true; }
   if (!touring && w.el.classList.contains('is-sheet')) {   // the tape puts back what it opens, so its windows stay off the stack
     if (sheets.includes(id)) sheets.splice(sheets.indexOf(id), 1);
@@ -188,7 +192,7 @@ function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
   }
   if (!w.open || rising) {
     w.el.hidden = false;
-    if (desktop() && !w.placed) { place(w.el); w.placed = true; }
+    if (desktop() && !w.placed) { place(w.el, lane); w.placed = true; }
     w.open = true;
     if (!quiet) sfx.open();
     if (!still.matches) w.el.animate(POP_IN, { duration: 420, delay, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
@@ -204,7 +208,7 @@ function handOffFocus(had) {
   if (focused) wins.get(focused).el.focus({ preventScroll: true }); else startBtn.focus();
 }
 
-async function close(id) {
+async function close(id, { quiet = false, user = true } = {}) {
   const w = wins.get(id);
   if (!desktop()) {
     if (!sheets.includes(id)) return;   // a second tap on the way out
@@ -213,8 +217,8 @@ async function close(id) {
   }
   const had = w.el.contains(document.activeElement);
   if (id === 'viewer') $('vw-stage').replaceChildren();
-  sfx.close();
-  track('window_close', { window: id });
+  if (!quiet) sfx.close();
+  if (user) track('window_close', { window: id });
   await animate(w.el, [{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(8px) scale(.95)' }], 170);
   if (sheets.includes(id)) return;   // reopened while it was closing
   if (desktop() || !START_OPEN.includes(id)) { w.el.hidden = true; w.open = false; w.min = false; w.placed = START_OPEN.includes(id); }   // her photo and the player come back where they were
@@ -241,14 +245,14 @@ async function minimize(id) {
   handOffFocus(had);
 }
 
-function restore(id) {
+function restore(id, { quiet = false, user = true } = {}) {   // the kitty's tour restores quietly, and leaves the keyboard where it was
   const w = wins.get(id);
   if (id === 'panopticon') lazy(id);   // its game loop stops while hidden
   w.el.hidden = false; w.min = false;
-  sfx.open();
+  if (!quiet) sfx.open();
   animate(w.el, POP_IN, 300);
   focus(id);
-  w.el.focus({ preventScroll: true });
+  if (user) w.el.focus({ preventScroll: true });
 }
 
 function toggleMax(id) {
@@ -283,7 +287,10 @@ addEventListener('popstate', () => {
   if (!ours) {
     const dialog = document.querySelector('dialog[open]'), have = history.state?.sheets || 0;
     if (!startMenu.hidden || dialog) { closeStart(); dialog?.close(); }   // back acts on what's on top, and the sync below puts the sheet's entry back
-    else while (sheets.length > have) { const top = sheets[sheets.length - 1]; if (top === 'tour') tourMod.stop(); else close(top); }
+    else {
+      kit?.stop();   // a show-around ends, and the kitty closes its own sheet quietly
+      while (sheets.length > have) { const top = sheets[sheets.length - 1]; if (top === 'tour') tourMod.stop(); else close(top); }
+    }
   }
   syncHistory();
 });
@@ -534,6 +541,7 @@ $('balloon-x').addEventListener('click', hideBalloon);
 $('balloon-go').addEventListener('click', () => { balloon.hidden = true; open('observe'); });
 function inviteObserve() {
   if (session.counted.balloon || wins.get('observe').open || touring || hooked()) return;
+  if (document.querySelector('.kitty__say:not([hidden])')) return void setTimeout(inviteObserve, 8000);   // the kitty is talking: one balloon at a time
   if (sheets.length || $('player').classList.contains('is-beat')) { setTimeout(inviteObserve, 15000); return; }   // a sheet fills a phone's screen, and a game wants its corner, so it waits
   session.counted.balloon = 1;
   const n = session.events.length;
@@ -543,27 +551,63 @@ function inviteObserve() {
   track('balloon_shown');
 }
 
-/* ---------- PLAY_ME.EXE: the 30-second tour. Until someone plays it, the tape bounces and glows, the bubbles fall into it, and a note points at it. ---------- */
+/* ---------- PLAY_ME.EXE: the 30-second tour. Until someone plays it, the tape bounces and glows, the bubbles fall into it, and the kitty
+   sits beside it and points. With the kitty off (or if it can't load), the handwritten note points instead. ---------- */
+// The kitty's tour opens and closes windows the way the tape does: silently, and not counted as the visitor's own opens or closes.
+// show() is for a window the visitor asked the kitty for (her resume): theirs, but silent, since the kitty makes no sound.
+// hush() hides the OBSERVE balloon when the kitty speaks, so there is one bubble at a time either way.
+let kit = null;   // the kitty, once it is up: the back gesture ends its show-around first
+const kitty = () => (loaded.kitty ||= import('./kitty.js').then((m) => m.initKitty(bubbles, {
+  open: (id) => open(id, { user: false, quiet: true, lane: 200 }), close: (id) => close(id, { quiet: true, user: false }), isOpen: (id) => wins.get(id).open,
+  show: (id) => open(id, { quiet: true }), hush: () => { if (!balloon.hidden) { clearTimeout(balloonTimer); hideBalloon(); } },
+})).then((k) => (kit = k)));
+const kittyOn = () => store.get('tahsin.kitty') !== 'off';   // on unless this browser turned it off
+// The paw button in the tray and the Start menu's "Kitty" line turn it on and off, remembered per browser. Off, it walks
+// out and stops all its work, and the handwritten note points at the tape instead; on again, it walks back in.
+function syncPaw() {
+  const on = kittyOn();
+  root.classList.toggle('no-kitty', !on);
+  $('tray-kitty').setAttribute('aria-pressed', String(on));
+  $('kitty-line').textContent = `Kitty: ${on ? 'on' : 'off'}`;
+}
+function setKitty(on) {
+  store.set('tahsin.kitty', on ? 'on' : 'off');
+  syncPaw();
+  track('kitty', { act: on ? 'on' : 'off' });
+  const tape = document.querySelector('.ico[data-rundown]');
+  if (on) {
+    $('pss').classList.remove('is-on');
+    kitty().then((k) => { k.on(); if (hooked()) k.guide(tape); }, () => hooked() && pss());
+  } else {
+    if (loaded.kitty) kitty().then((k) => k.off(), () => {});
+    if (hooked()) pss();
+  }
+}
+$('tray-kitty').addEventListener('click', () => setKitty(!kittyOn()));
+$('kitty-toggle').addEventListener('click', () => { closeStart(); setKitty(!kittyOn()); });
+const pss = () => setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
 const hooked = () => root.classList.contains('hook');
 function calmHook() {   // they went their own way, so stop asking until the next visit
   if (!hooked()) return;
   root.classList.remove('hook');
   bubbles.release();
+  if (loaded.kitty) kitty().then((k) => k.calm(), () => {});
   setTimeout(inviteObserve, 15000);
 }
 function startHook() {
   if (!hooked() || touring) return;
-  bubbles.gather(document.querySelector('.ico[data-rundown]'));
-  setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
+  const tape = document.querySelector('.ico[data-rundown]');
+  bubbles.gather(tape);
+  if (kittyOn()) kitty().then((k) => { if (hooked()) k.guide(tape); }, pss); else pss();
   setTimeout(calmHook, 60000);
 }
-// Replay the intro: the site forgets this browser has seen the tour, and greets it the way it greets a first visit.
-$('replay-intro').addEventListener('click', () => {
+// Restart: boot again and greet this browser the way it greets a first visit, intro and all.
+$('restart-btn').addEventListener('click', () => {
   closeStart();
+  track('restart');
+  store.del('tahsin.booted');
   store.del('tahsin.played');
-  root.classList.add('hook');
-  startHook();
-  track('replay_intro');
+  location.reload();
 });
 function startRundown(from) {
   if (touring && !desktop()) tourMod.stop('link');   // a phone's end card shows the home screen, so a tap on the tape replays it
@@ -571,7 +615,7 @@ function startRundown(from) {
   closeStart();
   const burst = hooked();
   store.set('tahsin.played', '1');
-  if (burst) { root.classList.remove('hook'); bubbles.release(true); }
+  if (burst) { root.classList.remove('hook'); bubbles.release(true); if (loaded.kitty) kitty().then((k) => k.calm(), () => {}); }
   const font = desktop() ? null : Promise.race([document.fonts?.load('20px VT323'), new Promise((r) => setTimeout(r, 500))]).catch(() => {});   // a phone's dock measures its text, so the tape's font comes first
   setTimeout(() => Promise.all([import('./tour.js'), font]).then(([m]) => (tourMod = m).start({
     wins, open, focus, desktop, refresh: refreshTasks, focused: () => focused,
@@ -743,8 +787,10 @@ $('headline').textContent = HEADLINES[variant];
 $('abnote').hidden = false;
 document.querySelector('#story summary').tabIndex = -1;
 syncLook();
+syncPaw();
 initAudio();
 bubbles = initBubbles();
+addEventListener('load', () => kittyOn() && (window.requestIdleCallback || setTimeout)(() => kitty().catch(() => {}), { timeout: 3000 }), { once: true });   // the kitty comes once the page is up and idle, never before its first paint
 boot();
 syncHistory();   // a reload leaves no sheets open, so it drops back to the entry they came in on
 // Text metrics change once the fonts arrive. Re-measure the opening layout unless someone already moved things.

@@ -20,7 +20,8 @@
 // now is performance time. dt is milliseconds since this one last ran, and 0 on its first frame back.
 // A sleeping clock asks nobody, so something that starts wanting frames again on its own calls wake(). Input wakes it anyway.
 // once(write, read) is a single FULL frame for something brief, the way requestAnimationFrame is used.
-// keep(reason, on) holds it awake for a reason of its own, like music. seen(el) says whether el is on screen.
+// keep(reason, on) holds it awake for a reason of its own, like music. seen(el) says whether el is on screen. awake() is how long
+// until it may doze off.
 // A mover that throws is reported and skipped for that frame; the others and the clock carry on.
 // The desktop cat (js/kitty.js) joins the same way: CALM while it wanders, 0 while it sits still, so it sleeps for free.
 export const CALM = 30, FULL = Infinity;   // FULL isn't a number of frames: it's every frame the display has, 60 or 120 or more
@@ -36,6 +37,8 @@ export function join(m) { m.at = null; movers.push(m); wake(); return m; }
 export function once(write, read) { jobs.push({ write, read }); ask(true); }
 export function keep(reason, on) { if (on) held.add(reason); else held.delete(reason); poke(); }   // either way the 20 seconds start now
 export function wake() { ask(true); }
+// How long before it may doze off, in ms (Infinity while something holds it awake), so a mover can avoid starting what it couldn't finish.
+export const awake = () => (held.size ? Infinity : lastInput + IDLE - performance.now());
 const safe = (f, ...a) => { try { f?.(...a); } catch (e) { reportError(e); } };
 // On screen or not, from the browser's own bookkeeping, so nothing reads layout every frame to find out.
 export function seen(el) {
