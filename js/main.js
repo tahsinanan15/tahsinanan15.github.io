@@ -123,11 +123,12 @@ function sizeFor(el) {
 
 // New windows open centered in the open desktop, like a real OS: clear of the icons and of her photo and the player when they fit
 // beside them. Each one already open nudges the next down and right so every title bar stays reachable.
-function place(el) {
+// lane: room kept clear right of the icons when the kitty opens it, for the kitty and what it says.
+function place(el, lane = 0) {
   const [w, h] = sizeFor(el), H = deskH();
   el.style.setProperty('--w', `${w}px`);
   el.style.setProperty('--h', h ? `${h}px` : 'auto');
-  const left = $('icons').getBoundingClientRect().right + 12, realH = h || el.offsetHeight || 420;
+  const edge = $('icons').getBoundingClientRect().right + 12, left = Math.max(edge, Math.min(edge + lane, innerWidth - w - 8)), realH = h || el.offsetHeight || 420;
   const beside = ['portrait', 'player'].map((id) => wins.get(id)).filter((o) => o.open && !o.min && o.el !== el).map((o) => o.el.offsetLeft - 12);
   const clear = Math.min(innerWidth - 12, ...beside), right = clear - left >= w ? clear : innerWidth - 12;
   const others = [...wins.values()].filter((o) => o.open && !o.min && o.el !== el && !['portrait', 'player'].includes(o.el.id)).length, step = others % 6 * 26;
@@ -170,7 +171,7 @@ function focus(id) {
   refreshTasks();
 }
 
-function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
+function open(id, { user = true, tab, quiet = false, delay = 0, lane = 0 } = {}) {
   const w = wins.get(id);
   if (!w) return;
   if (id === 'about' && !touring) sawHeadline();   // the tape shows both headlines, so tape watchers stay out of the test
@@ -188,7 +189,7 @@ function open(id, { user = true, tab, quiet = false, delay = 0 } = {}) {
   }
   if (!w.open || rising) {
     w.el.hidden = false;
-    if (desktop() && !w.placed) { place(w.el); w.placed = true; }
+    if (desktop() && !w.placed) { place(w.el, lane); w.placed = true; }
     w.open = true;
     if (!quiet) sfx.open();
     if (!still.matches) w.el.animate(POP_IN, { duration: 420, delay, easing: 'cubic-bezier(.16,1,.3,1)', fill: 'backwards' });
@@ -547,10 +548,33 @@ function inviteObserve() {
 // The kitty's tour opens and closes windows the way the tape does: silently, and not counted as the visitor's own opens or closes.
 // show() is for a window the visitor asked the kitty for (her resume): theirs, but silent, since the kitty makes no sound.
 const kitty = () => (loaded.kitty ||= import('./kitty.js').then((m) => m.initKitty(bubbles, {
-  open: (id) => open(id, { user: false, quiet: true }), close: (id) => close(id, { quiet: true, user: false }), isOpen: (id) => wins.get(id).open,
+  open: (id) => open(id, { user: false, quiet: true, lane: 200 }), close: (id) => close(id, { quiet: true, user: false }), isOpen: (id) => wins.get(id).open,
   show: (id) => open(id, { quiet: true }),
 })));
-const kittyOn = () => store.get('tahsin.kitty') !== 'off';   // ponytail: on unless this browser stored 'off'; the tray's paw button (still to come) is what will store it
+const kittyOn = () => store.get('tahsin.kitty') !== 'off';   // on unless this browser turned it off
+// The paw button in the tray and the Start menu's "Kitty" line turn it on and off, remembered per browser. Off, it walks
+// out and stops all its work, and the handwritten note points at the tape instead; on again, it walks back in.
+function syncPaw() {
+  const on = kittyOn();
+  root.classList.toggle('no-kitty', !on);
+  $('tray-kitty').setAttribute('aria-pressed', String(on));
+  $('kitty-line').textContent = `Kitty: ${on ? 'on' : 'off'}`;
+}
+function setKitty(on) {
+  store.set('tahsin.kitty', on ? 'on' : 'off');
+  syncPaw();
+  track('kitty', { act: on ? 'on' : 'off' });
+  const tape = document.querySelector('.ico[data-rundown]');
+  if (on) {
+    $('pss').classList.remove('is-on');
+    kitty().then((k) => { k.on(); if (hooked()) k.guide(tape); }, () => hooked() && pss());
+  } else {
+    if (loaded.kitty) kitty().then((k) => k.off(), () => {});
+    if (hooked()) pss();
+  }
+}
+$('tray-kitty').addEventListener('click', () => setKitty(!kittyOn()));
+$('kitty-toggle').addEventListener('click', () => { closeStart(); setKitty(!kittyOn()); });
 const pss = () => setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
 const hooked = () => root.classList.contains('hook');
 function calmHook() {   // they went their own way, so stop asking until the next visit
@@ -753,6 +777,7 @@ $('headline').textContent = HEADLINES[variant];
 $('abnote').hidden = false;
 document.querySelector('#story summary').tabIndex = -1;
 syncLook();
+syncPaw();
 initAudio();
 bubbles = initBubbles();
 addEventListener('load', () => kittyOn() && (window.requestIdleCallback || setTimeout)(() => kitty().catch(() => {}), { timeout: 3000 }), { once: true });   // the kitty comes once the page is up and idle, never before its first paint

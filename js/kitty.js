@@ -81,7 +81,7 @@ let el, canvas, g, bubble, bubbles, wins, W = innerWidth, H = innerHeight;
 let x = 0, y = 0, vx = 0, vy = 0, face = 1, state = 'sit', act = null, until = 0, idleAt = 0, strolls = 0;
 let clip = { name: 'sit', at: 0, rate: 1, then: null }, leap = null, walk = null, pounce = null, fade = null, chained = false;
 let swing = 0, swingV = 0, grab = null, pointer = null, trail = [], petting = false, swatAt = -1e9, swatHit = true;
-let guide = null, showing = null, visible = false, dust = [], rate = 0, again = false, timer = 0;
+let guide = null, showing = null, visible = false, dust = [], rate = 0, again = false, timer = 0, off = false, leaving = null;
 let arcade = false, floorY = null, barY = innerHeight, drawn = '', shown = null, placed = '', said = null, ink = '#fff', coat = '', inked = '';
 
 const scale = () => (phone() ? 80 : 100) / SIT;   // sheet pixels to CSS pixels
@@ -107,7 +107,7 @@ const hidden = () => root.classList.contains('is-rundown') || (root.classList.co
 // its picture changes, and not at all while nothing changes, so a cat holding still costs nothing and the clock can sleep.
 // Anything that changes what it does calls wake().
 function wake() {
-  if (!el) return;
+  if (!el || off) return;
   clearTimeout(timer);
   again = true;
   if (!rate) rate = CALM;
@@ -130,13 +130,16 @@ function measure() {
     const win = showing?.id && $(showing.id);
     if (win && !win.hidden) {   // the window it just opened, and above all its title and heading
       const l = win.offsetLeft, t = win.offsetTop, head = [l, t, l + win.offsetWidth, t + 170];
-      avoid.push([[l, t, l + win.offsetWidth, t + win.offsetHeight], 3], [head, 10]); keep.push(head);   // what it says matters more than the other icons
+      avoid.push([[l, t, l + win.offsetWidth, t + win.offsetHeight], 8], [head, 12]); keep.push(head);   // what it says matters more than the other icons
     }
     for (const ico of document.querySelectorAll('.icons .ico')) {   // the icons in sight, and above all the one it points at
       const r = ico.getBoundingClientRect(), it = ico === guide?.el;
-      if (r.width) { avoid.push([[r.left, r.top, r.right, r.bottom], it ? 10 : 1]); if (it) keep.push([r.left, r.top, r.right, r.bottom]); }
+      if (r.width) { avoid.push([[r.left, r.top, r.right, r.bottom], it ? 10 : 4]); if (it) keep.push([r.left, r.top, r.right, r.bottom]); }
     }
-    said = { w: bubble.offsetWidth, h: bubble.offsetHeight, avoid, keep };
+    // Perched by the icons on a desktop, it speaks in the lane between them and the window it opened (main.js keeps one clear).
+    const left = $('icons').getBoundingClientRect().right, lane = win && !win.hidden && !phone() && win.offsetLeft - left - 10;
+    bubble.style.maxWidth = lane >= 150 ? `${Math.min(lane, 230)}px` : '';
+    said = { w: bubble.offsetWidth, h: bubble.offsetHeight, avoid, keep, lane: lane >= 150 ? left + 4 : null };
     placeBubble();
   }
 }
@@ -146,7 +149,7 @@ function measure() {
 function placeBubble() {
   if (!said) return;
   floor();   // measures the taskbar too, once
-  const { w, h: bh, avoid, keep } = said, h = tall(), m = 8, low = barY - bh - 4, perched = !!guide?.arrived && !phone();
+  const { w, h: bh, avoid, keep, lane } = said, h = tall(), m = 8, low = barY - bh - 4, perched = !!guide?.arrived && !phone();
   const over = (a, b) => Math.max(0, Math.min(a[2], b[2]) - Math.max(a[0], b[0])) * Math.max(0, Math.min(a[3], b[3]) - Math.max(a[1], b[1])) / 100;
   const cat = [x - h * .45, y - h, x + h * .45, y], away = face * PAW < 0 ? 1 : -1;   // away: the side its paw is not on
   const tries = [['above', x - w / 2, y - h - 14 - bh], ['right', x + h * .45, y - h * .85], ['left', x - h * .45 - w, y - h * .85], ['below', x - w / 2, y + 12]];
@@ -154,6 +157,7 @@ function placeBubble() {
     tries.unshift(...tries.splice(away > 0 ? 1 : 2, 1));
     for (const [side, , t] of tries.filter(([sd]) => sd === 'above' || sd === 'below')) tries.push([side, away > 0 ? x - h * .3 : x + h * .3 - w, t]);
   }
+  if (lane != null && perched) tries.unshift(['below', lane, y + 12], ['above', lane, y - h - 14 - bh]);   // in the lane, over or under it
   for (const [side, l, t] of [...tries]) for (const k of keep) if (over([l, t, l + w, t + bh], k)) tries.push([side, l, k[3] + 8], [side, l, k[1] - bh - 8]);
   let best = null;
   tries.forEach(([side, l0, t0], k) => {
@@ -169,7 +173,7 @@ function placeBubble() {
 }
 function menu() {
   if (!bubble.hidden && bubble.querySelector('button')) return say('');
-  say(`<b>Mrrp?</b>${HELP.map(([text], i) => `<button type="button" data-help="${i}">${text}</button>`).join('')}`);
+  say(`<b>Mrrp?</b>${HELP.map(([text], i) => `<button type="button" class="gel" data-help="${i}">${text}</button>`).join('')}`);
   track('kitty', { act: 'menu' });
 }
 
@@ -234,15 +238,14 @@ function lit(icon) { document.querySelector('.ico.is-shown')?.classList.remove('
 
 // Where it sits to show an icon. On a desktop: on the open desktop just right of the icon grid, at the icon's height, facing
 // it, so it covers no icon, its paw at the grid's edge (the icon itself lights up, for one in the first column). On a phone
-// the icons fill the screen, so it stays on its floor: on the way to PLAY_ME.EXE, just beside the icon's column with its
-// paw reaching under it; while the sheets open, where it is, pointing toward the middle.
+// the icons fill the screen: on a first visit it sits on top of PLAY_ME.EXE's row, in the band the grid leaves above it,
+// reaching down toward it; while the sheets open, it stays on its floor where it is, pointing toward the middle.
 function perch(target) {
   const h = tall(), ground = floor(), reach = REACH * scale();
   if (phone()) {
     const b = target?.isConnected && guide?.hook && target.getBoundingClientRect();
     if (!b?.width) { const px = clamp(x, h * .6, W - h * .6); return { x: px, y: ground, face: (px < W / 2 ? 1 : -1) * PAW }; }
-    const mid = b.left + b.width / 2, px = mid + reach + h * .6 < W ? mid + reach : mid - reach;
-    return { x: clamp(px, h * .6, W - h * .6), y: ground, face: (px > mid ? -1 : 1) * PAW };
+    return { x: clamp(b.left + b.width / 2 + reach, h * .6, W - h * .6), y: b.top + 4, face: -PAW };
   }
   const b = target?.isConnected && target.getBoundingClientRect(), grid = $('icons').getBoundingClientRect();
   if (!b || !b.width) return null;
@@ -262,7 +265,7 @@ function travel(now, calm) {
     return;
   }
   if (guide.arrived) { guide.arrived = false; act = null; lit(null); }
-  if (calm) { x = p.x; y = p.y; return; }
+  if (calm || guide.now) { x = p.x; y = p.y; guide.now = false; return; }   // a first visit: it is already there when the page opens
   const onFloor = Math.abs(y - ground) < 3, far = Math.abs(p.x - x) > h * 2, stand = () => { state = 'sit'; };   // still on its feet: the next moment decides
   const sit = () => { state = 'sitdown'; play('sit_down', () => { state = 'sit'; }, 2); };
   if (!onFloor && far) rise((n) => jump(n, x + Math.sign(p.x - x) * h * .6, ground, stand));
@@ -296,7 +299,7 @@ function nextStop() {
   const arrive = () => {
     if (showing !== s) return;
     if (id) { if (!wins.isOpen(id)) s.opened = id; wins.open(id); }   // one they had open, or minimised, stays theirs
-    say(`<b>${file}</b><span>${line}</span>${end ? '<button type="button" data-tape>Play the tape</button>' : '<button type="button" data-next>Next</button>'}`);
+    say(`<b>${file}</b><span>${line}</span>${end ? '<button type="button" class="gel gel--go" data-tape>Play the tape</button>' : '<button type="button" class="gel" data-next>Next</button>'}`);
     clearTimeout(s.timer);
     s.timer = setTimeout(nextStop, Math.max(5000, line.split(' ').length * 330));
   };
@@ -320,6 +323,7 @@ function endShow(why, target) {
 
 function step(now, ms) {
   again = false;
+  if (off) { rate = 0; return; }
   const dt = Math.min(.05, ms / 1000), calm = still.matches;
   if (showing && root.classList.contains('is-rundown')) endShow('stop');
   const show = !hidden() && !document.hidden;
@@ -368,7 +372,8 @@ function step(now, ms) {
   } else if (state === 'sleep') {
     if (now > until) { state = 'wake'; play('wake', settle); }
   } else if (state === 'sit') {
-    if (guide) travel(now, calm);
+    if (leaving != null) { if (y < ground - 2) hop(); else rise(() => walkTo(leaving, true, gone)); }   // turned off: out by the nearest edge
+    else if (guide) travel(now, calm);
     else if (y > ground + 2) rise((n) => jump(n, x, ground, stand));   // its floor moved up (a phone's sheet closed): it hops up
     else if (y < ground - 2) hop();   // up on a perch with nothing to show: a hop down
     else if (!calm && !petting && bubble.hidden) idle(now, h);
@@ -392,6 +397,36 @@ function step(now, ms) {
   else { rate = 0; if (calm && state === 'sleep') nextIn(until - now + 10); }   // nothing will change until something happens, and whatever happens wakes it
 }
 function stand() { state = 'sit'; }
+// The open floor around px: between the windows (the player among them) that come down to its floor, so a walk never
+// crosses their buttons. Null when it sits under one. Read when it sets off, every few seconds at most, not as it moves.
+function room(px) {
+  const ground = floor(), h = tall(), side = h * .45;
+  let lo = h * .6, hi = W - h * .6;
+  for (const win of document.querySelectorAll('.win:not([hidden])')) {
+    const r = win.getBoundingClientRect();
+    if (!r.width || r.top > ground - 8 || r.bottom < ground - h) continue;   // what it stands on, or well clear above it
+    if (px > r.left - side && px < r.right + side) return null;
+    if (r.right <= px) lo = Math.max(lo, r.right + side); else hi = Math.min(hi, r.left - side);
+  }
+  return hi > lo ? [lo, hi] : null;
+}
+function gone() { off = true; leaving = walk = null; guide = null; el.hidden = bubble.hidden = true; visible = false; rate = 0; }   // all its work stops here
+// In from the left, the icons' side, to open floor; under reduced motion it is just there.
+function enter(now) {
+  const h = tall(), span = room(-h);
+  y = floor(); face = 1;
+  if (still.matches || !span) { x = span ? clamp(W * .38, ...span) : W * .38; settle(now); }
+  else { x = -h * .6; walkTo(clamp(W * .38, ...span), true); }
+}
+// The first-visit hook: off to sit by PLAY_ME.EXE and point, or, when the page has just opened, already there.
+function point(icon, now = false) {
+  if (showing || off) return;
+  guide = { el: icon, hook: true, now, then: () => say('<b>psst… start here</b><span>30 seconds, then go play</span>') };
+  sheet(M.actions.point.sheet);
+  if (state === 'sleep') settle(performance.now());
+  if (state === 'walk' && !walk.then) { unglide(); walk.x = x; }   // still running in: it turns that way at once
+  wake();
+}
 function hop() { fall(x < W / 2 ? 90 : -90, -320); }   // off a perch, toward the open middle of the screen
 
 // Sitting on the floor with nothing to do: prey, a bubble, an idle, a stroll, a nap.
@@ -406,7 +441,9 @@ function idle(now, h) {
   else if (now > idleAt && has('groom')) { act = IDLES[Math.floor(Math.random() * IDLES.length)]; idleAt = now + rand(6000, 12000); play(act, back); }
   else if (now > until) {
     if (++strolls > 4 && has('sleep')) { strolls = 0; nap(now); return; }
-    const tx = clamp(x + rand(80, 360) * (Math.random() < .5 ? -1 : 1), h, W - h);
+    const span = room(x);
+    if (!span) { until = now + rand(3500, 8000); return; }   // nowhere open to go: it stays sat
+    const tx = clamp(x + rand(80, 360) * (Math.random() < .5 ? -1 : 1), ...span);
     // now and then a long stretch first: it starts and ends sitting, so it gets up after it
     if (Math.random() < .3 && has('stretch')) { act = null; state = 'stretch'; play('stretch', () => (guide ? stand() : rise(() => walkTo(tx)))); }
     else rise(() => walkTo(tx));
@@ -432,6 +469,7 @@ function draw(now, dt, name, i) {
     if (was) later(() => M.sheets.forEach((sh) => sheets[`${was}-${sh}`] && sheet(sh)));
   }
   // Until the new coat's sheet is in, it goes on in the coat it had; with neither in, the last picture stays.
+  if (!coat && !has(name) && has('sit')) { want(name); name = 'sit'; i = 0; }   // its first picture: the sit, till the clip's sheet is in
   if (!has(name)) { want(name); if (!coat || !has(name, coat)) { drawn = ''; return; } } else coat = inked;
   const k = fade && (now - fade.at) / FADE;
   if (k >= 1) fade = null;
@@ -545,11 +583,15 @@ function wire() {
 // guide(icon) sends it to sit by that icon and point; calm() lets it go.
 // Nothing of it loads until the page is up; then the sheet for its first moves, its idle sheet when the page is idle, and
 // its play sheet when that is first wanted.
+// On a first visit (the page's .hook) it is wanted at once: it is placed by PLAY_ME.EXE straight away and says so while its
+// sheets come in.
 export async function initKitty(pond, windows) {
   bubbles = pond; wins = windows;
-  if (document.readyState !== 'complete') await new Promise((r) => addEventListener('load', r, { once: true }));
+  const hook = root.classList.contains('hook');
+  if (!hook && document.readyState !== 'complete') await new Promise((r) => addEventListener('load', r, { once: true }));
   await meta();
-  await sheet(M.actions.run.sheet).ready;   // the run in, and the sit
+  if (!hook) await sheet(M.actions.run.sheet).ready;   // the run in, and the sit
+  else sheet(M.actions.sit.sheet);
   later(() => sheet(M.actions.groom.sheet));
   el = Object.assign(document.createElement('button'), { className: 'kitty', type: 'button', hidden: true });
   el.setAttribute('aria-label', 'Kitty. Press for help. Drag to carry it.');
@@ -559,27 +601,32 @@ export async function initKitty(pond, windows) {
   bubble.setAttribute('role', 'status');
   document.body.append(el, bubble);
   W = innerWidth; H = innerHeight;
-  const now = performance.now();
-  y = floor();
-  // it runs in from the left, the icons' side, so a first visit's walk to PLAY_ME.EXE is short; under reduced motion it is just there
-  if (still.matches) { x = W * .38; settle(now); }
-  else { x = -tall() * .6; face = 1; walkTo(W * .38, true); }
+  if (hook) { settle(performance.now()); point(document.querySelector('.ico[data-rundown]'), true); } else enter(performance.now());
   wire();
   join({ rate: () => rate, read: () => el && !floorY && floor(), write: step });
   wake();
   return {
-    guide(icon) {
-      if (showing) return;
-      // on a phone it can't sit beside the icon, so it says which
-      guide = { el: icon, hook: true, then: () => say(phone() ? '<b>psst… tap PLAY_ME.EXE</b><span>up there: 30 seconds, then go play</span>' : '<b>psst… start here</b><span>30 seconds, then go play</span>') };
-      sheet(M.actions.point.sheet);
-      if (state === 'sleep') settle(performance.now());
-      if (state === 'walk' && !walk.then) { unglide(); walk.x = x; }   // still running in: it turns that way at once
-      wake();
-    },
+    guide(icon) { if (!guide?.hook) point(icon); },
     calm() {
       if (!guide?.hook) return;
       halt(performance.now()); say('');
+    },
+    // The paw button. Off: it walks out by the nearest edge and then does nothing at all. On again: it walks in.
+    off() {
+      if (off || leaving != null) return;
+      endShow('stop'); guide = null; say(''); petting = false;
+      if (state === 'sleep') settle(performance.now());
+      if (!visible || still.matches) return gone();
+      const h = tall(); leaving = x < W / 2 ? -h * .6 : W + h * .6;
+      if (state === 'walk') { unglide(); walk = null; state = 'sit'; }   // turns for the edge at once
+      halt(performance.now());
+      wake();
+    },
+    on() {
+      if (!off && leaving == null) return;
+      const was = off; off = false; leaving = null;
+      if (was) { relayout(); enter(performance.now()); }
+      wake();
     },
   };
 }
