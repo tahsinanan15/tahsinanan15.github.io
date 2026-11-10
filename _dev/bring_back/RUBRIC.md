@@ -40,3 +40,9 @@ The question is whether a comeback lasts, so the scored outcome is binary: LASTE
 - Reported: holdout hit rate, base rate, the difference, n, and a 95% interval from 10,000 bootstrap resamples of the holdout cases (percentile method, seed 2026).
 - Whatever the holdout says is published. If the rule does not beat the base rate, that is the finding, and anything else that seems to separate the outcomes is shown only as exploratory, labelled so.
 - Words: the measure is attention (search interest), never sales. At this n the result is called directional, always with its range.
+
+## Added 2026-11-09, still before any case's curve was pulled
+- One honest disclosure first: while checking that the Google Trends library works, a test request printed three weeks of "crystal pepsi" against "pepsi" from January 2014. The product sat at 1 against the brand at 36 to 47. Nothing else about any case's curve was seen.
+- That test is the reason for one change. In a shared request the small term is rounded to whole numbers on the big term's scale, so a product at 1 or 2 out of 100 moves in 50% steps, and the ratio is noise. The ratio only compares a series with its own past, so it does not need the two terms on one scale. So each term is pulled in its own request, on its own 0-100 scale, over the same dates, and the product's ratio is divided by the control's as before. The same-request version is also computed and reported as a sensitivity check, never as the result.
+- An announcement known only to the month is dated to the 1st of that month, so the window can only end early, never late.
+- Weeks are Google's Sunday-start weeks. The window is the 52 weeks whose last day falls before the announcement date. Wikipedia daily pageviews are summed into the same weeks.
