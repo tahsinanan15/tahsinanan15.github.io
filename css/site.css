@@ -84,12 +84,17 @@ html, body { transition: none; }
 .wall img:not([src]) { visibility: hidden; }
 .no-js .wall { display: none; }
 .bubbles { position: fixed; inset: 0; z-index: 1; width: 100%; height: 100%; pointer-events: none; }
-/* The desktop kitty (js/kitty.js): a button over the windows and under the taskbar, and what it says, in the balloon's own paper
-   (each OS re-themes both through the balloon's tokens below), with the OS's own secondary buttons. */
-.kitty { position: fixed; top: 0; left: 0; z-index: 8990; will-change: transform; padding: 0; color: #fff; background: none; border: 0; touch-action: none; -webkit-user-select: none; user-select: none; filter: drop-shadow(0 3px 4px rgba(0, 20, 60, .35)); }
+/* The desktop kitty (js/kitty.js): a button over the windows and under the taskbar, and what it says, in the balloon's own paper,
+   corners and shadow (each OS re-themes both through the balloon's tokens below), with the OS's own secondary buttons.
+   Its canvas draws its nap's z and its ! in the OS's icon-label colour and display face, and its hearts in --kitty-heart.
+   No CSS filter on it: the browser would redraw one at the screen's full resolution every time the cat moves. */
+.kitty { position: fixed; top: 0; left: 0; z-index: 8990; will-change: transform; padding: 0; color: var(--ico-ink, #fff); font-family: var(--display); --kitty-heart: var(--pink); background: none; border: 0; touch-action: none; -webkit-user-select: none; user-select: none; }
+:is([data-theme=vapor], [data-theme=baroque], [data-theme=ghost]) .kitty { --kitty-heart: var(--iris-b); }
+[data-theme=ray] .kitty { --kitty-heart: var(--accent); }
+[data-theme=metro] .kitty { --kitty-heart: var(--link-hover); }
 .kitty canvas { display: block; pointer-events: none; }
 .kitty[hidden], .kitty__say[hidden] { display: none; }
-.kitty__say { position: fixed; top: 0; left: 0; z-index: 8991; display: grid; gap: 4px; width: max-content; max-width: min(230px, calc(100vw - 16px)); padding: 8px 11px 9px; font: 400 14.5px/1.3 var(--body); border: 1px solid #7a7350; }
+.kitty__say { position: fixed; top: 0; left: 0; z-index: 8991; display: grid; gap: 4px; width: max-content; max-width: min(230px, calc(100vw - 16px)); padding: 8px 11px 9px; font: 400 14.5px/1.3 var(--body); border: 1px solid #7a7350; border-radius: 9px; box-shadow: 0 8px 22px rgba(0, 20, 60, .45); }
 .kitty__say::after { content: ""; position: absolute; bottom: -8px; left: calc(var(--tail, 50%) - 7px); width: 14px; height: 14px; border: solid #7a7350; border-width: 0 1px 1px 0; rotate: 45deg; }
 .kitty__say[data-side=below]::after { top: -8px; bottom: auto; border-width: 1px 0 0 1px; }   /* the tail points at the kitty from whichever side the bubble is on */
 .kitty__say:is([data-side=right], [data-side=left])::after { top: calc(var(--tail, 20px) - 7px); bottom: auto; left: -8px; border-width: 0 0 1px 1px; }
@@ -575,8 +580,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .ico svg, .win__ico, .task svg, .startmenu svg, .files svg, .startmenu__head .eye { fill: currentColor; }
 .win__ico, .task svg { color: var(--bar-text); }
 .startmenu svg, .files svg { color: var(--accent); }
-.balloon, .kitty__say { color: var(--balloon-ink, var(--ink)); background: var(--balloon-bg, #fff9d6); border-radius: 9px; box-shadow: 0 8px 22px rgba(0, 20, 60, .45); }
-:root:not([data-theme=aero]) :is(.balloon, .kitty__say) { border-radius: min(9px, var(--win-top)); box-shadow: var(--win-shadow-off); }   /* the OS's own corners and shadow: square where its windows are */
+.balloon, .kitty__say { color: var(--balloon-ink, var(--ink)); background: var(--balloon-bg, #fff9d6); }
 .balloon::after, .kitty__say::after { background: var(--balloon-bg, #fff9d6); }
 .balloon b, .kitty__say b { color: var(--heading); }
 #g-iris stop:nth-child(1) { stop-color: var(--iris-a, #7ff1ff); }
@@ -993,6 +997,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone[data-theme=metro] .is-sheet .win__main { padding-inline: env(safe-area-inset-left, 0px) env(safe-area-inset-right, 0px); }
   .phone #bin.is-sheet, .phone #contact.is-sheet { top: auto; max-height: 100%; }   /* short ones sit at the bottom, over her painting */
   .phone .win__btn:not(.win__btn--close), .phone .win:not(.is-sheet) .win__btns, .phone .is-touring .win__btns { display: none; }
+  .phone.kitty-shows .win.is-sheet { bottom: var(--kitty-band, 140px); }   /* the kitty showing them around: it and its bubble sit in the band this leaves above the taskbar */
   .phone .win__btn--close { width: 44px; height: 44px; }
   .phone .win__btn--close svg { width: 18px; height: 18px; }
   .phone .win__body { overflow-wrap: break-word; }

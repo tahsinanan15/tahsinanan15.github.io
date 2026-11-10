@@ -19,6 +19,7 @@ What it writes, into assets/kitty/
     actions             per action: sheet, first (its first cell), frames, fps, loop, view (always 'three_quarter':
                         one camera, the cat facing screen-right and out) and, for the jump, markers (frame numbers)
 It checks every frame's lowest drawn pixel against the floor row and prints any frame that misses it.
+Coats in RIM get a gilt rim here, at pack time, over Blender's outline (see RIM).
 With --preview it draws contact sheets of every action in aero and baroque on their wallpapers, at the size the
 desktop shows them (a sitting cat about 100 px tall) and at twice that. The kitty makes no sound.
 """
@@ -38,10 +39,29 @@ MARKERS = {'jump': {'crouch': 0, 'takeoff': 4, 'air_up': 5, 'air_down': 6, 'land
 SHOW = 2 / 3                          # sheet pixels to desktop CSS pixels
 WALL = os.path.join(ROOT, 'assets', 'wall', '{}-1000.webp')
 PREVIEW = {'aero': 'hills', 'baroque': 'clay'}       # each coat on its theme's wallpaper
+# A gilt rim: the outline round the silhouette (the line within RIM_PX of the transparent outside) in gold instead of the
+# coat's line colour. Baroque's black cat on its dark wall needs it: its dark outline read at 1.4:1 against the wallpaper,
+# the gold (#e6c565, the theme's own heading gold) at well over 3:1. Lines inside the cat, the pupils and a shut eye stay dark.
+RIM = {'baroque': ('#0a0607', '#e6c565')}            # coat: (its line colour in cat.py, the rim's colour)
+RIM_PX, RIM_NEAR = 3, 45                              # how far in from the outside; how close to the line colour counts as line
 
 
 def frames(d, coat, a):
     return [np.array(Image.open(os.path.join(d, coat, a['name'], f'{i:02d}.png')).convert('RGBA')) for i in range(a['frames'])]
+
+
+def rim(c, line, gold):
+    """c with its outer outline recoloured: each pixel near the edge moves toward gold by how close it is to the line colour,
+    so the antialiased edge keeps its blend."""
+    from scipy import ndimage as nd
+    hexc = lambda h: np.array([int(h[i:i + 2], 16) for i in (1, 3, 5)], np.float32)
+    line, gold = hexc(line), hexc(gold)
+    rgb = c[..., :3].astype(np.float32)
+    edge = nd.binary_dilation(c[..., 3] < 128, iterations=RIM_PX) & (c[..., 3] > 0)
+    w = np.clip(1 - np.linalg.norm(rgb - line, axis=-1) / RIM_NEAR, 0, 1) * edge
+    out = c.copy()
+    out[..., :3] = np.clip(np.rint(rgb + (gold - line) * w[..., None]), 0, 255).astype(np.uint8)
+    return out
 
 
 def lowest(c):
@@ -78,7 +98,7 @@ def main():
                     lifted = n in ('run', 'stalk', 'pounce')   # all paws may be up
                     if n != 'held' and low is not None and (low > meta['floor'] + 1 or (low < meta['floor'] - 1 and not lifted)):
                         misses.add(f'{n} {i}: lowest row {low}')
-                cells += fr
+                cells += [rim(c, *RIM[coat]) for c in fr] if coat in RIM else fr
             rows = -(-len(cells) // COLS)
             img = np.zeros((rows * H, min(COLS, len(cells)) * W, 4), np.uint8)
             for i, c in enumerate(cells):

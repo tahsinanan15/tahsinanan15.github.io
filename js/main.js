@@ -123,12 +123,15 @@ function sizeFor(el) {
 
 // New windows open centered in the open desktop, like a real OS: clear of the icons and of her photo and the player when they fit
 // beside them. Each one already open nudges the next down and right so every title bar stays reachable.
-// lane: room kept clear right of the icons when the kitty opens it, for the kitty and what it says.
+// lane: room kept clear right of the icons when the kitty opens it, for the kitty and what it says. A wide window gives up
+// some of its width for it (down to 480 px; below that the lane narrows instead).
 function place(el, lane = 0) {
-  const [w, h] = sizeFor(el), H = deskH();
+  const edge = $('icons').getBoundingClientRect().right + 12, H = deskH();
+  let [w, h] = sizeFor(el);
+  if (lane) w = Math.min(w, Math.max(480, innerWidth - 8 - edge - lane));
   el.style.setProperty('--w', `${w}px`);
   el.style.setProperty('--h', h ? `${h}px` : 'auto');
-  const edge = $('icons').getBoundingClientRect().right + 12, left = Math.max(edge, Math.min(edge + lane, innerWidth - w - 8)), realH = h || el.offsetHeight || 420;
+  const left = Math.max(edge, Math.min(edge + lane, innerWidth - w - 8)), realH = h || el.offsetHeight || 420;
   const beside = ['portrait', 'player'].map((id) => wins.get(id)).filter((o) => o.open && !o.min && o.el !== el).map((o) => o.el.offsetLeft - 12);
   const clear = Math.min(innerWidth - 12, ...beside), right = clear - left >= w ? clear : innerWidth - 12;
   const others = [...wins.values()].filter((o) => o.open && !o.min && o.el !== el && !['portrait', 'player'].includes(o.el.id)).length, step = others % 6 * 26;
@@ -284,7 +287,10 @@ addEventListener('popstate', () => {
   if (!ours) {
     const dialog = document.querySelector('dialog[open]'), have = history.state?.sheets || 0;
     if (!startMenu.hidden || dialog) { closeStart(); dialog?.close(); }   // back acts on what's on top, and the sync below puts the sheet's entry back
-    else while (sheets.length > have) { const top = sheets[sheets.length - 1]; if (top === 'tour') tourMod.stop(); else close(top); }
+    else {
+      kit?.stop();   // a show-around ends, and the kitty closes its own sheet quietly
+      while (sheets.length > have) { const top = sheets[sheets.length - 1]; if (top === 'tour') tourMod.stop(); else close(top); }
+    }
   }
   syncHistory();
 });
@@ -548,10 +554,12 @@ function inviteObserve() {
    sits beside it and points. With the kitty off (or if it can't load), the handwritten note points instead. ---------- */
 // The kitty's tour opens and closes windows the way the tape does: silently, and not counted as the visitor's own opens or closes.
 // show() is for a window the visitor asked the kitty for (her resume): theirs, but silent, since the kitty makes no sound.
+// hush() hides the OBSERVE balloon when the kitty speaks, so there is one bubble at a time either way.
+let kit = null;   // the kitty, once it is up: the back gesture ends its show-around first
 const kitty = () => (loaded.kitty ||= import('./kitty.js').then((m) => m.initKitty(bubbles, {
   open: (id) => open(id, { user: false, quiet: true, lane: 200 }), close: (id) => close(id, { quiet: true, user: false }), isOpen: (id) => wins.get(id).open,
-  show: (id) => open(id, { quiet: true }),
-})));
+  show: (id) => open(id, { quiet: true }), hush: () => { if (!balloon.hidden) { clearTimeout(balloonTimer); hideBalloon(); } },
+})).then((k) => (kit = k)));
 const kittyOn = () => store.get('tahsin.kitty') !== 'off';   // on unless this browser turned it off
 // The paw button in the tray and the Start menu's "Kitty" line turn it on and off, remembered per browser. Off, it walks
 // out and stops all its work, and the handwritten note points at the tape instead; on again, it walks back in.

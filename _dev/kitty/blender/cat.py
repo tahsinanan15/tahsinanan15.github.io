@@ -66,7 +66,8 @@ COATS = {
     'aero':    dict(fur='#fbeeda', shade='#e2c4a4', points='#8a5f47', eye='#58b8ff', inner='#f59bab', line='#3b241a'),
     'vapor':   dict(fur='#fff0fb', shade='#f3c4ec', points='#b967ff', eye='#01cdfe', inner='#ff71ce', line='#3b1466'),
     # the brief's #a8202e inside the ears read as blood on the black fur: a dusky rose instead. The fur is a soft
-    # charcoal rather than black, so the shape and its one shadow tone still read on a dark wall without a light rim.
+    # charcoal rather than black, so the shape and its one shadow tone still read on a dark wall. Its outline still sank into
+    # that wall (1.4:1), so pack_sprites.py gilds the outer outline (RIM) at pack time.
     'baroque': dict(fur='#54434a', shade='#382b31', points='#2c2126', eye='#f0c055', inner='#c0707c', line='#0a0607'),
     'ghost':   dict(fur='#1d4a4c', shade='#12363a', points='#2a6b6e', eye='#ff2bd6', inner='#ff2bd6', line='#00ffc8',
                     pupil='#021012'),
