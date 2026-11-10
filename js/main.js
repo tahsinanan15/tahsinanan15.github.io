@@ -583,6 +583,16 @@ function setKitty(on) {
   }
 }
 $('tray-kitty').addEventListener('click', () => setKitty(!kittyOn()));
+// The bubble wand beside it: off unless this browser turned it on. On, the cursor over the open desktop is the OS's wand, and
+// a drag there blows bubbles (js/bubbles.js); on a phone a finger drag on the wallpaper does. Not tracked.
+const wandOn = () => store.get('tahsin.wand') === 'on';
+function syncWand() {
+  const on = wandOn();
+  root.classList.toggle('wand-on', on);
+  $('tray-wand').setAttribute('aria-pressed', String(on));
+  bubbles?.wand(on);
+}
+$('tray-wand').addEventListener('click', () => { store.set('tahsin.wand', wandOn() ? 'off' : 'on'); syncWand(); });
 $('kitty-toggle').addEventListener('click', () => { closeStart(); setKitty(!kittyOn()); });
 const pss = () => setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
 const hooked = () => root.classList.contains('hook');
@@ -600,13 +610,13 @@ function startHook() {
   if (kittyOn()) kitty().then((k) => { if (hooked()) k.guide(tape); }, pss); else pss();
   setTimeout(calmHook, 60000);
 }
-// Replay the intro: the site forgets this browser has seen the tour, and greets it the way it greets a first visit.
-$('replay-intro').addEventListener('click', () => {
+// Restart: boot again and greet this browser the way it greets a first visit, intro and all.
+$('restart-btn').addEventListener('click', () => {
   closeStart();
+  track('restart');
+  store.del('tahsin.booted');
   store.del('tahsin.played');
-  root.classList.add('hook');
-  startHook();
-  track('replay_intro');
+  location.reload();
 });
 function startRundown(from) {
   if (touring && !desktop()) tourMod.stop('link');   // a phone's end card shows the home screen, so a tap on the tape replays it
@@ -789,6 +799,7 @@ syncLook();
 syncPaw();
 initAudio();
 bubbles = initBubbles();
+syncWand();
 addEventListener('load', () => kittyOn() && (window.requestIdleCallback || setTimeout)(() => kitty().catch(() => {}), { timeout: 3000 }), { once: true });   // the kitty comes once the page is up and idle, never before its first paint
 boot();
 syncHistory();   // a reload leaves no sheets open, so it drops back to the entry they came in on
