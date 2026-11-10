@@ -600,13 +600,13 @@ function startHook() {
   if (kittyOn()) kitty().then((k) => { if (hooked()) k.guide(tape); }, pss); else pss();
   setTimeout(calmHook, 60000);
 }
-// Replay the intro: the site forgets this browser has seen the tour, and greets it the way it greets a first visit.
-$('replay-intro').addEventListener('click', () => {
+// Restart: boot again and greet this browser the way it greets a first visit, intro and all.
+$('restart-btn').addEventListener('click', () => {
   closeStart();
+  track('restart');
+  store.del('tahsin.booted');
   store.del('tahsin.played');
-  root.classList.add('hook');
-  startHook();
-  track('replay_intro');
+  location.reload();
 });
 function startRundown(from) {
   if (touring && !desktop()) tourMod.stop('link');   // a phone's end card shows the home screen, so a tap on the tape replays it

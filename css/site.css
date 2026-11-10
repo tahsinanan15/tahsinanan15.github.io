@@ -387,7 +387,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .startmenu a:hover, .startmenu a:focus-visible { color: var(--bar-text); background: linear-gradient(180deg, var(--glass-a), var(--glass-b)); }
 .startmenu svg { flex: none; width: 26px; height: 26px; }
 .startmenu__side { background: var(--tint) !important; }
-.startmenu__foot { display: flex; justify-content: flex-end; padding: 7px 8px; }
+.startmenu__foot { display: flex; justify-content: flex-end; gap: 6px; padding: 7px 8px; }
 
 .balloon { position: fixed; right: 12px; bottom: calc(var(--taskbar) + 16px + env(safe-area-inset-bottom, 0px)); z-index: 8999; width: min(310px, calc(100vw - 24px)); padding: 10px 30px 12px 13px; font-size: 14.5px; line-height: 1.35; background: #fff9d6; border: 1px solid #7a7350; border-radius: 9px; box-shadow: 0 8px 22px rgba(0, 20, 60, .45); animation: pop .5s var(--ease-out); }
 .balloon::after { content: ""; position: absolute; right: 26px; bottom: -11px; width: 18px; height: 18px; background: #fff9d6; border: solid #7a7350; border-width: 0 1px 1px 0; transform: skewY(36deg) rotate(45deg) scale(.7); }
