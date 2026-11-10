@@ -41,8 +41,8 @@ WALL = os.path.join(ROOT, 'assets', 'wall', '{}-1000.webp')
 PREVIEW = {'aero': 'hills', 'baroque': 'clay'}       # each coat on its theme's wallpaper
 # A gilt rim: the outline round the silhouette (the line within RIM_PX of the transparent outside) in gold instead of the
 # coat's line colour. Baroque's black cat on its dark wall needs it: its dark outline read at 1.4:1 against the wallpaper,
-# the gold (#e6c565, the theme's own heading gold) at well over 3:1. Lines inside the cat, the pupils and a shut eye stay dark.
-RIM = {'baroque': ('#0a0607', '#e6c565')}            # coat: (its line colour in cat.py, the rim's colour)
+# the brass (#b8923a, the theme's own photo-frame brass) at 5.5:1; the brighter heading gold #e6c565 clashed with the cat. Lines inside the cat, the pupils and a shut eye stay dark.
+RIM = {'baroque': ('#0a0607', '#b8923a')}            # coat: (its line colour in cat.py, the rim's colour)
 RIM_PX, RIM_NEAR = 3, 45                              # how far in from the outside; how close to the line colour counts as line
 
 
