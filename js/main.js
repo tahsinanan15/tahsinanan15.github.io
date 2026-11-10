@@ -585,10 +585,10 @@ function setKitty(on) {
 }
 $('tray-kitty').addEventListener('click', () => setKitty(!kittyOn()));
 // The bubble wand beside it: off unless this browser turned it on. On, the cursor over the open desktop is the OS's wand, and
-// a drag there blows bubbles (js/bubbles.js); on a phone a finger drag on the wallpaper does. Not tracked.
+// a drag there blows bubbles (js/bubbles.js). Desktop only: phones have no wand. Not tracked.
 const wandOn = () => store.get('tahsin.wand') === 'on';
 function syncWand() {
-  const on = wandOn();
+  const on = wandOn() && desktop();
   root.classList.toggle('wand-on', on);
   $('tray-wand').setAttribute('aria-pressed', String(on));
   bubbles?.wand(on);
@@ -679,6 +679,7 @@ function unlockPanopticon() {
 function applyMode() {
   const phone = isPhone(), stacked = [...wins.keys()].filter((id) => wins.get(id).open && !wins.get(id).min && !START_OPEN.includes(id)).sort((a, b) => wins.get(a).el.style.zIndex - wins.get(b).el.style.zIndex);
   root.classList.toggle('phone', phone);
+  syncWand();   // the wand is desktop only
   wins.forEach((w, id) => {
     if (START_OPEN.includes(id)) { w.open = true; w.min = false; }
     else if (w.min) w.open = w.min = false;   // no task buttons to bring it back with

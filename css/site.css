@@ -531,6 +531,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 :root[data-theme=metro] { --cur-wand: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='21' cy='11' r='6' fill='%23f4f3ef' fill-opacity='0.3'/%3E%3Cpath d='M15.6 16.4L4.5 27.5' stroke='%23f4f3ef' stroke-width='5.6' stroke-linecap='round' /%3E%3Cpath d='M15.6 16.4L4.5 27.5' stroke='%232f6fe0' stroke-width='3.4' stroke-linecap='round' /%3E%3Cpath d='M21 3.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 0 1 0-15z' fill='none' stroke='%23f4f3ef' stroke-width='5.4' /%3E%3Cpath d='M21 3.5a7.5 7.5 0 1 1 0 15a7.5 7.5 0 0 1 0-15z' fill='none' stroke='%23ee352e' stroke-width='3.4' /%3E%3Ccircle cx='8' cy='8' r='2.6' fill='none' stroke='%23f4f3ef' stroke-width='2.8'/%3E%3Ccircle cx='8' cy='8' r='2.6' fill='none' stroke='%23f7b500' stroke-width='1.6'/%3E%3C/svg%3E") 21 11, crosshair; }
 .os.wand-on body, .os.wand-on .icons { cursor: var(--cur-wand); }
 .wall img { -webkit-user-drag: none; user-select: none; }
+.os.phone #tray-wand { display: none; }   /* the wand is desktop only */
 .os.wand-on :is(.win, .taskbar, .startmenu, .balloon, dialog, .kitty__say, .tour, .arcade) { cursor: var(--cur-arrow); }
 
 .os .win:not(.is-focus) .win__bar { background: var(--gloss-off), linear-gradient(180deg, var(--glass-off-a), var(--glass-off-b)); }
@@ -1007,7 +1008,6 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone .desk { bottom: var(--tb); }
   .os.phone .icons { inset: 0 0 calc(var(--tb) + var(--mp-h) + 10px) 0; grid-auto-flow: row; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); grid-template-rows: none; grid-auto-columns: auto; grid-auto-rows: var(--row); gap: 0; padding: var(--top) var(--gutter) 0; overflow: hidden auto; overscroll-behavior: contain; pointer-events: auto; transition: padding-top .5s var(--ease-out); }
   .phone .icons::before { content: ""; grid-column: var(--cols); grid-row: 1 / span 2; }
-  .os.phone.wand-on .icons { touch-action: pan-y; }   /* the wand: a vertical drag still scrolls the icons, a sideways one blows bubbles */
   .os.phone .ico[data-rundown] { grid-area: 1 / 1; }
   .phone .ico { gap: 2px; padding: 3px 1px 0; font-size: 12px; line-height: 1.1; -webkit-touch-callout: none; user-select: none; }
   /* Every OS has its own label font, and each one's longest word fits its column. */
