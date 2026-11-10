@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <radialGradient id="radial-gradient-1" cx="191.76" cy="240.8" r="246.48" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#6f6877"/>
+      <stop offset="0.45" stop-color="#2a2530"/>
+      <stop offset="1" stop-color="#0d0b10"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient-1" x1="78" y1="304" x2="78" y2="338" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset="0.5" stop-color="#f0c055"/>
+      <stop offset="1" stop-color="#8a6414"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-2" x1="236" y1="146" x2="236" y2="462" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset="0.5" stop-color="#f0c055"/>
+      <stop offset="1" stop-color="#8a6414"/>
+    </linearGradient>
+    <linearGradient id="linear-gradient-3" x1="239" y1="306" x2="239" y2="366" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset="0.5" stop-color="#f0c055"/>
+      <stop offset="1" stop-color="#8a6414"/>
+    </linearGradient>
+    <radialGradient id="radial-gradient-2" cx="265.7" cy="331.6" r="15.4" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd0cc"/>
+      <stop offset="0.4" stop-color="#ff3b30"/>
+      <stop offset="1" stop-color="#9c0f0a"/>
+    </radialGradient>
+    <linearGradient id="linear-gradient-4" x1="298.39" y1="167.66" x2="338.28" y2="194.37" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#fff0b8"/>
+      <stop offset="0.5" stop-color="#f0c055"/>
+      <stop offset="1" stop-color="#8a6414"/>
+    </linearGradient>
+  </defs>
+  <title>baroque.svg</title>
+  <g id="Layer_1" data-name="Layer 1">
+    <path d="M394 304 C394 391.26 323.26 462 236 462 C148.74 462 78 391.26 78 304 C78 216.74 148.74 146 236 146 C323.26 146 394 216.74 394 304 Z" fill="url(#radial-gradient-1)"/>
+    <path d="M78 304 C183.33 349.33 288.67 349.33 394 304" fill="none" stroke="url(#linear-gradient-1)" stroke-width="17"/>
+    <path d="M236 146 C281.33 251.33 281.33 356.67 236 462" fill="none" stroke="url(#linear-gradient-2)" stroke-width="17"/>
+    <path d="M306 316 C316.67 301.33 328 298.67 340 308 C346.67 317.33 344 324 332 328" fill="none" stroke="#f0c055" stroke-width="5" stroke-linecap="round"/>
+    <path d="M232 348 C220 361.33 208 363.33 196 354 C189.33 344.67 192 338 204 334" fill="none" stroke="#f0c055" stroke-width="5" stroke-linecap="round"/>
+    <path d="M286 372 C291.33 388 288.67 400 278 408 C267.33 410.67 262 406.67 262 396" fill="none" stroke="#f0c055" stroke-width="5" stroke-linecap="round"/>
+    <path d="M258 298 C252.67 280.67 255.33 268 266 260 C276.67 257.33 282 261.33 282 272" fill="none" stroke="#f0c055" stroke-width="5" stroke-linecap="round"/>
+    <path d="M299 336 L281 341 L290.2 357.2 L274 348 L269 366 L264 348 L247.8 357.2 L257 341 L239 336 L257 331 L247.8 314.8 L264 324 L269 306 L274 324 L290.2 314.8 L281 331 Z" fill="url(#linear-gradient-3)" stroke="#3d2a08" stroke-width="3"/>
+    <path d="M280 336 C280 342.08 275.08 347 269 347 C262.92 347 258 342.08 258 336 C258 329.92 262.92 325 269 325 C275.08 325 280 329.92 280 336 Z" fill="url(#radial-gradient-2)"/>
+    <g>
+      <path d="M302.28 161.85 L314.52 143.56 C316.67 140.35 321.02 139.49 324.23 141.64 L352.49 160.56 C355.7 162.71 356.56 167.05 354.41 170.27 L342.17 188.55 C340.02 191.76 335.67 192.62 332.46 190.47 L304.21 171.56 C300.99 169.41 300.13 165.06 302.28 161.85 Z" fill="url(#linear-gradient-4)" stroke="#3d2a08" stroke-width="3"/>
+      <path d="M325.61 144.97 L326.72 143.31 C327.95 141.47 330.44 140.98 332.27 142.21 L348.89 153.34 C350.73 154.57 351.22 157.05 349.99 158.89 L348.88 160.55 C347.65 162.38 345.17 162.88 343.33 161.65 L326.71 150.52 C324.88 149.29 324.38 146.81 325.61 144.97 Z" fill="#2a1c06"/>
+    </g>
+    <path d="M341 148 C352 110 372 96 384 78 C396 60 402 56 410 46" fill="none" stroke="#c9a26b" stroke-width="11" stroke-linecap="round"/>
+    <path d="M341 148 C352 110 372 96 384 78 C396 60 402 56 410 46" fill="none" stroke="#7a5a2a" stroke-width="11" stroke-dasharray="3 9" opacity="0.8"/>
+    <path d="M216.96 207.32 C225.83 219.99 214.68 243.1 192.06 258.94 C169.44 274.78 143.91 277.35 135.04 264.68 C126.17 252.01 137.32 228.9 159.94 213.06 C182.56 197.22 208.09 194.65 216.96 207.32 Z" fill="#ffd9a0" opacity="0.55"/>
+    <path d="M150 424 C210 449.33 272 446 336 414" fill="none" stroke="#d81e3a" stroke-width="9" stroke-linecap="round" opacity="0.6"/>
+  </g>
+</svg>

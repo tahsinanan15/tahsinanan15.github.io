@@ -548,6 +548,14 @@ function startHook() {
   setTimeout(() => $('pss').classList.add('is-on'), still.matches ? 0 : 900);
   setTimeout(calmHook, 60000);
 }
+// Replay the intro: the site forgets this browser has seen the tour, and greets it the way it greets a first visit.
+$('replay-intro').addEventListener('click', () => {
+  closeStart();
+  store.del('tahsin.played');
+  root.classList.add('hook');
+  startHook();
+  track('replay_intro');
+});
 function startRundown(from) {
   if (touring && !desktop()) tourMod.stop('link');   // a phone's end card shows the home screen, so a tap on the tape replays it
   balloon.hidden = true;

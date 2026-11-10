@@ -274,6 +274,10 @@ html, body { transition: none; }
 .tool { padding: 3px 9px; color: var(--ctl-ink, #2d2a20); font: 600 13.5px/1.3 var(--body); cursor: inherit; background: linear-gradient(180deg, var(--putty-1), var(--putty-2)); border: 1px solid; border-color: #fff var(--putty-4) var(--putty-4) #fff; border-radius: 3px; box-shadow: 0 0 0 1px rgba(90, 80, 60, .3); }
 .tool[aria-pressed=true], .tool:active { background: var(--putty-3); border-color: var(--putty-4) #fff #fff var(--putty-4); }
 .paint__sep { width: 8px; }
+.paint__size { display: inline-flex; align-items: center; gap: 6px; padding: 0 4px; color: var(--ctl-ink, #2d2a20); font: 600 13.5px/1.3 var(--body); }
+.paint__size input { width: 92px; height: 18px; margin: 0; background: none; accent-color: var(--accent); cursor: inherit; }
+.paint__dot { display: grid; flex: none; width: 30px; height: 26px; place-items: center; background: #fbf8f1; border: 1px solid; border-color: var(--putty-4) #fff #fff var(--putty-4); }   /* the stroke at its real width, as far as the box can show it */
+.paint__dot i { display: block; border-radius: 50%; }
 .paint__canvas { min-height: 0; flex: 1; padding: 6px; background: #8f8672; border: 1px solid; border-color: var(--putty-4) #fff #fff var(--putty-4); }
 #pt-canvas { width: 100%; height: 100%; background: #fbf8f1; box-shadow: 1px 1px 3px rgba(0, 0, 0, .5); cursor: crosshair; touch-action: none; aspect-ratio: 8 / 5; }
 .paint__colors { display: flex; flex-wrap: wrap; gap: 3px; }
@@ -1021,6 +1025,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone .ball:not(.ball--big), .phone .tray__btn { width: 44px; height: 44px; }
   .phone .tool, .phone .pill { min-height: 44px; }
   .phone .swatch { width: 44px; height: 44px; }
+  .phone .paint__size input { width: 120px; height: 36px; }
   .phone .mp input[type=range] { height: 36px; }
   .phone .gel { min-height: 44px; }
   .phone .actions .gel { flex: 1 1 auto; }

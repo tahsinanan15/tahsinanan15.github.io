@@ -63,8 +63,8 @@ function shade(g, f, rgb, a) {   // the corners fall away
   p.addColorStop(0, `rgba(${rgb},0)`); p.addColorStop(1, `rgba(${rgb},${a})`);
   g.fillStyle = p; g.fillRect(0, 0, f.W, f.H);
 }
-function slip(g, f, n, reach) {   // a missed note tears the picture sideways in a few bands
-  for (let i = 0; i < n; i++) { const y = (Math.sin(i * 91.7 + Math.floor(f.time * 30)) * .5 + .5) * f.H, h = f.H * .04; g.drawImage(g.canvas, 0, y, f.W, h, Math.sin(i * 7.1 + f.time * 90) * reach * f.d * f.miss, y, f.W, h); }
+function slip(g, f, n, reach, amount = f.miss) {   // the picture tears sideways in a few bands: on a missed note, or a hard kick
+  for (let i = 0; i < n; i++) { const y = (Math.sin(i * 91.7 + Math.floor(f.time * 30)) * .5 + .5) * f.H, h = f.H * .04; g.drawImage(g.canvas, 0, y, f.W, h, Math.sin(i * 7.1 + f.time * 90) * reach * f.d * amount, y, f.W, h); }
 }
 const edges = (g, f, inner, outer, glow) => {   // lane lines and the road's two edges
   for (let i = 0; i <= 4; i++) {
@@ -86,7 +86,7 @@ function dolphin(g, L) {
 }
 const aero = {
   hands: [['#d9fbff', '#19b9f6', '#0563c4'], ['#f3ffc8', '#84e02b', '#2c961c']],
-  ink: '#ffffff', glow: 'rgba(0,50,130,.9)', shade: 'rgba(0,50,120,.4)', fall: .9,
+  ink: '#ffffff', glow: 'rgba(0,50,130,.9)', shade: 'rgba(0,50,120,.4)', fall: .9, ride: [.5, 1.7, .5],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(7), u = H / 100, sx = W * .74, sy = hz * .42;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#04329a', '#0a6fd8', '#38b6ff', '#c9f3ff'); g.fillRect(0, 0, W, hz);
@@ -145,6 +145,7 @@ const aero = {
     gel(g, S * .1, S * .1, S * .8, S * .8, tone);
   },
   spark: dot,
+  snap(g, f) { g.globalCompositeOperation = 'lighter'; blob(g, f.W * .74, f.hz * .42, f.H * .5, '255,255,255', .16 * f.snap); },   // the sun blooms on the beat
   sound(tone, burst, hz, kind, pan) { tone(hz * 2, 0, .34, { gain: .16, pan }); tone(hz * 4.01, 0, .12, { gain: .05, pan, type: 'triangle' }); if (kind === 1) tone(hz, 0, .22, { to: hz * 2, gain: .1, pan }); },
 };
 
@@ -159,7 +160,7 @@ function column(g, x, base, h, w, broken) {
 }
 const vapor = {
   hands: [['#ffd1f1', '#ff71ce', '#b0218f'], ['#d6fbff', '#01cdfe', '#0a6aa8']],
-  shade: 'rgba(255,113,206,.45)', fall: .3,
+  shade: 'rgba(255,113,206,.45)', fall: .3, ride: [.7, 1.3, .7],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(11), u = H / 100, r = u * 15, sy = hz - r * .25;
     g.fillStyle = lin(g, 0, 0, 0, hz, ...DUSK); g.fillRect(0, 0, W, hz);
@@ -265,7 +266,7 @@ function bat(g, s, flap) {
 }
 const baroque = {
   hands: [['#ffb3bd', '#d81e3a', '#6d0a1a'], ['#fff0b8', '#f0c055', '#8a6414']],
-  shade: 'rgba(0,0,0,.6)', fall: -.35,
+  shade: 'rgba(0,0,0,.6)', fall: -.35, ride: [1.3, .7, 1.6],
   sky(g, f) {
     const { W, H, hz, cx } = f, u = H / 100, ry = hz - u * 13, rr = u * 10, span = Math.max(W * .5, u * 55);
     g.fillStyle = lin(g, 0, 0, 0, H, '#050203', '#150809', '#1d0c0c', '#0a0405'); g.fillRect(0, 0, W, H);
@@ -317,7 +318,7 @@ const baroque = {
     g.strokeStyle = '#d9b45a'; g.lineWidth = 1.5 * f.d;   // three gold strings, and the ones beside a struck note ring
     for (let i = 1; i < 4; i++) {
       const ring = Math.max(f.lit[i - 1], f.lit[i]) * 4 * f.d * Math.sin(f.now / 18);
-      g.beginPath(); for (let k = 0; k <= 10; k++) { const p = f.at(i, f.far + (f.stop - f.far) * k / 10); g.lineTo(p[0] + ring * Math.sin(Math.PI * k / 10), p[1]); } g.stroke();
+      g.beginPath(); for (let k = 0; k <= 10; k++) { const p = f.at(i, f.mid(k / 10)); g.lineTo(p[0] + ring * Math.sin(Math.PI * k / 10), p[1]); } g.stroke();
     }
   },
   block(g, S, [light, mid, dark], wide) {
@@ -340,6 +341,7 @@ const baroque = {
   },
   spark(g, s) { poly(g, [[0, -s * 2.4], [s * .5, -s * .5], [s * 2.4, 0], [s * .5, s * .5], [0, s * 2.4], [-s * .5, s * .5], [-s * 2.4, 0], [-s * .5, -s * .5]]); g.fill(); },
   post(g, f) { shade(g, f, '0,0,0', .85); },
+  snap(g, f) { shade(g, f, '150,8,26', .3 * f.snap); },   // the dark closes in red
   sound(tone, burst, hz, kind, pan) { tone(hz, 0, .32, { type: 'sawtooth', gain: .11, pan }); tone(hz * 2, 0, .12, { type: 'square', gain: .045, pan }); burst(0, .02, 5000, .08, 'highpass'); if (kind === 1) tone(hz * 1.5, .05, .3, { type: 'sawtooth', gain: .07, pan }); },
 };
 
@@ -353,7 +355,7 @@ function sign(g, x, y, s, R) {   // a neon sign in writing nobody reads
 }
 const ghost = {
   hands: [['#c9fdff', '#19f7ff', '#0a7f8c'], ['#ffd0f6', '#ff2bd6', '#8a0f72']],
-  shade: 'rgba(25,247,255,.35)', fall: 0,
+  shade: 'rgba(25,247,255,.35)', fall: 0, ride: [.9, .85, 1.2],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(23), u = H / 100;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#020405', '#07100f', '#2a2208', '#7a5a12'); g.fillRect(0, 0, W, hz);   // toxic amber, thickest at the horizon
@@ -415,7 +417,7 @@ const ghost = {
 let plume = null;
 const ray = {
   hands: [['#fffaf0', '#f4ecd8', '#b9ad92'], ['#5b574e', '#1d1b18', '#000000']],
-  shade: 'rgba(0,0,0,.45)', fall: .7, mono: true, letters: true,
+  shade: 'rgba(0,0,0,.45)', fall: .7, mono: true, letters: true, ride: [.5, 1.5, .45],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(41), u = H / 100;
     g.fillStyle = lin(g, 0, 0, 0, hz, '#2b2a27', '#5e5b54', '#a39e90', '#d9d3c2'); g.fillRect(0, 0, W, hz);
@@ -489,7 +491,7 @@ const ray = {
 /* ---------- Concrete Jungle: an avenue at dusk, the sun going down the end of it ---------- */
 const metro = {
   hands: [['#fff3cf', '#ffc247', '#c27a0a'], ['#eafaff', '#8fdcff', '#2a7fb8']],
-  shade: 'rgba(255,190,90,.3)', fall: 0,
+  shade: 'rgba(255,190,90,.3)', fall: 0, ride: [1, 1, 1.1],
   sky(g, f) {
     const { W, H, hz, cx } = f, R = rnd(57), u = H / 100, step = Math.max(W * .058, u * 5);
     g.fillStyle = lin(g, 0, 0, 0, hz, '#141c27', '#2b3a4d', '#7a6a66', '#f0a35a', '#ffd9a0'); g.fillRect(0, 0, W, hz);
@@ -541,6 +543,7 @@ const metro = {
   },
   spark(g, s) { g.globalAlpha *= .6; g.beginPath(); g.arc(0, 0, s * 2.2, 0, TAU); g.fill(); g.lineWidth = s * .3; g.stroke(); },
   post(g, f) { grain(g, f, .14); shade(g, f, '4,6,12', .75); },
+  snap(g, f) { const u = f.H / 100; g.globalCompositeOperation = 'lighter'; g.fillStyle = lin(g, 0, 0, f.W, 0, 'rgba(255,220,160,0)', `rgba(255,220,160,${.55 * f.snap})`, 'rgba(255,220,160,0)'); g.fillRect(0, f.hz - u * 3.2, f.W, u * 2.4); },   // the sun flares across the lens
   sound(tone, burst, hz, kind, pan) { burst(0, kind === 1 ? .1 : .03, 5200, .14, 'highpass'); tone(hz / 2, 0, .2, { type: 'triangle', gain: .22, pan }); tone(hz, 0, .08, { gain: .06, pan }); },
 };
 
@@ -556,4 +559,15 @@ export function sprite(id, hand, kind, v = 0) {
   w.block(c.getContext('2d'), SIZE, w.hands[hand], wide, v % 7);
   return (kept[key] = c);
 }
-document.fonts?.ready.then(() => { for (const key in kept) if (key.startsWith('ray')) delete kept[key]; });   // its letters wait for their font
+document.fonts?.ready.then(() => { for (const key in kept) if (key.startsWith('ray')) delete kept[key]; });
+// Each world has its own bomb, drawn in VectorCraft (sources in _dev/bombs, exported to assets/beats/bombs). In every drawing
+// the fuse or beacon ends at the same spot, top right, which is where the game burns its spark. A picture is kept once it loads.
+const balls = {};
+export function bomb(id) {
+  const b = balls[id] ||= { img: Object.assign(new Image(), { src: `assets/beats/bombs/${id}.svg` }), c: null };
+  if (!b.c && b.img.complete && b.img.naturalWidth) {
+    b.c = document.createElement('canvas'); b.c.width = b.c.height = 320;
+    b.c.getContext('2d').drawImage(b.img, 0, 0, 320, 320);
+  }
+  return b.c;
+}

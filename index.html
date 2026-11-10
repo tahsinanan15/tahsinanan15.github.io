@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" href="assets/icons/eye-180.png">
 <link rel="preload" href="assets/fonts/baloo-da-2-var-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="assets/fonts/hind-siliguri-400-latin.woff2" as="font" type="font/woff2" crossorigin>
-<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=e23c2a25", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=be0b2548", "./js/beatworlds.js": "./js/beatworlds.js?v=2a5de457", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=d57315c3", "./js/observe.js": "./js/observe.js?v=42a1229f", "./js/paint.js": "./js/paint.js?v=20faf4fb", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
-<link rel="stylesheet" href="css/site.css?v=29c73a15">
+<script type="importmap">{"imports": {"./js/analytics.js": "./js/analytics.js?v=96af613f", "./js/audio.js": "./js/audio.js?v=025a1495", "./js/beats.js": "./js/beats.js?v=92d75dc4", "./js/beatworlds.js": "./js/beatworlds.js?v=8497192b", "./js/bubblepop.js": "./js/bubblepop.js?v=af0ef0de", "./js/bubbles.js": "./js/bubbles.js?v=2a2802ad", "./js/fx.js": "./js/fx.js?v=2de60bd2", "./js/main.js": "./js/main.js?v=22839011", "./js/observe.js": "./js/observe.js?v=ebdbe8fa", "./js/paint.js": "./js/paint.js?v=0e55c193", "./js/panopticon.js": "./js/panopticon.js?v=543213a3", "./js/stats.js": "./js/stats.js?v=1988723d", "./js/themes.js": "./js/themes.js?v=15cefb94", "./js/tour.js": "./js/tour.js?v=400a7c40"}}</script>
+<link rel="stylesheet" href="css/site.css?v=1458d552">
 <script>
   // Decide before first paint, so the boot screen never flashes for returning visitors.
   (function () {
@@ -382,6 +382,7 @@
         <button class="tool" data-tool="brush" aria-pressed="false">Brush</button>
         <button class="tool" data-tool="coffee" aria-pressed="false">Coffee</button>
         <button class="tool" data-tool="erase" aria-pressed="false">Eraser</button>
+        <label class="paint__size">Size <input type="range" id="pt-size" min="30" max="300" step="10" value="100"><span class="paint__dot" aria-hidden="true"><i id="pt-dot"></i></span></label>
         <span class="paint__sep"></span>
         <button class="tool" id="pt-undo">Undo</button>
         <button class="tool" id="pt-clear">Clear</button>
@@ -543,6 +544,7 @@
   <div class="startmenu__cols">
     <ul>
       <li><button type="button" class="startmenu__btn" data-rundown><svg aria-hidden="true"><use href="#i-rundown"/></svg>30-second rundown</button></li>
+      <li><button type="button" class="startmenu__btn" id="replay-intro"><svg aria-hidden="true"><use href="#u-play"/></svg>Replay the intro</button></li>
       <li><a href="#about" data-open="about"><svg><use href="#i-person"/></svg>About me</a></li>
       <li><a href="#portrait" data-open="portrait"><svg><use href="#i-person"/></svg>My photo</a></li>
       <li><a href="#case" data-open="case"><svg><use href="#i-chart"/></svg>Case study</a></li>
@@ -606,7 +608,7 @@
   </div>
 </div>
 
-<script type="module" src="js/main.js?v=d57315c3"></script>
+<script type="module" src="js/main.js?v=22839011"></script>
 <script>addEventListener('load', function () { setTimeout(function () { if (!window.tahsinUp) document.documentElement.className = 'no-js'; }, 400); });</script>
 </body>
 </html>
