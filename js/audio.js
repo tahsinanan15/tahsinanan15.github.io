@@ -2,6 +2,7 @@
 // the first click or key press, so the music starts on that gesture, and mute is always one click away.
 import { track } from './analytics.js';
 import { SONGS, THEMES } from './themes.js';
+import { join, keep, seen, CALM, FULL } from './clock.js';
 
 const TRACKS = SONGS;
 
@@ -129,21 +130,26 @@ function setPlayIcons() {
 export const beat = { bass: 0, kick: 0, kickAt: 0, pulse: 0, playing: false };
 const spectrum = new Uint8Array(512);
 let bassAvg = 0;
-function listen(now) {
+// The smoothing here was tuned at 60 frames a second. f is how many of those frames this one stands for, so the levels move
+// the same at 30 a second, when only calm things are moving, as they do under a game at full rate.
+const ease = (k, f) => 1 - (1 - k) ** f;
+function listen(now, dt) {
+  const f = Math.min(4, dt / 16.7) || 1;
   follow();
   beat.playing = !audio.paused;
   if (!analyser || audio.paused) {
     spectrum.fill(0);
-    beat.bass *= .9; beat.kick *= .86; beat.pulse *= .9;
+    beat.bass *= .9 ** f; beat.kick *= .86 ** f; beat.pulse *= .9 ** f;
     return;
   }
+  analyser.smoothingTimeConstant = .72 ** f;   // the analyser smooths once per reading, and it's read once a frame
   analyser.getByteFrequencyData(spectrum);
   const band = (a, b) => { let s = 0; for (let i = a; i < b; i++) s += spectrum[i]; return s / ((b - a) * 255); };
   const b = band(1, 7);
-  beat.bass += (b - beat.bass) * (b > beat.bass ? .6 : .12);
-  bassAvg += (b - bassAvg) * .04;
-  beat.pulse += (Math.min(1, Math.max(0, (beat.bass - bassAvg) / .08)) - beat.pulse) * .08;   // loud bass sits near its ceiling, so what moves with the music is its rise above the running average
-  beat.kick *= .86;
+  beat.bass += (b - beat.bass) * ease(b > beat.bass ? .6 : .12, f);
+  bassAvg += (b - bassAvg) * ease(.04, f);
+  beat.pulse += (Math.min(1, Math.max(0, (beat.bass - bassAvg) / .08)) - beat.pulse) * ease(.08, f);   // loud bass sits near its ceiling, so what moves with the music is its rise above the running average
+  beat.kick *= .86 ** f;
   if (b > bassAvg + .04 && b > .3 && now - beat.kickAt > 340) { beat.kick = 1; beat.kickAt = now; }
 }
 
@@ -152,6 +158,7 @@ function listen(now) {
 // 600 by 120 canvas. A game can stand them anywhere, far end first if `back` is set.
 let vizColors = THEMES.aero.viz;
 const BARS = 30, CHUNK = 6, GAP = 2, peaks = new Float32Array(BARS);
+let fall = 1.1;   // how far a peak cap drops each time the bars are drawn
 let grad = null, gradFor = null;
 const strip = (W, floor, zone) => (i) => [i * W / BARS + W / 600, floor, W / BARS - W / 200, zone];
 function bars(g, place, alpha = 1, back = false) {
@@ -163,7 +170,7 @@ function bars(g, place, alpha = 1, back = false) {
   for (let b = 0; b < BARS; b++) {
     const i = back ? BARS - 1 - b : b, v = spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] / 255, n = Math.max(1, Math.round(v * 15));
     const [x, floor, w, zone, a = 1] = place(i);
-    peaks[i] = Math.max(n * (CHUNK + GAP), peaks[i] - 1.1);
+    peaks[i] = Math.max(n * (CHUNK + GAP), peaks[i] - fall);
     if (!a) continue;
     g.setTransform(1, 0, 0, zone / 120, x, floor);
     g.globalAlpha = alpha * a;
@@ -174,27 +181,31 @@ function bars(g, place, alpha = 1, back = false) {
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.globalAlpha = 1;
 }
+// It runs on the frame clock: 30 frames a second like everything calm, and every frame while a game has the screen.
+// The song's levels are worked out first in every frame, whether or not the player is on screen, since the desktop dances to them too.
 function visualizer() {
-  const canvas = $('mp-viz'), g = canvas.getContext('2d');
-  let rested = -1e9;
-  const draw = (now = 0) => {
-    requestAnimationFrame(draw);
-    listen(now);
-    if (canvas.offsetParent === null || document.hidden) return;
-    if (deck.game) return deck.game(g, now, bars, strip);   // a game sizes the canvas, paints its board, and stands the bars where it wants them
-    if (audio.paused) {   // nothing playing, which is how every visit starts: a slow swell so the screen isn't dead, about 16 times a second
-      if (now - rested < (still.matches ? Infinity : 60)) return;
-      rested = now;
-      const t = still.matches ? 0 : now / 1000;
-      for (let i = 0; i < BARS; i++) spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] = 255 * (.2 + .13 * Math.sin(t * 1.3 + i * .45) + .07 * Math.sin(t * .8 - i * .9));
-    } else {
-      rested = -1e9;
-      if (still.matches) spectrum.fill(40);
-    }
-    g.clearRect(0, 0, canvas.width, canvas.height);
-    bars(g, strip(canvas.width, canvas.height, canvas.height));
-  };
-  draw();
+  const canvas = $('mp-viz'), g = canvas.getContext('2d'), shown = seen(canvas);
+  let rested = -1e9, idle = 0;   // idle: the swell's own time, which stands still while the clock sleeps
+  join({
+    rate: () => (!shown() || (still.matches && audio.paused && !deck.game) ? 0 : deck.game ? FULL : CALM),   // reduced motion and nothing playing: the bars hold still, so no frames (music starting wakes the clock)
+    levels: listen,
+    paint(now, dt) {
+      fall = 1.1 * (Math.min(4, dt / 16.7) || 1);
+      if (deck.game) return deck.game(g, now, bars, strip);   // a game sizes the canvas, paints its board, and stands the bars where it wants them
+      if (audio.paused) {   // nothing playing, which is how every visit starts: a slow swell so the screen isn't dead, about 16 times a second
+        idle += dt;
+        if (idle - rested < (still.matches ? Infinity : 60)) return;
+        rested = idle; fall = 1.1;
+        const t = still.matches ? 0 : idle / 1000;
+        for (let i = 0; i < BARS; i++) spectrum[Math.floor(Math.pow(i / BARS, 1.7) * 280) + 1] = 255 * (.2 + .13 * Math.sin(t * 1.3 + i * .45) + .07 * Math.sin(t * .8 - i * .9));
+      } else {
+        rested = -1e9;
+        if (still.matches) spectrum.fill(40);
+      }
+      g.clearRect(0, 0, canvas.width, canvas.height);
+      bars(g, strip(canvas.width, canvas.height, canvas.height));
+    },
+  });
 }
 
 /* ---------- Sound effects, synthesized so nothing extra downloads ---------- */
@@ -341,8 +352,9 @@ export function tryAutoplay() {
 export function initAudio() {
   load(0);
   addEventListener('tahsin:stop-audio', pause);
-  audio.addEventListener('play', setPlayIcons);
-  audio.addEventListener('pause', setPlayIcons);
+  const playing = () => { setPlayIcons(); keep('music', !audio.paused); };   // music counts as someone being here, so the clock stays awake
+  audio.addEventListener('play', playing);
+  audio.addEventListener('pause', playing);
   audio.addEventListener('ended', () => go(index + 1, true));
   audio.addEventListener('loadedmetadata', () => { $('mp-time').textContent = fmt(0); });
   audio.addEventListener('timeupdate', () => {

@@ -8,6 +8,7 @@ import { track } from './analytics.js';
 import { deck, beat, play, playSong, currentSong } from './audio.js';
 import { SONGS } from './themes.js';
 import { WORLDS, sprite, bomb } from './beatworlds.js';
+import { once } from './clock.js';
 
 const LEVEL = 90;      // seconds of each song a level plays, as in _dev/build_beats.py
 const TRAVEL = 2.6;    // seconds a note takes to reach the line: slow enough to read. On the road it takes a little longer, since it starts far away
@@ -31,6 +32,9 @@ let kickSeen = 0, snapAt = -1e9;
 let skin = null, view = null, seen = 0, seenAt = 0, last = 0, home = 0, energy = 0, missAt = -1e9, flashAt = -1e9, shakeAt = -1e9, shakeAmp = 0, sizedAt = 0;
 let full = false, tilt = 0, tiltFrom = 0, tiltTo = 0, tiltAt = 0, stage = null, slot = null, hushed = [], hud = 9, board = { left: 0, lane: 1 };
 let bests = {};
+// The screen's size in CSS pixels, kept up to date by the browser, so a frame never has to ask for it after drawing has begun.
+const box = { w: canvas.clientWidth, h: canvas.clientHeight };
+new ResizeObserver((seen) => { const r = seen[seen.length - 1].contentRect; box.w = r.width; box.h = r.height; }).observe(canvas);
 try { bests = JSON.parse(localStorage.getItem('tahsin.beat')) || {}; } catch { /* private mode */ }
 
 /* ---------- Stars: three for a level, kept per song and shown in the playlist ---------- */
@@ -67,7 +71,7 @@ function shake(amp) {
 function say(text, u, color, lift = 1, life = 540) {
   add(life, (a, g, f) => {
     const [x, y] = f.at(u, 0);
-    g.globalAlpha = a < .7 ? 1 : (1 - a) / .3; g.font = `${f.type}px ${f.font}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic';
+    g.globalAlpha = a < .7 ? 1 : (1 - a) / .3; font(g, `${f.type}px ${f.font}`); g.textAlign = 'center'; g.textBaseline = 'alphabetic';
     g.fillStyle = color; g.shadowColor = 'rgba(0,0,0,.8)'; g.shadowBlur = 5 * f.d;
     g.fillText(text, Math.max(f.type * 2.4, Math.min(f.W - f.type * 2.4, x)), y - f.size * (.9 + .5 * a) * lift);
   }, true);
@@ -274,12 +278,17 @@ function scenery(name, w, f) {
   return l.c;
 }
 
-// The visualizer calls this each frame in place of its own drawing, and hands over its bars to stand wherever the board wants them.
+// The visualizer calls this each frame in place of its own drawing (every frame the display shows, on the frame clock), and hands over its bars to stand wherever the board wants them.
+// Setting a canvas's font makes the browser work out the page's styles there and then, even to the same font, so it's only set
+// when it changes. Resizing the canvas forgets it.
+let fontNow = '';
+const font = (g, f) => { if (f !== fontNow) g.font = fontNow = f; };
+document.fonts?.addEventListener('loadingdone', () => { fontNow = ''; });
 function frame(g, now, bars, strip) {
   lag += (Math.min(100, now - before) - lag) * .05; before = now;
   if (lag <= 24) slow = 0; else if ((slow += lag) > 2500) lite = true;   // a screen that can't keep up for a few seconds gets a plainer picture from then on: no film grain, fewer pixels, and a world that holds still behind the road
-  const d = Math.min(devicePixelRatio || 1, lite ? 1 : full ? 1.5 : 2), W = Math.round(canvas.clientWidth * d), H = Math.round(canvas.clientHeight * d), calm = still.matches;
-  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; sizedAt = now; } else g.clearRect(0, 0, W, H);
+  const d = Math.min(devicePixelRatio || 1, lite ? 1 : full ? 1.5 : 2), W = Math.round(box.w * d), H = Math.round(box.h * d), calm = still.matches;
+  if (canvas.width !== W || canvas.height !== H) { canvas.width = W; canvas.height = H; sizedAt = now; fontNow = ''; } else g.clearRect(0, 0, W, H);
   const x = calm ? 1 : clamp((now - tiltAt) / 500);
   tilt = tiltFrom + (tiltTo - tiltFrom) * (1 - (1 - x) ** 3);
   // In the player the board fills the screen above the bars. Full screen it's a road down the middle that runs out to the horizon.
@@ -349,7 +358,7 @@ function frame(g, now, bars, strip) {
     const hot = [0, 0, 0, 0], l0 = at(0, 0), l4 = at(4, 0);
     for (let i = first; i < notes.length && notes[i].t - t <= HIT; i++) { const n = notes[i]; if (!n.state) hot[n.lane] = hot[n.lane + (n.kind ? 1 : 0)] = 1; }
     g.globalAlpha = .55; g.strokeStyle = ink; g.lineWidth = 2 * d; g.beginPath(); g.moveTo(l0[0], l0[1]); g.lineTo(l4[0], l4[1]); g.stroke();
-    g.font = `${type}px ${s.font}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    font(g, `${type}px ${s.font}`); g.textAlign = 'center'; g.textBaseline = 'middle';
     for (let i = 0; i < 4; i++) {
       const tone = w.hands[+(i > 1)], lit = Math.max(down[i], f.lit[i]), [px, py] = at(i + .5, 0);
       const pool = g.createRadialGradient(px, py, 0, px, py, ring * 1.7);   // light pooled under the pad
@@ -391,7 +400,7 @@ function frame(g, now, bars, strip) {
           if (now - (n.tick || 0) > 130) { n.tick = now; deck.sound((voice) => voice(n.hz * 2 * (1 + clamp((t - n.t) / n.hold)), 0, .07, { gain: .05 })); }
         }
       }
-      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
+      if (tilt) { g.globalAlpha = show * tilt; g.fillStyle = w.shade[hand]; g.beginPath(); g.ellipse(nx, ny, sz * (.4 + broad * .5), sz * .13, 0, 0, 7); g.fill(); }
       g.globalAlpha = show;
       const img = sprite(s.id, hand, n.kind, n.v);
       if (n.kind === 2) { g.save(); g.translate(nx, 0); g.scale(-1, 1); g.drawImage(img, -iw / 2, topY, iw, sz); g.restore(); } else g.drawImage(img, nx - iw / 2, topY, iw, sz);
@@ -449,7 +458,7 @@ function frame(g, now, bars, strip) {
   if (!notes.length) return;
 
   // Streak and multiplier, score, a bar across the top for how far through the level, and how to play until the first note comes.
-  g.font = `${type}px ${s.font}`; g.fillStyle = ink; g.textBaseline = 'top'; g.shadowColor = w.glow || s.glow; g.shadowBlur = 6 * d;
+  font(g, `${type}px ${s.font}`); g.fillStyle = ink; g.textBaseline = 'top'; g.shadowColor = w.glow || s.glow; g.shadowBlur = 6 * d;
   if (streak > 1) { g.textAlign = 'left'; g.fillText(`${streak} COMBO  x${mult()}`, 14 * d, top); }
   if (judged) { g.textAlign = 'right'; g.fillText(score.toLocaleString('en-US'), W - 14 * d, top); }
   const wait = notes[0].t - .4 - t;
@@ -519,15 +528,17 @@ function morph(change, quick) {
     return Promise.resolve();
   }
   const h0 = canvas.offsetHeight, was = win.offsetHeight, bottom = win.offsetTop + was;
-  const anchor = () => { if (free && !win.hidden) win.style.top = `${Math.max(6, bottom - win.offsetHeight)}px`; };
-  const settle = () => { canvas.style.flex = ''; anchor(); requestAnimationFrame(() => dispatchEvent(new Event('tahsin:player-resize'))); };   // then the window manager checks it still fits
+  const anchor = (tall = win.offsetHeight) => { if (free && !win.hidden) win.style.top = `${Math.max(6, bottom - tall)}px`; };
+  const settle = () => { canvas.style.flex = ''; anchor(); once(() => dispatchEvent(new Event('tahsin:player-resize'))); };   // then the window manager checks it still fits
   change();
   const h1 = canvas.offsetHeight, from = free ? h1 - (win.offsetHeight - was) : h0;
   // Under reduced motion the site lands every style a frame late, so wait for it and jump once.
-  if (still.matches || !canvas.animate) return new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(() => done(settle()))));
+  if (still.matches || !canvas.animate) return new Promise((done) => once(() => once(() => done(settle()))));
   canvas.style.flex = 'none';
   const grow = canvas.animate([{ height: `${from}px` }, { height: `${h1}px` }], { duration: 450, easing: EASE });
-  (function hold() { anchor(); if (grow.playState === 'running') requestAnimationFrame(hold); })();
+  let tall = 0;   // measured in the clock's read step, then the window moved in its write step
+  anchor();
+  (function hold() { if (grow.playState === 'running') once(() => { anchor(tall); hold(); }, () => { tall = win.offsetHeight; }); })();
   return grow.finished.catch(() => {}).then(settle);
 }
 function enter() {
@@ -561,7 +572,7 @@ function leave(quick) {
   canvas.removeAttribute('tabindex');
   canvas.removeAttribute('aria-label');
   if (back) star.focus({ preventScroll: true });
-  morph(() => win.classList.remove('is-beat'), quick === true).then(() => { if (!on) { deck.game = null; canvas.width = 600; canvas.height = 120; } });
+  morph(() => win.classList.remove('is-beat'), quick === true).then(() => { if (!on) { deck.game = null; canvas.width = 600; canvas.height = 120; fontNow = ''; } });
 }
 export function toggle() { if (on) leave(); else if (!win.hidden) enter(); }
 

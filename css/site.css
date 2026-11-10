@@ -368,7 +368,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .bb__paper summary { cursor: inherit; }
 .bb__paper summary h2 { display: inline; margin: 0 !important; }
 .bb__paper tr.is-hold td:first-child { font-weight: 600; }
-.bb__paper td:nth-child(5) { text-align: left; }
+.bb__paper :is(th, td):nth-child(5) { text-align: left; }
 
 /* ------- Taskbar and start menu ------- */
 .icons { position: relative; z-index: 2; }
@@ -418,7 +418,9 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 .off { position: fixed; inset: 0; z-index: 9998; display: grid; place-content: center; gap: 18px; justify-items: center; padding: 20px; color: #ffb545; background: #000; font: 400 16px/1.5 var(--pixel); text-align: center; }
 .off p { margin: 0; font-size: 24px; line-height: 1.3; }
 
-.taskbar::before { content: ""; position: absolute; inset: -2px 0 auto; height: 2px; background: linear-gradient(90deg, transparent, var(--beat-col) 30%, var(--beat-col) 70%, transparent); opacity: var(--beat, 0); pointer-events: none; }
+/* The song's level, set on the taskbar many times a second. It reaches only this line, not everything else on the taskbar. */
+@property --beat { syntax: "<number>"; inherits: false; initial-value: 0; }
+.taskbar::before { --beat: inherit; content: ""; position: absolute; inset: -2px 0 auto; height: 2px; background: linear-gradient(90deg, transparent, var(--beat-col) 30%, var(--beat-col) 70%, transparent); opacity: var(--beat, 0); pointer-events: none; }
 ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
 ::view-transition-new(root) { z-index: 2; }
 .wall.is-cut img { transition: none; }
@@ -553,6 +555,11 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+/* The frame clock (js/clock.js) is asleep, so the CSS loops hold still too. A blink or a sweep caught halfway would look stuck,
+   so the clock lets those finish moving and pauses them itself. The first visit's call to the tape keeps going through its minute. */
+.is-asleep *, .is-asleep *::before, .is-asleep *::after { animation-play-state: paused !important; }
+.is-asleep .start .eye, .is-asleep .ico .eye__iris, .is-asleep .win__bar::after { animation-play-state: running !important; }
+.os.hook .ico[data-rundown] > svg, .os.hook .ico[data-rundown]::before, .os.hook .pss svg { animation-play-state: running !important; }
 @media print {
   .wall, .bubbles, .taskbar, .icons, .boot, .balloon, .tour, .tourspot { display: none !important; }
   .os, .os body { height: auto; overflow: visible; }

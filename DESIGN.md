@@ -30,6 +30,14 @@ Aero sky and grass carry the surface. Sheets stay white so the work stays calm.
 ## Motion
 One authored moment: the eyelids. Windows pop open with an exponential ease-out over 420ms. Bubbles rise slowly at about 30fps. Reduced motion removes the travel and keeps everything readable.
 
+### The frame clock
+Everything that moves runs on one frame loop, `js/clock.js`, and nothing else asks the browser for frames. The visualizer and the song's live levels, the bubbles, the wallpaper's ripple and breathing, the play-along game (still through `deck.game`), Panopticon, Bubble Pop, the eyelids, the Start eye and the player settling after the game opens all join it. Each frame goes levels first, then every measurement, then every change, so the page is never laid out twice in a frame. Sizes and places are measured once and kept until a resize or a new look, and whether something is on screen comes from the browser (`seen`), not from reading layout.
+- Two speeds. The calm things (bubbles, bars, wallpaper) run at 30 frames a second on every screen. The game, the two toys while they're played, and windows on the move get every frame the display has.
+- It sleeps, asking for no frames at all: while the tab is hidden, while nothing that moves is on screen (a phone's sheet over the desktop), and after 20 seconds with no pointer, tap, scroll or key and no music. Before sleeping the calm motion slows to rest over about a second, and `<html>` gets `.is-asleep`, which pauses the CSS loops (a blink or a title bar sweep under way finishes moving first). The first visit's call to the tape, bubbles streaming into it included, keeps going through its minute. Any input, or music starting, wakes it at once. It never sleeps while music plays, the tape runs, or a level is on.
+- A screen that can't hold the calm frames near 30 a second for a few seconds gets less to draw, a step at a time and never back during the visit: first the wallpaper stops rippling, then there are half as many bubbles on a coarser canvas.
+- The ripple is drawn at the screen's own size on desktops, as before (at half size the detailed wallpapers went soft). Phones never ripple: their wallpaper only breathes.
+- Reduced motion is unchanged: still bubbles, no ripple, no travel. Something new that moves joins with `join({ rate, read, write })`; the module's header says how.
+
 ## Layout
 The base styles are a plain scrolling page, used only without JavaScript. With JavaScript the page is always `.os`: windows over a wallpaper. Only her photo and the media player start open, so the desktop is clear and PLAY_ME.EXE is the first thing a new visitor notices. `placeStart()` computes where every window will land.
 

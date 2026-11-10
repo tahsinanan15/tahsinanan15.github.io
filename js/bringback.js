@@ -101,7 +101,8 @@ function deal(n) {
   go(list.children[from]);
 }
 
-const mark = (li) => { for (const c of $('bb-deck').children) c.classList.toggle('is-current', c === li); };
+// Cards that aren't current are inert as well as faded, so the peeking card's buttons can't be clicked or tabbed to.
+const mark = (li) => { if (li) for (const c of $('bb-deck').children) { c.classList.toggle('is-current', c === li); c.inert = c !== li; } };
 function go(li) {
   if (!li) return;
   const list = $('bb-deck');
@@ -113,12 +114,14 @@ function go(li) {
 // The base call is named, and so is the opposite guess, because an interviewer will ask about both.
 const baseGuess = (r) => `always saying "${said(r.majority_call === 'LASTS').toLowerCase()}"`;
 const otherGuess = (r) => `always saying "${said(r.majority_call !== 'LASTS').toLowerCase()}"`;
+const method = (r) => `The rules were written down and dated before any of the cases' search data was downloaded, then tested once on ${r.holdout_n} comebacks the rule had never seen.`;
 function finding(r) {
   const [lo, hi] = r.rule_ci.map(pct);
   const vs = r.rule_hits > r.base_hits ? 'more than' : r.rule_hits === r.base_hits ? 'the same as' : 'fewer than';
-  return `The rules were dated before any case's curve was pulled, then tested once on ${r.holdout_n} comebacks the rule had never seen. Search before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
+  return `Search before the news didn't pick the keepers: ${r.rule_hits} of ${r.holdout_n} right (range ${lo} to ${hi}), ${vs} ${baseGuess(r)}.`;
 }
-const otherLine = (r) => `${r.holdout_lasted} of those ${r.holdout_n} lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits}.`;
+const otherLine = (r) => `${r.holdout_lasted} of the ${r.holdout_n} held-out comebacks lasted, so ${otherGuess(r)} would have got ${r.holdout_n - r.base_hits} of ${r.holdout_n}.`;
+const nextLine = 'A rise in search before launch is common, so it isn\'t a green light on its own (exploratory). What I\'d test next is whether demand holds after launch.';
 const risingLine = (d) => {
   const [a, n1] = d.rising.lasted, [b, n2] = d.rising.faded, m = d.rising15.lasted[0] + d.rising15.faded[0];
   return `Interest was at least a little higher, compared with the brand, before ${a + b} of ${n1 + n2} comebacks (${m} of ${n1 + n2} by more than 15%): ${a} of the ${n1} that lasted and ${b} of the ${n2} that didn't. A rise before the news is common, so on its own it doesn't separate them (exploratory).`;
@@ -144,7 +147,7 @@ function paper() {
       <li><b>${r.holdout_n - r.base_hits}/${r.holdout_n}</b><span>Always "${said(r.majority_call !== 'LASTS').toLowerCase()}"</span></li>
       <li><b>${pct(r.rule_ci[0])}-${pct(r.rule_ci[1])}</b><span>95% bootstrap range</span></li>
     </ul>
-    <p class="verdict">${esc(finding(r))} ${esc(otherLine(r))} With ${r.holdout_n} held-out cases, one comeback moves the hit rate by ${Math.round(100 / r.holdout_n)} points, so read it with its range.</p>
+    <p class="verdict">${esc(method(r))} ${esc(finding(r))} ${esc(otherLine(r))} With ${r.holdout_n} held-out cases, one comeback moves the hit rate by ${Math.round(100 / r.holdout_n)} points, so read it with its range.</p>
     <p>Of the ${r.train_n} older cases, ${r.train_lasted} lasted${r.train_lasted * 2 === r.train_n ? `, an even split, so the base call came from a tie rule set in advance: a tie means "${said(false).toLowerCase()}"` : ''}.</p>
     <h3>What did show up (exploratory)</h3>
     <p>${esc(risingLine(data))} Found after the test, so it's a lead to check, not a result. Only comebacks that happened were studied, so it can't say whether a rise means one is coming; leaks and teasers before the official date may add to it.</p>
@@ -174,9 +177,10 @@ export async function init() {
   $('bb-root').innerHTML = `
     <h2 id="bb-h">Can fans call a comeback?</h2>
     <p class="insight">${esc(finding(data.result))}</p>
-    <p>Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
+    <p>${esc(method(data.result))} Here's the line I read for each one: how much people searched for it in the year before the brand said anything. Your turn. No names until you call it.</p>
     <ol class="bb__deck" id="bb-deck" aria-label="Cases"></ol>
     <p>${esc(otherLine(data.result))} ${esc(risingLine(data))}</p>
+    <p><b>For a brand team.</b> ${esc(nextLine)}</p>
     <div class="bb__score" id="bb-score" hidden></div>
     <details class="bb__paper" id="bb-paper">${paper()}</details>`;
   const list = $('bb-deck');

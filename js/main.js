@@ -4,6 +4,7 @@ import { initAudio, sfx, startSoundNow, tryAutoplay, declineSound, osChime, play
 import { initBubbles } from './bubbles.js';
 import { THEMES, SONGS } from './themes.js';
 import { setFx, quake } from './fx.js';
+import { once } from './clock.js';
 
 const root = document.documentElement;
 const $ = (id) => document.getElementById(id);
@@ -489,21 +490,28 @@ $('mp-quake').checked = quake.on;
 $('mp-quake').addEventListener('change', (e) => { quake.on = e.target.checked; store.set('tahsin.quake', quake.on ? '1' : '0'); track('screen_effects', { on: quake.on }); });
 
 /* ---------- The eye that watches the pointer ---------- */
+// Where each eye sits is measured once, in the frame clock's read step, and kept until a resize or the layout changes.
 const irises = all('.eye__iris');
-let eyeQueued = false, pointer = [0, 0];
+let eyeQueued = false, pointer = [0, 0], eyes = null;
+const forgetEyes = () => { eyes = null; };
+addEventListener('resize', forgetEyes);
+document.addEventListener('scroll', forgetEyes, { capture: true, passive: true });   // a phone's icons scroll, and the eye with them
+document.addEventListener('animationend', forgetEyes, true);   // the tour's eye may be measured while it's still popping in
+new MutationObserver(forgetEyes).observe(root, { attributes: true, attributeFilter: ['class', 'data-theme'] });
+document.fonts?.ready.then(forgetEyes);
 addEventListener('pointermove', (e) => {
   pointer = [e.clientX, e.clientY];
   if (eyeQueued) return;
   eyeQueued = true;
-  requestAnimationFrame(() => {
+  once(() => {
     eyeQueued = false;
-    irises.forEach((iris) => {
-      const r = iris.ownerSVGElement.getBoundingClientRect();
+    irises.forEach((iris, i) => {
+      const r = eyes[i];
       if (!r.width) return;
       const dx = pointer[0] - (r.left + r.width / 2), dy = pointer[1] - (r.top + r.height / 2), a = Math.atan2(dy, dx), reach = Math.min(1, Math.hypot(dx, dy) / 240);
       iris.setAttribute('transform', `translate(${(Math.cos(a) * 9 * reach).toFixed(1)} ${(Math.sin(a) * 6 * reach).toFixed(1)})`);
     });
-  });
+  }, () => { eyes ||= irises.map((iris) => iris.ownerSVGElement.getBoundingClientRect()); });
 }, { passive: true });
 
 /* ---------- Small things ---------- */
@@ -676,9 +684,9 @@ function runLids(from, to, ms) {
     const step = (now) => {
       const k = Math.min(1, (now - t0) / ms), e = 1 - Math.pow(1 - k, 4);
       setLids(from + (to - from) * e);
-      if (k < 1) requestAnimationFrame(step); else done();
+      if (k < 1) once(step); else done();
     };
-    requestAnimationFrame(step);
+    once(step);
   });
 }
 function boot() {

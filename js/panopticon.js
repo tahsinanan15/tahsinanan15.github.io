@@ -2,10 +2,11 @@
 // Bentham's prison as a whack-a-mole. Linked from nothing. Stare back at the Start eye, or type its name.
 import { sfx } from './audio.js';
 import { track, session } from './analytics.js';
+import { join, wake, seen, FULL } from './clock.js';
 
 const N = 12, TAU = Math.PI * 2, BEAM = .52;
 const $ = (id) => document.getElementById(id);
-let canvas, g, ready = false, raf = 0, last = 0, state = 'off', cells = [], gaze = 0, caught = 0, out = 0, idle = 0, turn = 0, openWin;
+let canvas, g, ready = false, shown = () => false, dirty = false, ink = '#111', accent = '#1f8fe8', look = '', state = 'off', cells = [], gaze = 0, caught = 0, out = 0, idle = 0, turn = 0, openWin;
 const css = (name) => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 const gap = (a, b) => { const d = Math.abs(a - b) % TAU; return d > Math.PI ? TAU - d : d; };
 const say = (t) => { $('pan-msg').textContent = t; };
@@ -17,7 +18,7 @@ function begin() {
   $('pan-end').hidden = true;
   say(matchMedia('(hover: none)').matches ? "You're in the tower. Touch to look. Tap anyone acting up." : "You're in the tower. Point to look. Click anyone acting up.");
   hud();
-  if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); }
+  wake();
 }
 
 function step(dt) {
@@ -59,7 +60,7 @@ function catchAt() {
 
 function draw() {
   const S = canvas.width, C = S / 2, R = S * .47, r0 = S * .13;
-  const ink = css('--ink') || '#111', accent = css('--accent') || '#1f8fe8', danger = '#e0372a';
+  const danger = '#e0372a';
   g.clearRect(0, 0, S, S);
   g.fillStyle = '#0a0d14'; g.beginPath(); g.arc(C, C, R + 8, 0, TAU); g.fill();
   for (const c of cells) {   // the ring of cells, each with a window behind it
@@ -94,25 +95,32 @@ function draw() {
   g.fillStyle = ink;
 }
 
-function loop(now) {
-  raf = 0;
-  if (canvas.offsetParent === null) return;
-  step(Math.min(.05, (now - last) / 1000)); last = now;
-  draw();
-  raf = requestAnimationFrame(loop);
-}
+// On the frame clock: every frame while there's a game on and the window is on screen, and one more whenever the gaze moves
+// after it's over. Its colours are read once for each look, in the clock's read step.
+const playing = () => state === 'play' || state === 'trained' || (state === 'turned' && turn < 1);
+const mover = {
+  rate: () => (shown() && ((dirty && state !== 'off') || playing()) ? FULL : 0),
+  read() {
+    const id = document.documentElement.dataset.theme + document.documentElement.dataset.scene;
+    if (id !== look) { look = id; ink = css('--ink') || '#111'; accent = css('--accent') || '#1f8fe8'; }
+  },
+  write(now, dt) { dirty = false; step(Math.min(.05, dt / 1000)); draw(); },
+};
+const redraw = () => { dirty = true; wake(); };
 
 export function init(opener) {
   openWin = opener;
-  if (ready) { if (state === 'play' || state === 'trained') { if (!raf) { last = performance.now(); raf = requestAnimationFrame(loop); } } return; }
+  if (ready) return;   // coming back on screen wakes the clock by itself
   ready = true;
   canvas = $('pan-canvas'); g = canvas.getContext('2d');
-  const aim = (e) => { const r = canvas.getBoundingClientRect(); gaze = Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2); };
+  shown = seen(canvas);
+  join(mover);
+  const aim = (e) => { const r = canvas.getBoundingClientRect(); gaze = Math.atan2(e.clientY - r.top - r.height / 2, e.clientX - r.left - r.width / 2); redraw(); };
   canvas.addEventListener('pointermove', aim);
   canvas.addEventListener('pointerdown', (e) => { aim(e); catchAt(); });
   canvas.addEventListener('keydown', (e) => {
-    if (e.key === 'ArrowLeft') { gaze -= .26; e.preventDefault(); }
-    if (e.key === 'ArrowRight') { gaze += .26; e.preventDefault(); }
+    if (e.key === 'ArrowLeft') { gaze -= .26; redraw(); e.preventDefault(); }
+    if (e.key === 'ArrowRight') { gaze += .26; redraw(); e.preventDefault(); }
     if (e.key === ' ' || e.key === 'Enter') { catchAt(); e.preventDefault(); }
   });
   $('pan-again').addEventListener('click', begin);
