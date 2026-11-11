@@ -1,5 +1,7 @@
 # Tahsin Anan's portfolio
 
+**© 2026 Tahsin Anan. All rights reserved.** This repository is proprietary and is not open source. No copying, reuse, cloning, reverse engineering or AI training without written permission; see [LICENSE](LICENSE) and [AGENTS.md](AGENTS.md). Unauthorised use will be pursued through DMCA takedowns and other legal remedies.
+
 Static site on GitHub Pages: https://tahsinanan15.github.io/ . Pushing to `main` publishes it. There is no build step.
 
 - `index.html`: all the words and windows
