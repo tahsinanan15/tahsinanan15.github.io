@@ -34,7 +34,7 @@ const CUT = new Set(['walk', 'run', 'jump', 'fall', 'held', 'pounce']);   // cli
 const MOVING = new Set(['leap', 'fall', 'held', 'pounce']);   // states that move it every frame (a walk glides on its own, below)
 const IDLES = ['groom', 'yawn', 'look_around'];   // what it does now and then while sitting
 const FADE = 250;   // a crossfade between two clips: three frames
-const HELP = [['Show me around', () => showAround()], ['Her resume', () => wins.show('resume')], ['Nap time', () => nap(performance.now())]];
+const HELP = [['Follow me', () => follow()], ['Show me around', () => { chasing = false; showAround(); }], ['Her resume', () => wins.show('resume')], ['Nap time', () => nap(performance.now())]];
 // The show-around: each window, and one plain line about it. It ends at the tape.
 const STOPS = [
   ['about', 'ABOUT_ME.EXE', 'Who Tahsin is: a marketing analytics graduate from Baruch who also paints.'],
@@ -83,6 +83,7 @@ function blit(g, name, i, face = 1, alpha = 1, coat = coatId()) {
 let el, canvas, g, bubble, bubbles, wins, W = innerWidth, H = innerHeight;
 let x = 0, y = 0, vx = 0, vy = 0, face = 1, state = 'sit', act = null, until = 0, idleAt = 0, strolls = 0;
 let clip = { name: 'sit', at: 0, rate: 1, then: null }, leap = null, walk = null, pounce = null, fade = null, chained = false;
+let chasing = false;   // Follow me: it runs after the cursor, and jumps onto the window top under it
 let swing = 0, swingV = 0, grab = null, pointer = null, trail = [], petting = false, hovering = false, swatAt = -1e9, swatHit = true;
 let guide = null, showing = null, visible = false, dust = [], rate = 0, again = false, timer = 0, off = false, leaving = null;
 let drops = [], toy = null, playAt = 0, toyCool = 0, toyLook = 0, perch = null, bopUntil = 0, bopNext = 0, kickPrev = 0, kickGap = 500;
@@ -193,7 +194,7 @@ function placeBubble() {
 }
 function menu() {
   if (!bubble.hidden && bubble.querySelector('button')) return say('');
-  say(`<b>Mrrp?</b>${HELP.map(([text], i) => `<button type="button" class="gel" data-help="${i}">${text}</button>`).join('')}`);
+  say(`<b>Mrrp?</b>${HELP.map(([text], i) => (i || !phone() ? `<button type="button" class="gel" data-help="${i}">${!i && chasing ? 'Stop following' : text}</button>` : '')).join('')}`);   // no cursor to follow on a phone
   track('kitty', { act: 'menu' });
 }
 
@@ -217,7 +218,7 @@ function frameAt(now) {
 function settle(now, wait = phone() ? rand(3500, 8000) : rand(1800, 4500)) { state = 'sit'; act = null; toy = null; until = now + wait; idleAt = now + (phone() ? rand(2500, 5000) : rand(1200, 3000)); play('sit'); }
 function sitDown(now, rate = 1, wait) { state = 'sitdown'; play('sit_down', () => settle(performance.now(), wait), rate); }
 const rise = (next) => { act = null; if (UP.has(clip.name)) next(performance.now()); else { state = 'stand'; play('stand_up', next, 1.5); } };
-function nap(now) { state = 'sleep'; act = null; until = now + 45000; say(''); play('sleep'); }
+function nap(now) { chasing = false; state = 'sleep'; act = null; until = now + 45000; say(''); play('sleep'); }
 // A walk or a run along the floor. Its speed is fixed, so the browser glides it there itself (an animation of its transform,
 // run off the main thread); the page only works out where it is when it needs to, from the time.
 function walkTo(tx, run, then) {
@@ -441,6 +442,7 @@ function step(now, ms) {
       const to = deck ? clamp(x, deck[0] + h * .45, deck[1] - h * .45) : x;
       rise((n) => (Math.abs(to - x) > h ? walkTo(to, true, stand) : jump(n, to, ground, stand)));
     }
+    else if (chasing && !phone()) chase(now, h, ground);
     else if (y < ground - 2 && (!perch || now > perch.until)) hop();   // up on a perch with nothing to show, or done sitting up on a window: a hop down
     else if (hovering && !act && !petting && has('happy')) pet();   // the mouse came to rest on it before its play sheet was in
     else if (!calm && !petting && bubble.hidden) idle(now, h);
@@ -593,6 +595,35 @@ function idle(now, h) {
 // falling to the taskbar. Up there that edge is its floor: it sits, grooms, naps and strolls along it within the window's
 // width, never over the title bar's buttons, and after a while hops down. If the window moves, closes, is minimised or
 // maximised, or another window comes over its spot, it hops down at once. Never on a phone, where windows are sheets.
+// Follow me. Sitting or just landed, it looks for the surface under the cursor: the top edge of the nearest open window below
+// it (its title bar counts), or the taskbar. On the same surface it walks, or runs if it is far, to under the cursor and sits;
+// on another one it jumps there, up onto a window, across to the next, or down. Desktop only.
+function follow() {
+  chasing = !chasing;
+  if (chasing) { listen(); wake(); }
+  else if (perch) perch.until = performance.now() + rand(4000, 9000);   // it stays up a moment, then hops down as usual
+}
+function chase(now, h, ground) {
+  if (!pointer || act) return;
+  const [px, py] = pointer;
+  let on = null;
+  for (const win of document.querySelectorAll('.win:not([hidden])')) {
+    if (win.classList.contains('is-max')) continue;
+    const l = ledge(win, h);
+    if (!l || l.r.top < py - h * .4 || px < l.r.left || px > l.r.right || (on && l.r.top >= on.l.r.top)) continue;
+    if (onTop(win, clamp(px, l.lo, l.hi), l.r.top + 3)) on = { win, l };
+  }
+  const ty = on ? on.l.r.top : ground, tx = on ? clamp(px, on.l.lo, on.l.hi) : clamp(px, h / 2, W - h / 2);
+  if (Math.abs(ty - y) < 3 && (on ? perch?.win === on.win : !perch)) {   // already on that surface
+    if (Math.abs(tx - x) > h * .5) rise(() => walkTo(tx, Math.abs(tx - x) > h * 2, stand));
+    else if (UP.has(clip.name)) sitDown(now, 1.5);
+    else if (Math.abs(px - x) > h * .25) face = px < x ? -1 : 1;
+    return;
+  }
+  if (!has('jump')) return;
+  if (on) perchOn(on.win, on.l, 1e9); else unperch();
+  rise((n) => jump(n, tx, ty, stand));
+}
 function iconsRight() { let r = 0; for (const ico of document.querySelectorAll('.icons .ico')) r = Math.max(r, ico.getBoundingClientRect().right); return r; }
 function unperch() { perch?.obs.disconnect(); perch = null; }
 // The stretch of a window's top edge it can stand on: its width less half a cat each side, short of the title bar's buttons.
@@ -878,6 +909,7 @@ function wire() {
   }, true);
   addEventListener('pointermove', (e) => {
     pointer = [e.clientX, e.clientY];
+    if (chasing) wake();
     if (e.pointerType === 'mouse') { trail.push([e.clientX, e.clientY, performance.now()]); if (trail.length > 12) trail.shift(); }
   }, { passive: true });
   addEventListener('resize', () => {   // on its floor before (sitting, napping, walking ...), on its floor after

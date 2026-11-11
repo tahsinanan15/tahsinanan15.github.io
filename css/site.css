@@ -1088,7 +1088,7 @@ th, td { padding: 4px 8px; border-bottom: 1px solid var(--rule); }
   .phone .mp__list button { min-height: 44px; padding-block: 6px; }
 
   /* Touch sizes. */
-  .phone a, .phone button { touch-action: manipulation; }
+  .phone a, .phone button:not(.kitty) { touch-action: manipulation; }
   .phone .ball:not(.ball--big), .phone .tray__btn { width: 44px; height: 44px; }
   .phone .tool, .phone .pill { min-height: 44px; }
   .phone .swatch { width: 44px; height: 44px; }
