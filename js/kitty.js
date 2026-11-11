@@ -596,7 +596,7 @@ function idle(now, h) {
 // width, never over the title bar's buttons, and after a while hops down. If the window moves, closes, is minimised or
 // maximised, or another window comes over its spot, it hops down at once. Never on a phone, where windows are sheets.
 // Follow me. Sitting or just landed, it looks for the surface under the cursor: the top edge of the nearest open window below
-// it (its title bar counts), or the taskbar. On the same surface it walks, or runs if it is far, to under the cursor and sits;
+// it (its title bar counts), or the taskbar. On the same surface it runs to under the cursor and sits;
 // on another one it jumps there, up onto a window, across to the next, or down. Desktop only.
 function follow() {
   chasing = !chasing;
@@ -615,7 +615,7 @@ function chase(now, h, ground) {
   }
   const ty = on ? on.l.r.top : ground, tx = on ? clamp(px, on.l.lo, on.l.hi) : clamp(px, h / 2, W - h / 2);
   if (Math.abs(ty - y) < 3 && (on ? perch?.win === on.win : !perch)) {   // already on that surface
-    if (Math.abs(tx - x) > h * .5) rise(() => walkTo(tx, Math.abs(tx - x) > h * 2, stand));
+    if (Math.abs(tx - x) > h * .5) rise(() => walkTo(tx, true, stand));   // chasing: always a run
     else if (UP.has(clip.name)) sitDown(now, 1.5);
     else if (Math.abs(px - x) > h * .25) face = px < x ? -1 : 1;
     return;
