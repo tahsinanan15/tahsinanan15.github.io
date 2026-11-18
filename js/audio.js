@@ -13,7 +13,7 @@ const write = (k, v) => { try { localStorage.setItem(k, v); } catch { /* fine */
 
 const audio = new Audio();
 audio.preload = 'none';
-let ctx = null, master = null, analyser = null, sfxBus = null, musicGain = null, musicTone = null, songGain = null, underGain = null, under = null, wired = false;
+let ctx = null, master = null, analyser = null, sfxBus = null, room = null, musicGain = null, musicTone = null, songGain = null, underGain = null, under = null, wired = false;
 let index = 0;
 let muted = read('tahsin.muted', '0') === '1';
 let volume = +read('tahsin.volume', '55') / 100;
@@ -56,6 +56,10 @@ function ensureContext() {
   sfxBus = ctx.createGain();
   sfxBus.gain.value = .5;
   sfxBus.connect(master);
+  // The room: a little of every made sound rings out in purpl's reverb (an impulse response rendered from it).
+  const verb = ctx.createConvolver(), send = ctx.createGain();
+  send.gain.value = .22; send.connect(verb).connect(sfxBus);
+  fetch('assets/sfx/room.mp3').then((r) => r.arrayBuffer()).then((b) => ctx.decodeAudioData(b)).then((buf) => { verb.buffer = buf; room = send; }).catch(() => {});
   applyVolume();
   return ctx;
 }
@@ -218,6 +222,7 @@ function tone(freq, start, dur, { type = 'sine', gain = .2, to, pan = 0 } = {}) 
   let out = o.connect(a);
   if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; out = out.connect(p); }
   out.connect(sfxBus);
+  if (room) out.connect(room);
   o.start(t); o.stop(t + dur + .02);
 }
 export const sfx = {
