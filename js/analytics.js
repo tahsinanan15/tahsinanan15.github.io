@@ -48,14 +48,17 @@ async function hit(key, perBrowser = false) {
 
 export async function readCounts() {
   if (!ONLINE) return null;
+  // One at a time, with a retry: Abacus rate-limits a burst of parallel reads and answers some with 429 or 500.
+  const read = async (key, tries = 2) => {
+    const res = await timed(`${API}/get/${NS}/${key}`);
+    if (res.status === 404) return 0;              // never counted yet
+    if (!res.ok) { if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(key, tries - 1); } throw new Error(res.status); }
+    return Math.max(0, Number((await res.json()).value) || 0);
+  };
   try {
-    const values = await Promise.all(KEYS.map(async (key) => {
-      const res = await timed(`${API}/get/${NS}/${key}`);
-      if (res.status === 404) return 0;              // never counted yet
-      if (!res.ok) throw new Error(res.status);
-      return Math.max(0, Number((await res.json()).value) || 0);
-    }));
-    return Object.fromEntries(KEYS.map((k, i) => [k, values[i]]));
+    const counts = {};
+    for (const key of KEYS) counts[key] = await read(key);
+    return counts;
   } catch { return null; }
 }
 
