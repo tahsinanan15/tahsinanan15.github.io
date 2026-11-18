@@ -196,7 +196,7 @@ function blocks(t) {
 function hurt(t) {
   if (nowAt < safeTo || caughtAt) return;
   t.gone = nowAt;
-  if (active('shield')) { powers.shield = 0; safeTo = nowAt + SAFE; ring(1.6); spark('burst', U(x), dist, y + TALL / 2, 1.5); return; }   // the bubble takes it, and pops without a sound, like her bubbles
+  if (active('shield')) { powers.shield = 0; safeTo = nowAt + SAFE; ring(1.6); spark('burst', U(x), dist, y + TALL / 2, .9); return; }   // the bubble takes it, and pops without a sound, like her bubbles
   if (nowAt - hitAt < AGAIN) return caught();
   hitAt = nowAt; safeTo = nowAt + SAFE; cleanFrom = sec;
   spark('hit', U(t.lane), dist + .02, .7, 1.2);
@@ -252,7 +252,7 @@ const ring = (size) => fx.push({ at: nowAt, life: 420, size });
 
 // Pixel effects (pixelfx, built by _dev/run_fx in each OS's own colours): dust from her paws at every stride, a bigger puff
 // when she lands, a spark when something hits her, a burst for a power-up and for the shield. Their pixels are the
-// LCD's. Each sits on the road where it happened and falls behind as she runs on. None under reduced motion.
+// LCD's, scaled in whole pixels. Each sits on the road where it happened and fades as it falls behind. None under reduced motion.
 let FX = null;
 const fxSheets = {}, sparks = [];
 fetch('assets/run/fx.json').then((r) => r.json()).then((m) => { FX = m; }).catch(() => {});
@@ -271,7 +271,9 @@ function drawSparks(g, f, front) {
     const s = sparks[i], e = FX.effects[s.kind], n = Math.floor((nowAt - s.at) / 1000 * e.fps);
     if (n >= e.frames) { sparks.splice(i, 1); continue; }
     if ((s.kind === 'hit' || s.kind === 'burst') !== front) continue;
-    const [px, py, k] = f.at(s.u, Math.max(s.z - dist, f.stop)), unit = f.lane * k / 40 * s.size;   // one effect pixel, in canvas pixels
+    const r = s.z - dist, [px, py, k] = f.at(s.u, Math.max(r, f.stop)), unit = Math.max(1, Math.round(f.lane * k / 40 * s.size));   // one effect pixel: a whole number of canvas pixels
+    g.globalAlpha = clamp(1 + r / .12);   // gone a third of the way back to the camera
+    if (!g.globalAlpha) continue;
     g.drawImage(img, (n % e.cols) * e.w, e.y + Math.floor(n / e.cols) * e.h, e.w, e.h, px - e.pivot[0] * unit, py - s.h * f.lane * k - e.pivot[1] * unit, e.w * unit, e.h * unit);
   }
   g.restore();
@@ -357,7 +359,7 @@ function near0(t) {   // the song's note nearest this moment, so the pops play a
 }
 function power(p) {
   p.got = nowAt; tally.power++;
-  spark('burst', U(p.lane), p.z, p.h - .2, 1.1);
+  spark('burst', U(p.lane), p.z, p.h - .2, .6);   // within the chip's own size
   powers[p.kind] = nowAt + LAST[p.kind] * 1000;
   if (p.kind === 'ride') { tally.ride++; rideName = pick(WINDOWS); air = null; slideTo = 0; }
   if (p.kind === 'zoom') safeTo = Math.max(safeTo, powers.zoom + 600);
@@ -505,7 +507,7 @@ function kitty(g, f) {
     const s = f.lane * TALL * .78 * (calm ? 1 : 1 + .03 * Math.sin(nowAt / 150)), cy = py - y * f.lane - f.lane * TALL * .5, fade = Math.min(1, (powers.shield - nowAt) / 1500);
     g.save(); g.globalAlpha = .8 * fade;
     if (f.id === 'aero') g.drawImage(soapOnce(), px - s, cy - s, s * 2, s * 2);
-    else { const c = WORLDS[f.id].hands[0]; g.shadowColor = c[1]; g.shadowBlur = 12 * f.d; g.lineWidth = 3 * f.d; g.strokeStyle = c[1]; g.beginPath(); g.ellipse(px, cy, s * .9, s, 0, 0, TAU); g.stroke(); g.lineWidth = f.d; g.strokeStyle = c[0]; g.beginPath(); g.ellipse(px, cy, s * .82, s * .92, 0, -2.4, -1.4); g.stroke(); }
+    else if (lcd) { g.shadowColor = lcd.glow; g.shadowBlur = 12 * f.d; g.lineWidth = 3 * f.d; g.strokeStyle = lcd.fg; g.beginPath(); g.ellipse(px, cy, s * .9, s, 0, 0, TAU); g.stroke(); g.lineWidth = f.d; g.globalAlpha *= .6; g.beginPath(); g.ellipse(px, cy, s * .82, s * .92, 0, -2.4, -1.4); g.stroke(); }   // the LCD's own ink: Baroque's gold, Vaporwave's pink
     g.restore();
   }
   if (active('magnet')) {   // and the OS's own bubble wand, beside her
@@ -535,7 +537,9 @@ function paneArt(id) {
   else if (stops.length > 2) { const p = g.createLinearGradient(0, 0, 0, bar); stops.slice(0, 3).forEach((col, i) => p.addColorStop([0, .47, .5][i], col)); g.fillStyle = p; g.fillRect(0, 0, W, bar); }
   g.fillStyle = v('--bar-edge'); g.fillRect(0, bar - 2, W, 2);
   g.fillStyle = v('--sheet'); g.fillRect(12, bar + 8, W - 24, H - bar - 20);   // the page inside: that window's own heading and words
-  const win = document.querySelector(`[data-file="${rideName}"]`), head = $(win?.getAttribute('aria-labelledby'))?.textContent.trim() || '', words = (win?.querySelector('p')?.textContent || '').trim().split(/\s+/);
+  const win = document.querySelector(`[data-file="${rideName}"]`), head = $(win?.getAttribute('aria-labelledby'))?.textContent.trim() || '';
+  const para = [...(win?.querySelectorAll('p') || [])].find((el) => !el.hidden && !el.classList.contains('meta') && el.textContent.trim());   // its first real paragraph
+  const words = (para?.textContent || '').replace(/[^.]*JavaScript[^.]*\.?/g, '').trim().split(/\s+/).filter(Boolean);   // not the no-JavaScript note
   g.textBaseline = 'top'; g.textAlign = 'left';
   g.fillStyle = v('--heading'); g.font = `700 38px ${v('--display')}`; g.fillText(head, 30, bar + 24, W - 60);
   g.fillStyle = v('--ink-2'); g.font = `22px ${v('--body')}`;
@@ -549,15 +553,16 @@ function paneArt(id) {
   return c;
 }
 function carpet(g, f, h, slide, alpha) {   // tilted up toward the far end, as a carpet lifts, so its face reads
-  const img = paneArt(f.id), u0 = U(x) - .66, u1 = U(x) + .66, far = .3 + slide, near = -.05 + slide, hf = h + .7, hn = h - .4;
-  const N = Math.max(24, Math.min(96, Math.round(f.lane * 1.4 / f.d / 3)));   // a slice every few pixels, so the sides run straight
+  const mid = clamp(U(x), .66, 3.34), img = paneArt(f.id), u0 = mid - .66, u1 = mid + .66, far = .3 + slide, near = -.05 + slide, hf = h + .7, hn = h - .4;   // kept over the road
   g.save(); g.globalAlpha = alpha;
   if (!f.lite) {   // a soft shadow on the road below
     const [sx, sy, sk] = f.at(U(x), .08 + slide), rx = f.lane * .9 * sk, sh = g.createRadialGradient(sx, sy, 0, sx, sy, rx);
     sh.addColorStop(0, 'rgba(0,0,0,.22)'); sh.addColorStop(1, 'rgba(0,0,0,0)');
     g.save(); g.translate(sx, sy); g.scale(1, .3); g.translate(-sx, -sy); g.fillStyle = sh; g.fillRect(sx - rx, sy - rx, rx * 2, rx * 2); g.restore();
   }
+  let N = 1;
   const edge = (u, i) => { const r = far + (near - far) * i / N, p = f.at(u, r); return [p[0], p[1] - (hf + (hn - hf) * i / N) * f.lane * p[2]]; };
+  N = clamp(Math.ceil((edge(u0, 1)[1] - edge(u0, 0)[1]) / (2 * f.d)), 24, 240);   // a slice every two pixels, so the words don't shear
   g.save(); g.beginPath();   // its outline, so the slices below meet in clean edges
   for (let i = 0; i <= N; i++) g.lineTo(...edge(u0, i));
   for (let i = N; i >= 0; i--) g.lineTo(...edge(u1, i));
@@ -567,6 +572,8 @@ function carpet(g, f, h, slide, alpha) {   // tilted up toward the far end, as a
     g.drawImage(img, 0, img.height * i / N, img.width, img.height / N, bx, ay, cx - bx, by - ay + 1);
   }
   g.restore();
+  g.beginPath(); for (let i = 0; i <= N; i++) g.lineTo(...edge(u0, i)); for (let i = N; i >= 0; i--) g.lineTo(...edge(u1, i)); g.closePath();   // its frame, drawn once along the outline
+  g.lineWidth = Math.max(1, 1.5 * f.d); g.strokeStyle = getComputedStyle(document.documentElement).getPropertyValue('--putty-4'); g.stroke();
   g.restore();
 }
 

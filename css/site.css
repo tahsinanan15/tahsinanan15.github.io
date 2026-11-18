@@ -225,6 +225,7 @@ html, body { transition: none; }
 .mp__full svg { filter: drop-shadow(0 0 3px var(--lcd-glow)); }
 .is-beat .mp__run { display: none; }   /* KITTY_RUN.EXE starts from full screen only */
 .arcade .mp__title { text-overflow: ellipsis; }
+.arcade .mp__title span { display: inline; padding-left: 0; animation: none; }   /* the ticker's span would stop the ellipsis */
 .arcade:has(#mp-run[aria-pressed=true]) #mp-time, .arcade:has(#mp-run[aria-pressed=true]) .mp__screen::after { display: none; }   /* on the run the top bar shows the song's progress; no sheen over the shut lids */
 .arcade .mp__result :is(.pill, .gel) { min-height: 44px; font-size: 16px; }
 .mp__full[aria-pressed=true] { color: #ffe14d; }
@@ -248,6 +249,7 @@ html, body { transition: none; }
 .run__goals svg { flex: none; width: 13px; height: 13px; color: #ffe14d; }
 .run__goals .is-off { opacity: .22; }
 .run__goals .is-done { color: var(--lcd-fg); }
+.mp__result .run__next, .arcade .mp__result .run__next { color: var(--lcd-sub); font-size: 16px; }
 /* Full screen: the player's screen leaves its window and fills the display, above the taskbar. The board tilts back into a road. */
 .arcade { position: fixed; inset: 0; z-index: 9500; }
 .arcade .mp__screen { position: absolute; inset: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; -webkit-user-select: none; user-select: none; }

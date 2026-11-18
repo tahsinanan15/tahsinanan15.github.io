@@ -562,7 +562,8 @@ function unrace(again) {
 kit.addEventListener('click', () => (running ? unrace(true) : race()));
 // On the run the arrow keys and W steer her, so the glyphs say what they do there.
 const TITLES = { 'mp-back': ['Previous level (left arrow)', 'Previous song'], 'mp-skip': ['Next level (right arrow)', 'Next song'], 'mp-watch': ['Just watch (W)', 'Just watch the song'] };
-function retitle(run) { for (const [id, t] of Object.entries(TITLES)) $(id).title = t[+run]; }
+const ARIA = {};
+function retitle(run) { for (const [id, t] of Object.entries(TITLES)) { const el = $(id); ARIA[id] ??= el.getAttribute('aria-label'); el.title = t[+run]; el.setAttribute('aria-label', run ? t[1] : ARIA[id]); } }
 
 /* ---------- Coming and going ---------- */
 // The screen grows or shrinks in one move. On a desktop the window's bottom edge stays put and its height never jumps:

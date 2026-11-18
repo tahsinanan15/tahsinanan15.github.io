@@ -88,8 +88,10 @@ def cap(name, sign, mats):
     """A lid: a shell a little bigger than the ball over its front, above (sign 1) or below (-1) its middle. Only the
     front: from behind, the back of the ball shows bare, as a real eye's does."""
     bm = bmesh.new()
-    bmesh.ops.create_uvsphere(bm, u_segments=48, v_segments=24, radius=LID)
-    bmesh.ops.delete(bm, geom=[v for v in bm.verts if v.co.z * sign < -1e-4 or v.co.x < 0.12], context='VERTS')   # only over its front: from behind, a thin rim
+    bmesh.ops.create_uvsphere(bm, u_segments=96, v_segments=48, radius=LID)
+    for co, no in (((0, 0, 0), (0, 0, -sign)), ((0.12, 0, 0), (-1, 0, 0))):   # cut along clean planes, so its edges are smooth arcs
+        geom = bm.verts[:] + bm.edges[:] + bm.faces[:]
+        bmesh.ops.bisect_plane(bm, geom=geom, plane_co=co, plane_no=no, clear_outer=True)
     return mesh(name, bm, mats)
 
 
