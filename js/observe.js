@@ -106,7 +106,7 @@ async function renderFunnel() {
   }
   const n = Math.max(c.visit, 1);
   box.innerHTML = `<ul class="barlist">${FUNNEL.map(([k, l]) => `<li><span>${l}${you[k] ? ' <b>(you)</b>' : ''}</span><span class="track"><span class="fill" style="width:${c[k] / n * 100}%"></span></span><span class="val">${c[k].toLocaleString()} ${k === 'visit' ? '' : `(${pct(c[k] / n)})`}</span></li>`).join('')}</ul>
-    <p class="note">${c.visit < 100 ? `Small sample, n = ${c.visit}. Read this as direction, not a result. ` : ''}Each step is counted on its own, so people can skip steps. Counts are per session, and automated browsers are excluded.${c.visitor ? ` ${c.visitor.toLocaleString('en-US')} different browsers since 9 Nov 2026, each counted once however often it comes back.` : ''}</p>`;
+    <p class="note">${c.at ? `The live counter isn't answering, so these are the totals as of ${new Date(c.at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}. ` : ''}${c.visit < 100 ? `Small sample, n = ${c.visit}. Read this as direction, not a result. ` : ''}Each step is counted on its own, so people can skip steps. Counts are per session, and automated browsers are excluded.${c.visitor ? ` ${c.visitor.toLocaleString('en-US')} different browsers since 9 Nov 2026, each counted once however often it comes back.` : ''}</p>`;
 }
 
 /* ---------- Tab 2: the live headline test ---------- */

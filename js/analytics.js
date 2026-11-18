@@ -13,7 +13,7 @@ if (new URLSearchParams(location.search).has('me')) store.set('localStorage', 't
 // Reading the totals is fine from any browser on the live site, Tahsin's included; only counting is switched off for her.
 const ONLINE = location.hostname.endsWith('github.io');
 const LIVE = ONLINE && !navigator.webdriver && !store.get('localStorage', 'tahsin.me');
-const timed = (url) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(6000) });
+const timed = (url, ms = 6000) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(ms) });
 
 const fresh = () => ({ start: Date.now(), events: [], counted: {}, engagedMs: 0 });
 export const session = store.get('sessionStorage', 'tahsin.session') || fresh();
@@ -50,16 +50,20 @@ export async function readCounts() {
   if (!ONLINE) return null;
   // One at a time, with a retry: Abacus rate-limits a burst of parallel reads and answers some with 429 or 500.
   const read = async (key, tries = 2) => {
-    const res = await timed(`${API}/get/${NS}/${key}`);
-    if (res.status === 404) return 0;              // never counted yet
-    if (!res.ok) { if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(key, tries - 1); } throw new Error(res.status); }
+    // Abacus can take 5 to 8 seconds to answer, so reads wait longer than counting does.
+    const res = await timed(`${API}/get/${NS}/${key}`, 15000).catch(() => null);
+    if (res?.status === 404) return 0;              // never counted yet
+    if (!res?.ok) { if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(key, tries - 1); } throw new Error(res?.status); }
     return Math.max(0, Number((await res.json()).value) || 0);
   };
   try {
     const counts = {};
     for (const key of KEYS) counts[key] = await read(key);
+    store.set('localStorage', 'tahsin.counts', { ...counts, at: Date.now() });
     return counts;
-  } catch { return null; }
+  } catch {
+    return store.get('localStorage', 'tahsin.counts');   // the last real totals this browser saw, marked with when
+  }
 }
 
 export function track(name, params = {}) {
