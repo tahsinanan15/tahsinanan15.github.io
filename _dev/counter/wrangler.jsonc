@@ -1,0 +1,10 @@
+// Deploy from this folder: npx wrangler deploy. Schema: npx wrangler d1 execute tahsin-counter --remote --file schema.sql
+{
+  "name": "tahsin-counter",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-18",
+  "d1_databases": [
+    { "binding": "DB", "database_name": "tahsin-counter", "database_id": "131e585e-1a75-4155-b8ad-8275580b6880" }
+  ],
+  "observability": { "enabled": true, "traces": { "enabled": true } }
+}

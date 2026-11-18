@@ -1,7 +1,7 @@
 // First-party analytics. The event log never leaves this browser. Only anonymous totals are counted,
 // once per session, on the live site, and automated browsers are excluded.
-const API = 'https://abacus.jasoncameron.dev';
-const NS = 'tahsinanan15-portfolio';
+// Her own counter on Cloudflare (source in _dev/counter). Totals carried over from Abacus on 18 Nov 2026.
+const API = 'https://tahsin-counter.tahsinanan.workers.dev';
 
 // Storage can be blocked outright, and just reading the property then throws. So it's only ever touched inside a try.
 const store = {
@@ -13,7 +13,7 @@ if (new URLSearchParams(location.search).has('me')) store.set('localStorage', 't
 // Reading the totals is fine from any browser on the live site, Tahsin's included; only counting is switched off for her.
 const ONLINE = location.hostname.endsWith('github.io');
 const LIVE = ONLINE && !navigator.webdriver && !store.get('localStorage', 'tahsin.me');
-const timed = (url, ms = 6000) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(ms) });
+const timed = (url) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(6000) });
 
 const fresh = () => ({ start: Date.now(), events: [], counted: {}, engagedMs: 0 });
 export const session = store.get('sessionStorage', 'tahsin.session') || fresh();
@@ -37,7 +37,7 @@ async function hit(key, perBrowser = false) {
   session.counted[key] = 1; save();
   if (!LIVE) return null;
   try {
-    const res = await timed(`${API}/hit/${NS}/${key}`);
+    const res = await timed(`${API}/hit/${key}`);
     if (!res.ok) throw new Error(res.status);
     return Number((await res.json()).value) || null;
   } catch {
@@ -48,17 +48,16 @@ async function hit(key, perBrowser = false) {
 
 export async function readCounts() {
   if (!ONLINE) return null;
-  // Spread out, with a retry: Abacus rate-limits a burst of reads and answers some with 429 or 500.
-  const read = async (key, tries = 2) => {
-    // Abacus can take up to 20 seconds to answer when it is busy, so reads wait longer than counting does.
-    const res = await timed(`${API}/get/${NS}/${key}`, 20000).catch(() => null);
-    if (res?.status === 404) return 0;              // never counted yet
-    if (!res?.ok) { if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(key, tries - 1); } throw new Error(res?.status); }
-    return Math.max(0, Number((await res.json()).value) || 0);
+  // Every total in one reply, with one retry.
+  const read = async (tries = 2) => {
+    const res = await timed(`${API}/get`).catch(() => null);
+    if (res?.ok) return res.json();
+    if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(tries - 1); }
+    throw new Error(res?.status);
   };
   try {
-    const values = await Promise.all(KEYS.map((key, i) => new Promise((r) => setTimeout(r, i * 150)).then(() => read(key))));
-    const counts = Object.fromEntries(KEYS.map((k, i) => [k, values[i]]));
+    const all = await read();
+    const counts = Object.fromEntries(KEYS.map((k) => [k, Math.max(0, Number(all[k]) || 0)]));
     store.set('localStorage', 'tahsin.counts', { ...counts, at: Date.now() });
     return counts;
   } catch {
@@ -96,7 +95,7 @@ export async function startVisit() {
   hit('visitor', true);   // the same visit, counted once per browser, so a browser that comes back daily is one visitor
   if (value != null) return value;
   if (!ONLINE) return null;
-  try { const r = await timed(`${API}/get/${NS}/visit`); return r.ok ? Number((await r.json()).value) || null : null; } catch { return null; }
+  return (await readCounts())?.visit || null;
 }
 
 // GA4 counts a session as engaged after 10 seconds in view, so this clock only runs while the tab is visible.
