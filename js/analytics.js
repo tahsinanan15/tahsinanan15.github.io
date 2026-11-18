@@ -10,7 +10,9 @@ const store = {
 };
 // Tahsin opens the site once with ?me on each device, so her own visits and test clicks stay out of the numbers.
 if (new URLSearchParams(location.search).has('me')) store.set('localStorage', 'tahsin.me', 1);
-const LIVE = location.hostname.endsWith('github.io') && !navigator.webdriver && !store.get('localStorage', 'tahsin.me');
+// Reading the totals is fine from any browser on the live site, Tahsin's included; only counting is switched off for her.
+const ONLINE = location.hostname.endsWith('github.io');
+const LIVE = ONLINE && !navigator.webdriver && !store.get('localStorage', 'tahsin.me');
 const timed = (url) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(6000) });
 
 const fresh = () => ({ start: Date.now(), events: [], counted: {}, engagedMs: 0 });
@@ -45,7 +47,7 @@ async function hit(key, perBrowser = false) {
 }
 
 export async function readCounts() {
-  if (!LIVE) return null;
+  if (!ONLINE) return null;
   try {
     const values = await Promise.all(KEYS.map(async (key) => {
       const res = await timed(`${API}/get/${NS}/${key}`);
@@ -86,7 +88,7 @@ export async function startVisit() {
   const value = await hit('visit');
   hit('visitor', true);   // the same visit, counted once per browser, so a browser that comes back daily is one visitor
   if (value != null) return value;
-  if (!LIVE) return null;
+  if (!ONLINE) return null;
   try { const r = await timed(`${API}/get/${NS}/visit`); return r.ok ? Number((await r.json()).value) || null : null; } catch { return null; }
 }
 
