@@ -48,17 +48,17 @@ async function hit(key, perBrowser = false) {
 
 export async function readCounts() {
   if (!ONLINE) return null;
-  // One at a time, with a retry: Abacus rate-limits a burst of parallel reads and answers some with 429 or 500.
+  // Spread out, with a retry: Abacus rate-limits a burst of reads and answers some with 429 or 500.
   const read = async (key, tries = 2) => {
-    // Abacus can take 5 to 8 seconds to answer, so reads wait longer than counting does.
-    const res = await timed(`${API}/get/${NS}/${key}`, 15000).catch(() => null);
+    // Abacus can take up to 20 seconds to answer when it is busy, so reads wait longer than counting does.
+    const res = await timed(`${API}/get/${NS}/${key}`, 20000).catch(() => null);
     if (res?.status === 404) return 0;              // never counted yet
     if (!res?.ok) { if (tries > 1) { await new Promise((r) => setTimeout(r, 800)); return read(key, tries - 1); } throw new Error(res?.status); }
     return Math.max(0, Number((await res.json()).value) || 0);
   };
   try {
-    const counts = {};
-    for (const key of KEYS) counts[key] = await read(key);
+    const values = await Promise.all(KEYS.map((key, i) => new Promise((r) => setTimeout(r, i * 150)).then(() => read(key))));
+    const counts = Object.fromEntries(KEYS.map((k, i) => [k, values[i]]));
     store.set('localStorage', 'tahsin.counts', { ...counts, at: Date.now() });
     return counts;
   } catch {
