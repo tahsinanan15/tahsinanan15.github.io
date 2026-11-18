@@ -9,6 +9,9 @@ Run it with Blender (it renders PNG frames and a meta.json into OUT; pack_sprite
       [--actions walk,sit]            only these actions (all by default)
       [--measure]                     only work out the cell and write meta.json, render nothing
       [--remake held]                 with --blend: make these actions_interaction actions again (the rest are kept)
+      [--view back]                   KITTY_RUN.EXE's clips instead: the cat seen from behind and a little above, running
+                                      into the screen (BACK actions unless --actions says otherwise), measured on their own
+      [--ppu 270]                     pixels per Blender unit (PPU by default)
 
 What it does
   1. Makes every action from actions_locomotion, actions_idles and actions_interaction on the rig.
@@ -28,7 +31,7 @@ import numpy as np
 from mathutils import Vector
 
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-import cat, actions_locomotion, actions_idles, actions_interaction
+import cat, actions_locomotion, actions_idles, actions_interaction, actions_run
 
 PPU = 180           # pixels per Blender unit: a sitting cat is then about 150 px tall, 1.5 times its 100 px on the desktop
 PAD = 3             # empty pixels kept round the furthest any pose reaches
@@ -41,8 +44,10 @@ FACE_PROPS = ('lid', 'mouth', 'eyes_shut')     # painted-face controls the actio
 # is up, and placed as its first frame the cat would hover on its hind paws; the walk is each too, so a paw is always
 # on the floor row (the body dips a pixel or two as the near paws lift, which reads as weight).
 FLOOR = dict(sit='first', groom='each', yawn='first', look_around='first', swat='each', point='each',
-             happy='first', nod='first', sleep='first', walk='each', run='lowest', stalk='lowest', pounce='lowest',
+             happy='first', nod='first', sleep='first', walk='each', run='lowest', stalk='lowest', pounce='lowest', sprint='lowest',
              held='none')
+BACK = 'run,sprint,leap,duck,hop,stumble,sit,stand_up,look_around'   # KITTY_RUN.EXE's: the start, and the run and its moves (actions_run)
+BACK_ELEVATION = 40                                       # degrees above her, behind: the road's own camera is about this high
 
 
 def frames_of(name):
@@ -108,8 +113,25 @@ def main():
     if opt('--save'):
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(opt('--save')))
     arm.animation_data_create()
-    cam = bpy.data.objects['cam_three_quarter']
-    cat.use_camera()
+    global PPU
+    PPU = float(opt('--ppu') or PPU)
+    back = opt('--view') == 'back'
+    if back:   # every action unturned (the cat faces +X), seen by an orthographic camera behind her (-X) and above
+        new = actions_run.build(arm)   # its run replaces the desktop's, which it is built over
+        acts = [a for a in acts if a['name'] not in {n['name'] for n in new}] + new
+        keep = (opt('--actions') or BACK).split(',')
+        acts = [dict(a, yaw=0, view='back') for a in acts if a['name'] in keep]
+        el = math.radians(BACK_ELEVATION)
+        d = Vector((-math.cos(el), 0, math.sin(el)))
+        cam = bpy.data.objects.new('cam_back', bpy.data.cameras.new('cam_back')); sc.collection.objects.link(cam)
+        cam.data.type, cam.data.clip_start, cam.data.clip_end = 'ORTHO', 0.1, 20
+        cam.location = Vector((0.02, 0, 0.47)) + d * 8
+        cam.rotation_euler = (-d).to_track_quat('-Z', 'Y').to_euler()
+        cat.use_camera('cam_back')
+        bpy.context.view_layer.update()
+    else:
+        cam = bpy.data.objects['cam_three_quarter']
+        cat.use_camera()
 
     # 1. where every frame reaches, in pixels from the world origin's picture point (x right, y up), and how far each
     # frame is raised (dy, pixels) to stand on the floor row
@@ -147,12 +169,12 @@ def main():
     cam.location += right * (ax + (W / 2 - cx) / PPU) + up * (ay + (floor - H / 2) / PPU)
     base = cam.location.copy()
     bpy.context.view_layer.update()
-    held = next(a for a in acts if a['name'] == 'held')
-    sx, sy = cam_xy(cam, Vector(held['scruff']))
+    held = next((a for a in acts if a['name'] == 'held'), None)   # from behind there is no held pose, and no stride: she runs on the spot
+    sx, sy = cam_xy(cam, Vector(held['scruff'])) if held else (0, 0)
     scruff = [round(W / 2 + sx * PPU, 1), round(H / 2 - sy * PPU, 1)]
     # one stride of the walk and the run, as the picture sees it (the cat walks turned by its yaw)
     stride = {}
-    for name, length in (('walk', actions_locomotion.WALK_STRIDE), ('run', actions_locomotion.RUN_STRIDE)):
+    for name, length in () if back else (('walk', actions_locomotion.WALK_STRIDE), ('run', actions_locomotion.RUN_STRIDE)):
         a = next(a for a in acts if a['name'] == name)
         y = math.radians(a['yaw'] if not isinstance(a['yaw'], list) else a['yaw'][0])
         stride[name] = round(Vector((math.cos(y), math.sin(y), 0)).dot(right) * length * PPU, 1)

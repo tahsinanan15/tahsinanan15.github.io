@@ -1,0 +1,1 @@
+{"file":"fx-{os}.png","effects":{"puff":{"y":0,"w":96,"h":44,"cols":19,"frames":19,"fps":30,"pivot":[48,38]},"land":{"y":44,"w":96,"h":44,"cols":19,"frames":19,"fps":30,"pivot":[48,38]},"hit":{"y":88,"w":136,"h":80,"cols":15,"frames":16,"fps":30,"pivot":[44,64]},"burst":{"y":248,"w":112,"h":108,"cols":18,"frames":42,"fps":30,"pivot":[56,94]}}}

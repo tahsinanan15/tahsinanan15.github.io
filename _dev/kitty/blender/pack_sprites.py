@@ -3,6 +3,11 @@
 Run it with plain Python 3 (Pillow and numpy), after render_sprites.py:
   python3 _dev/kitty/blender/pack_sprites.py FRAMES_DIR [--preview /some/tmp/preview_dir] [--out DIR]
   (--out writes the sheets somewhere else than assets/kitty, for a trial)
+  python3 _dev/kitty/blender/pack_sprites.py FRAMES_DIR --view back
+  (KITTY_RUN.EXE's clips from render_sprites.py --view back: one more sheet per coat, <coat>-run.webp, and kitty.json's
+   run, with the cell, anchor, height of the run and the actions, leaving the desktop's sheets and actions as they are)
+  python3 _dev/kitty/blender/pack_sprites.py EYE_FRAMES_DIR --eye
+  (eyeball.py's frames: assets/run/eye-<skin>.webp, 8 frames a row, and assets/run/eye.json with the cell and actions)
 
 What it writes, into assets/kitty/
   <coat>-<sheet>.webp   per coat, three sheets so the page can load the rarer ones later:
@@ -38,6 +43,7 @@ COAT_QUALITY = {'ghost': 66}         # ghost's neon outline costs more bytes: a 
 MARKERS = {'jump': {'crouch': 0, 'takeoff': 4, 'air_up': 5, 'air_down': 6, 'land': 7, 'stand': 11}}  # from actions_locomotion
 SHOW = 2 / 3                          # sheet pixels to desktop CSS pixels
 WALL = os.path.join(ROOT, 'assets', 'wall', '{}-1000.webp')
+BACK = ('run', 'sprint', 'leap', 'duck', 'hop', 'stumble', 'sit', 'stand_up', 'look_around')   # KITTY_RUN.EXE's, from behind
 PREVIEW = {'aero': 'hills', 'baroque': 'clay'}       # each coat on its theme's wallpaper
 # A gilt rim: the outline round the silhouette (the line within RIM_PX of the transparent outside) in gold instead of the
 # coat's line colour. Baroque's black cat on its dark wall needs it: its dark outline read at 1.4:1 against the wallpaper,
@@ -70,18 +76,69 @@ def lowest(c):
     return int(rows[-1]) if len(rows) else None
 
 
+def save_sheet(cells, W, H, coat, name):
+    rows = -(-len(cells) // COLS)
+    img = np.zeros((rows * H, min(COLS, len(cells)) * W, 4), np.uint8)
+    for i, c in enumerate(cells):
+        img[i // COLS * H:(i // COLS + 1) * H, i % COLS * W:(i % COLS + 1) * W] = c
+    p = os.path.join(OUT, f'{coat}-{name}.webp')
+    Image.fromarray(img).save(p, 'WEBP', quality=COAT_QUALITY.get(coat, QUALITY), alpha_quality=ALPHA_QUALITY, method=6)
+    return os.path.getsize(p)
+
+
+def pack_back(d):
+    meta = json.load(open(os.path.join(d, 'meta.json')))
+    W, H = meta['cell']
+    acts = {a['name']: a for a in meta['actions']}
+    coats = [c for c in ('aero', 'vapor', 'baroque', 'ghost', 'ray', 'metro') if os.path.isdir(os.path.join(d, c))]
+    info = {}
+    for coat in coats:
+        cells = []
+        for n in BACK:
+            a = acts[n]
+            info[n] = dict(first=len(cells), frames=a['frames'], fps=a['fps'], loop=a['loop'], **({'markers': MARKERS[n]} if n in MARKERS else {}))
+            fr = frames(d, coat, a)
+            cells += [rim(c, *RIM[coat]) for c in fr] if coat in RIM else fr
+        print(f'  {coat:8s} {save_sheet(cells, W, H, coat, "run"):8d} bytes')
+    k = json.load(open(os.path.join(OUT, 'kitty.json')))
+    k['run'] = dict(cell=[W, H], cols=COLS, cx=meta['cx'], floor=meta['floor'], tall=round(max(b[3] for b in acts['run']['box'])), actions=info)
+    with open(os.path.join(OUT, 'kitty.json'), 'w') as fh:
+        json.dump(k, fh, separators=(',', ':'))
+    print(f'cell {W}x{H}, {sum(a["frames"] for a in info.values())} frames a coat, run {k["run"]["tall"]} px tall')
+
+
+def pack_eye(d):
+    meta = json.load(open(os.path.join(d, 'meta.json')))
+    W, H = meta['cell']
+    out = os.path.join(ROOT, 'assets', 'run'); os.makedirs(out, exist_ok=True)
+    skins = [c for c in ('aero', 'vapor', 'baroque', 'ghost', 'ray', 'metro') if os.path.isdir(os.path.join(d, c))]
+    n, cols = sum(a['frames'] for a in meta['actions'].values()), 8
+    for skin in skins:
+        img = Image.new('RGBA', (cols * W, -(-n // cols) * H))
+        for i in range(n): img.paste(Image.open(os.path.join(d, skin, f'{i:02d}.png')).convert('RGBA'), (i % cols * W, i // cols * H))
+        p = os.path.join(out, f'eye-{skin}.webp')
+        img.save(p, 'WEBP', quality=QUALITY, alpha_quality=ALPHA_QUALITY, method=6)
+        print(f'  {skin:8s} {os.path.getsize(p):8d} bytes')
+    with open(os.path.join(out, 'eye.json'), 'w') as fh:
+        json.dump(dict(cell=[W, H], cols=cols, file='eye-{skin}.webp', skins=skins, actions=meta['actions']), fh, separators=(',', ':'))
+
+
 def main():
     d = os.path.abspath(sys.argv[1])
+    if '--eye' in sys.argv: return pack_eye(d)
     preview = sys.argv[sys.argv.index('--preview') + 1] if '--preview' in sys.argv else None
     global OUT
     if '--out' in sys.argv: OUT = os.path.abspath(sys.argv[sys.argv.index('--out') + 1]); os.makedirs(OUT, exist_ok=True)
+    if '--view' in sys.argv: return pack_back(d)
     meta = json.load(open(os.path.join(d, 'meta.json')))
     W, H = meta['cell']
     acts = {a['name']: a for a in meta['actions']}
     coats = [c for c in ('aero', 'vapor', 'baroque', 'ghost', 'ray', 'metro') if os.path.isdir(os.path.join(d, c))]
 
+    try: run = json.load(open(os.path.join(OUT, 'kitty.json'))).get('run')   # KITTY_RUN.EXE's sheets are packed on their own: keep them
+    except FileNotFoundError: run = None
     for f in os.listdir(OUT):           # the old puppet files and any earlier sheets
-        if f.endswith('.webp') or f == 'kitty.json': os.remove(os.path.join(OUT, f))
+        if (f.endswith('.webp') and not f.endswith('-run.webp')) or f == 'kitty.json': os.remove(os.path.join(OUT, f))
 
     info, sizes, misses = {}, {}, set()
     for coat in coats:
@@ -99,13 +156,7 @@ def main():
                     if n != 'held' and low is not None and (low > meta['floor'] + 1 or (low < meta['floor'] - 1 and not lifted)):
                         misses.add(f'{n} {i}: lowest row {low}')
                 cells += [rim(c, *RIM[coat]) for c in fr] if coat in RIM else fr
-            rows = -(-len(cells) // COLS)
-            img = np.zeros((rows * H, min(COLS, len(cells)) * W, 4), np.uint8)
-            for i, c in enumerate(cells):
-                img[i // COLS * H:(i // COLS + 1) * H, i % COLS * W:(i % COLS + 1) * W] = c
-            p = os.path.join(OUT, f'{coat}-{sheet}.webp')
-            Image.fromarray(img).save(p, 'WEBP', quality=COAT_QUALITY.get(coat, QUALITY), alpha_quality=ALPHA_QUALITY, method=6)
-            sizes[coat][sheet] = os.path.getsize(p)
+            sizes[coat][sheet] = save_sheet(cells, W, H, coat, sheet)
     print(f'cell {W}x{H}, floor row {meta["floor"]}, {sum(a["frames"] for a in acts.values())} frames a coat')
     for coat, sz in sizes.items():
         print(f'  {coat:8s} {sum(sz.values()):8d} bytes   ' + '   '.join(f'{k} {v}' for k, v in sz.items()))
@@ -117,7 +168,7 @@ def main():
     top = int(np.nonzero(held0[:, sx, 3] >= 128)[0][0])
     scruff = [sx, top + 3]
     meta_out = dict(cell=[W, H], cols=COLS, cx=meta['cx'], floor=meta['floor'], scruff=scruff, stride=meta['stride'],
-                    coats=coats, sheets=list(SHEETS), file='{coat}-{sheet}.webp', actions=info)
+                    coats=coats, sheets=list(SHEETS), file='{coat}-{sheet}.webp', actions=info, **({'run': run} if run else {}))
     with open(os.path.join(OUT, 'kitty.json'), 'w') as fh:
         json.dump(meta_out, fh, separators=(',', ':'))
     print(f'  walk and run strides (sheet px): {meta["stride"]}; scruff (top of the head) {scruff}')

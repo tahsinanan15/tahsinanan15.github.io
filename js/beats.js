@@ -4,6 +4,7 @@
 // and blocks are cut in two (the way Beat Saber's are). In the player the board lies flat above the bars. Full screen tilts
 // it back into a road through that OS's own world (js/beatworlds.js), with the bars lining both sides of it.
 // Notes sit on the song's beat (_dev/build_beats.py), and the rhythm section is cut out by _dev/build_backing.py.
+// Full screen also has the kitty glyph: KITTY_RUN.EXE (js/run.js, loaded on the first click) runs the same road, in the same world.
 import { track } from './analytics.js';
 import { deck, beat, play, playSong, currentSong } from './audio.js';
 import { SONGS } from './themes.js';
@@ -19,10 +20,11 @@ const FLOOR = 60;      // CSS pixels the bars keep under the flat board
 const DEPTH = 4;       // on the road: how many times farther a note starts than the line
 const KEYS = 'askl';
 const EASE = 'cubic-bezier(.16, 1, .3, 1)';
+const ALONG = 'Play along. Press A, S, K or L, or tap or swipe a lane, when a block reaches the line. The song only plays while you keep hitting. Left and right arrows change the level, W just watches, Escape leaves.';
 
 const $ = (id) => document.getElementById(id);
 const clamp = (v) => Math.max(0, Math.min(1, v));
-const root = document.documentElement, win = $('player'), canvas = $('mp-viz'), panel = canvas.parentElement, star = $('mp-star'), wide = $('mp-full'), eye = $('mp-watch'), card = $('mp-result');
+const root = document.documentElement, win = $('player'), canvas = $('mp-viz'), panel = canvas.parentElement, star = $('mp-star'), wide = $('mp-full'), eye = $('mp-watch'), card = $('mp-result'), kit = $('mp-run');
 const still = matchMedia('(prefers-reduced-motion: reduce)'), coarse = matchMedia('(pointer: coarse)');
 const charts = {}, layers = {}, down = [0, 0, 0, 0], litAt = [0, 0, 0, 0], reach = [0, 3], turn = [1, -1], fingers = new Map(), fx = [], trail = [];
 let on = false, watching = false, run = 0, song = null, notes = [], first = 0, end = 0, hits = 0, judged = 0, streak = 0, best = 0, score = 0, sharp = 0, over = false, open = false, stem = null;
@@ -32,6 +34,7 @@ let kickSeen = 0, snapAt = -1e9;
 let skin = null, view = null, seen = 0, seenAt = 0, last = 0, home = 0, energy = 0, missAt = -1e9, flashAt = -1e9, shakeAt = -1e9, shakeAmp = 0, sizedAt = 0;
 let full = false, tilt = 0, tiltFrom = 0, tiltTo = 0, tiltAt = 0, stage = null, slot = null, hushed = [], hud = 9, board = { left: 0, lane: 1 };
 let bests = {};
+let runner = null, running = false;   // KITTY_RUN.EXE, once it has been asked for, and whether it has the road
 // The screen's size in CSS pixels, kept up to date by the browser, so a frame never has to ask for it after drawing has begun.
 const box = { w: canvas.clientWidth, h: canvas.clientHeight };
 new ResizeObserver((seen) => { const r = seen[seen.length - 1].contentRect; box.w = r.width; box.h = r.height; }).observe(canvas);
@@ -298,8 +301,8 @@ function frame(g, now, bars, strip) {
   const hz = full ? Math.max(H * .26, top + type + 46 * d) : H * .4, s = look(), w = WORLDS[s.id], t = clock(now);
   const travel = TRAVEL + .6 * tilt, far = 1 + 2.2 * tilt, lie = 1 - .5 * tilt, ring = size * .56, away = size / 2, ink = w.ink || s.fg;
   board = { left: cx - 2 * lane, lane };
-  if (on) step(last = t);
-  energy += ((watching ? .75 : over ? 0 : Math.min(1, streak / 20)) - energy) * .04;   // a world is at its liveliest on a streak, and nearly so for someone just watching
+  if (on && !running) step(last = t);
+  energy += ((watching || running ? .75 : over ? 0 : Math.min(1, streak / 20)) - energy) * .04;   // a world is at its liveliest on a streak, and nearly so for someone just watching
 
   // Where things go: u runs 0 to 4 across the lanes, and r is how far a note still has to travel (1 where it starts, 0 on the
   // line, below 0 past it). Flat, r is simply height. On the road, things shrink toward the horizon the way distance does.
@@ -317,9 +320,9 @@ function frame(g, now, bars, strip) {
   const mid = (r0, r1, k) => r0 + (r1 - r0) * k;
   const rail = (u, r0, r1) => { for (let i = 0; i <= 48; i++) { const p = at(u, mid(r0, r1, i / 48)); g.lineTo(p[0], p[1]); } };   // enough points that a wave reads as a curve
   const stop = tilt * (yHit - H) / ((H - hz) * (DEPTH - 1));   // the flat board stops at the line; the road runs on to the bottom edge
-  const phase = calm ? 0 : t / travel;
+  const phase = calm ? 0 : running ? runner.dist : t / travel;   // on the run the road moves with her
   const f = view = {
-    id: s.id, W, H, d, cx, lane, size, yHit, hz, tilt, lie, full, calm, lite, snap, now, travel, far, stop, type, font: s.font, at,
+    id: s.id, W, H, d, cx, lane, size, yHit, hz, tilt, lie, full, calm, lite, snap, now, travel, far, stop, type, font: s.font, at, top, ink, glow: w.glow || s.glow, cuts: running ? [4 / 3, 8 / 3] : [1, 2, 3],
     time: calm ? 0 : now / 1000, energy, pulse: beat.pulse, progress: clamp(t / (end || LEVEL)),
     miss: calm ? 0 : Math.max(0, 1 - (now - missAt) / 350), missAge: (now - missAt) / 1000, lit: litAt.map((v) => Math.max(0, 1 - (now - v) / 300)),
     quad: (u0, u1, r0 = far, r1 = stop) => { g.beginPath(); rail(u0, r0, r1); rail(u1, r1, r0); g.closePath(); },
@@ -353,7 +356,8 @@ function frame(g, now, bars, strip) {
   w.road(g, f);
   settle();
 
-  if (!over && notes.length) {
+  if (running) runner.draw(g, f);
+  else if (!over && notes.length) {
     // The line to hit on, and a pad in each lane: it fills while its key or finger is down, and brightens when a note is in reach.
     const hot = [0, 0, 0, 0], l0 = at(0, 0), l4 = at(4, 0);
     for (let i = first; i < notes.length && notes[i].t - t <= HIT; i++) { const n = notes[i]; if (!n.state) hot[n.lane] = hot[n.lane + (n.kind ? 1 : 0)] = 1; }
@@ -454,6 +458,7 @@ function frame(g, now, bars, strip) {
   }
   if (now - flashAt < 300) { g.fillStyle = `rgba(255,255,255,${.16 * (1 - (now - flashAt) / 300)})`; g.fillRect(0, 0, W, H); }
   if (full) { const dusk = g.createLinearGradient(0, 0, 0, H * .17); dusk.addColorStop(0, 'rgba(0,0,0,.62)'); dusk.addColorStop(1, 'rgba(0,0,0,0)'); g.fillStyle = dusk; g.fillRect(0, 0, W, H * .17); }   // so the title row reads over any sky
+  if (running) return runner.hud(g, f, font);
   if (over) { g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(0, 0, W, H); return; }
   if (!notes.length) return;
 
@@ -500,6 +505,7 @@ function expand() {
 }
 function collapse(quick) {
   if (!full) return;
+  if (running) unrace(!quick);   // the run is full screen only: leaving it goes back to a level from the top
   const done = () => {
     if (!full) return;
     const had = document.activeElement;
@@ -516,6 +522,47 @@ function collapse(quick) {
   stage.animate([{ clipPath: 'inset(0 round 0px)' }, { clipPath: inset(slot.getBoundingClientRect()) }], { duration: 380, easing: EASE }).finished.catch(() => {}).then(done);
 }
 wide.addEventListener('click', () => (full ? collapse() : expand()));
+
+/* ---------- KITTY_RUN.EXE: the kitty glyph hands the road to js/run.js, and the song plays whole under it ---------- */
+const host = {
+  canvas, still,
+  chart: () => chart(currentSong().src).catch(() => null),
+  shake, miss() { missAt = performance.now(); }, flash() { if (!still.matches) flashAt = performance.now(); },
+  back: () => unrace(true), done: () => leave(),
+};
+async function race() {
+  if (!full || running) return;
+  runner ||= await import('./run.js');
+  if (!on || !full || running) return;
+  if (watching) watch(false);
+  quit(); run++;
+  notes = []; bombs = []; fx.length = trail.length = 0; down.fill(0); fingers.clear(); streak = 0; over = false; open = true;
+  card.hidden = true;
+  deck.band(null);   // and the song comes back whole
+  running = true;
+  kit.setAttribute('aria-pressed', 'true');
+  retitle(true);
+  canvas.setAttribute('aria-label', 'KITTY_RUN.EXE. Left and right, or A and D, change lanes. Up, W or space jumps. Down or S slides. On a touch screen, swipe. Escape goes back to the play-along.');
+  runner.start(host);
+  canvas.focus({ preventScroll: true });
+}
+// Back to the play-along (from the top, since a level is the song's first 90 seconds), or with nothing after it.
+function unrace(again) {
+  if (!running) return;
+  running = false;
+  runner.stop();
+  kit.setAttribute('aria-pressed', 'false');
+  retitle(false);
+  canvas.setAttribute('aria-label', ALONG);
+  if (!again || !on) return;
+  deck.audio.currentTime = 0; play().catch(() => {});
+  begin();
+  canvas.focus({ preventScroll: true });
+}
+kit.addEventListener('click', () => (running ? unrace(true) : race()));
+// On the run the arrow keys and W steer her, so the glyphs say what they do there.
+const TITLES = { 'mp-back': ['Previous level (left arrow)', 'Previous song'], 'mp-skip': ['Next level (right arrow)', 'Next song'], 'mp-watch': ['Just watch (W)', 'Just watch the song'] };
+function retitle(run) { for (const [id, t] of Object.entries(TITLES)) $(id).title = t[+run]; }
 
 /* ---------- Coming and going ---------- */
 // The screen grows or shrinks in one move. On a desktop the window's bottom edge stays put and its height never jumps:
@@ -549,7 +596,7 @@ function enter() {
   star.setAttribute('aria-pressed', 'true');
   canvas.removeAttribute('aria-hidden');
   canvas.tabIndex = 0;
-  canvas.setAttribute('aria-label', 'Play along. Press A, S, K or L, or tap or swipe a lane, when a block reaches the line. The song only plays while you keep hitting. Left and right arrows change the level, W just watches, Escape leaves.');
+  canvas.setAttribute('aria-label', ALONG);
   morph(() => win.classList.add('is-beat'));
   deck.audio.currentTime = 0;
   play().catch(() => {});
@@ -558,6 +605,7 @@ function enter() {
 }
 function leave(quick) {
   if (!on) return;
+  if (running) unrace(false);
   quit();
   collapse(true);
   on = false; run++;
@@ -579,6 +627,11 @@ export function toggle() { if (on) leave(); else if (!win.hidden) enter(); }
 /* ---------- Keys, fingers, and everything that ends a level early ---------- */
 function key(e) {
   if (!on) return;
+  if (running) {   // the run has the keys. Escape goes back to the play-along, from the top
+    if (e.key === 'Escape') { if (e.type === 'keydown') { e.stopImmediatePropagation(); unrace(true); } return; }
+    if (!e.ctrlKey && !e.metaKey && !e.altKey && !e.target.closest?.('input') && runner.key(e)) e.preventDefault();
+    return;
+  }
   if (e.key === 'Escape') { if (e.type === 'keydown') { e.stopImmediatePropagation(); if (full) collapse(); else leave(); } return; }   // Escape steps back one view, and never closes the window
   if (e.ctrlKey || e.metaKey || e.altKey || e.target.closest?.('input')) return;
   const move = { ArrowLeft: -1, ArrowRight: 1 }[e.key], lane = KEYS.indexOf(e.key?.toLowerCase());
@@ -597,6 +650,7 @@ function point(e) {   // which lane a finger or the mouse is over, and where on 
   return Math.max(0, Math.min(3, Math.floor((x - board.left) / board.lane)));
 }
 canvas.addEventListener('pointerdown', (e) => {
+  if (running) return runner.pointer(e);
   if (!on || over || watching) return;
   e.preventDefault();
   const lane = point(e);
@@ -605,6 +659,7 @@ canvas.addEventListener('pointerdown', (e) => {
   press(lane);
 });
 canvas.addEventListener('pointermove', (e) => {   // held down and drawn across the lanes, it cuts each one it enters
+  if (running) return runner.pointer(e);
   const was = fingers.get(e.pointerId);
   if (was == null || over) return;
   const lane = point(e);
@@ -613,6 +668,7 @@ canvas.addEventListener('pointermove', (e) => {   // held down and drawn across 
   lift(was); press(lane);
 });
 for (const type of ['pointerup', 'pointercancel']) canvas.addEventListener(type, (e) => {
+  if (running) return runner.pointer(e);
   const lane = fingers.get(e.pointerId);
   if (lane == null) return;
   fingers.delete(e.pointerId);
@@ -635,6 +691,7 @@ function skip(step) {
 // Watching: the whole song and the world it plays in, with nothing to hit. Coming back starts the level from the top.
 function watch(yes) {
   if (!on || watching === yes) return;
+  if (running) unrace(false);
   watching = yes;
   eye.setAttribute('aria-pressed', String(yes));
   if (yes) {
@@ -649,7 +706,7 @@ function watch(yes) {
 $('mp-back').addEventListener('click', () => skip(-1));
 $('mp-skip').addEventListener('click', () => skip(1));
 eye.addEventListener('click', () => watch(!watching));
-addEventListener('tahsin:song', () => { if (on && !over && !watching) begin(); });   // changing the song mid-level starts that song's level. A result stays up until they choose.
+addEventListener('tahsin:song', () => { if (on && !over && !watching && !running) begin(); });   // changing the song mid-level starts that song's level. A result stays up until they choose.
 // The tape takes the screen, and it remembers where every window stood, so the player is back in place before it starts.
 document.addEventListener('click', (e) => { if (e.target.closest?.('[data-rundown]')) leave(true); }, true);
 addEventListener('tahsin:rundown', (e) => { if (e.detail.active) leave(true); });

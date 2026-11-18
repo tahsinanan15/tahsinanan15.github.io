@@ -66,6 +66,8 @@ function sheet(name, coat = coatId()) {
   }
   return sheets[k];
 }
+// KITTY_RUN.EXE (js/run.js) draws her from behind from a sheet of her own, <coat>-run.webp, fetched and decoded the same way.
+export { meta as kittyMeta, sheet as kittySheet };
 const has = (name, coat = coatId()) => !!sheets[`${coat}-${M.actions[name].sheet}`]?.ok;   // in, without asking for it
 const want = (name) => sheet(M.actions[name].sheet).ok;   // in; if not, it is asked for now
 // Draws frame i of an action into g as one cell at (0, 0), in sheet pixels, mirrored when face < 0. False until its sheet is in.

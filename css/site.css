@@ -223,6 +223,10 @@ html, body { transition: none; }
 .mp__full { display: none; color: inherit; }
 .is-beat .mp__full, .arcade .mp__full { display: block; }
 .mp__full svg { filter: drop-shadow(0 0 3px var(--lcd-glow)); }
+.is-beat .mp__run { display: none; }   /* KITTY_RUN.EXE starts from full screen only */
+.arcade .mp__title { text-overflow: ellipsis; }
+.arcade:has(#mp-run[aria-pressed=true]) #mp-time, .arcade:has(#mp-run[aria-pressed=true]) .mp__screen::after { display: none; }   /* on the run the top bar shows the song's progress; no sheen over the shut lids */
+.arcade .mp__result :is(.pill, .gel) { min-height: 44px; font-size: 16px; }
 .mp__full[aria-pressed=true] { color: #ffe14d; }
 .is-beat #mp-time { display: none; }   /* in the player the level buttons take its room, and the bar across the top shows how far along */
 .mp__star:hover svg, .mp__star[aria-pressed=true] svg { filter: drop-shadow(0 0 4px #ffe14d); }
@@ -239,6 +243,11 @@ html, body { transition: none; }
 .mp__stars { display: flex; gap: 5px; color: #ffe14d; }
 .mp__stars svg { width: 26px; height: 26px; }
 .mp__stars .is-off { opacity: .22; }
+.run__goals { display: grid; justify-self: center; gap: 6px; width: max-content; max-width: 100%; margin: 0; padding: 0; list-style: none; }
+.run__goals li { display: flex; align-items: center; gap: 8px; }
+.run__goals svg { flex: none; width: 13px; height: 13px; color: #ffe14d; }
+.run__goals .is-off { opacity: .22; }
+.run__goals .is-done { color: var(--lcd-fg); }
 /* Full screen: the player's screen leaves its window and fills the display, above the taskbar. The board tilts back into a road. */
 .arcade { position: fixed; inset: 0; z-index: 9500; }
 .arcade .mp__screen { position: absolute; inset: 0; padding: 0; border: 0; border-radius: 0; box-shadow: none; -webkit-user-select: none; user-select: none; }

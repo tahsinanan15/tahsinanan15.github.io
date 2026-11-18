@@ -31,6 +31,17 @@ deck.lead = (x, tau = .03) => {
   underGain.gain.setTargetAtTime(under ? 1 - x : 0, ctx.currentTime, tau);
 };
 deck.sound = (fn) => { if (canSfx()) fn(tone, burst); };
+// A recorded sound: part of a decoded buffer (KITTY_RUN.EXE's sound sprites, made in SoundCraft with purpl's room already in
+// them), through the same bus as every made sound, so mute and volume hold for it too.
+deck.clip = (buffer, from, dur, { gain = 1, pan = 0 } = {}) => {
+  if (!canSfx() || !buffer) return;
+  const s = ctx.createBufferSource(), a = ctx.createGain();
+  s.buffer = buffer; a.gain.value = gain;
+  let out = s.connect(a);
+  if (ctx.createStereoPanner) { const p = ctx.createStereoPanner(); p.pan.value = pan; out = out.connect(p); }
+  out.connect(sfxBus);
+  s.start(0, from, dur);
+};
 function follow() {   // keeps that copy in step: started where the song is, and started again if the two drift apart
   if (!under) return;
   const run = !audio.paused && !audio.seeking && audio.readyState > 2 && audio.currentTime < under.buffer.duration - .05;

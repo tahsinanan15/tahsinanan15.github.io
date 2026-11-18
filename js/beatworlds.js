@@ -5,7 +5,8 @@
 // cx the middle, time in seconds (it stands still under reduced motion), energy 0 to 1 as a streak builds, pulse the bass,
 // lite when the screen is struggling and the costly touches should be left out.
 // For the road: f.at(u, r) places a point, f.quad(u0, u1) and f.line(u) trace along it, f.rows(gap, draw) calls draw(r) for
-// rows that travel with the notes. u runs 0 to 4 across the lanes, r is how far off something is (0 on the line, 1 a note's start).
+// rows that travel with the notes. u runs 0 to 4 across the road, r is how far off something is (0 on the line, 1 a note's start).
+// f.cuts is where the lanes divide: [1, 2, 3] for the play-along's four, [4/3, 8/3] for KITTY_RUN.EXE's three (js/run.js).
 import { soap } from './bubbles.js';
 
 const TAU = Math.PI * 2;
@@ -68,7 +69,7 @@ function slip(g, f, n, reach, amount = f.miss) {   // the picture tears sideways
   for (let i = 0; i < n; i++) { const y = (Math.sin(i * 91.7 + Math.floor(f.time * 30)) * .5 + .5) * f.H, h = f.H * .04; g.drawImage(g.canvas, 0, y, f.W, h, Math.sin(i * 7.1 + f.time * 90) * reach * f.d * amount, y, f.W, h); }
 }
 const edges = (g, f, inner, outer, glow) => {   // lane lines and the road's two edges
-  for (let i = 0; i <= 4; i++) {
+  for (const i of [0, ...f.cuts, 4]) {
     f.line(i);
     g.strokeStyle = i % 4 ? inner : outer; g.lineWidth = (i % 4 ? 1 : 3) * f.d;
     g.shadowColor = glow || 'transparent'; g.shadowBlur = glow && !(i % 4) ? 10 * f.d : 0;
@@ -317,8 +318,8 @@ const baroque = {
     g.fillStyle = '#f0c055';   // gold lozenges woven down both borders
     f.rows(.14, (r) => { for (const u of [.06, 3.94]) { const [x, y, k] = f.at(u, r), s = 5 * f.d * k; poly(g, [[x, y - s * 1.5 * f.lie], [x + s, y], [x, y + s * 1.5 * f.lie], [x - s, y]]); g.fill(); } });
     g.strokeStyle = '#d9b45a'; g.lineWidth = 1.5 * f.d;   // three gold strings, and the ones beside a struck note ring
-    for (let i = 1; i < 4; i++) {
-      const ring = Math.max(f.lit[i - 1], f.lit[i]) * 4 * f.d * Math.sin(f.now / 18);
+    for (const i of f.cuts) {
+      const ring = Math.max(f.lit[i - 1] || 0, f.lit[i] || 0) * 4 * f.d * Math.sin(f.now / 18);
       g.beginPath(); for (let k = 0; k <= 10; k++) { const p = f.at(i, f.mid(k / 10)); g.lineTo(p[0] + ring * Math.sin(Math.PI * k / 10), p[1]); } g.stroke();
     }
   },
@@ -389,7 +390,7 @@ const ghost = {
     f.quad(0, 4); g.fillStyle = 'rgba(2,8,9,.84)'; g.fill();
     edges(g, f, 'rgba(255,43,214,.55)', '#19f7ff', '#19f7ff');
     g.strokeStyle = '#eaffff'; g.lineCap = 'round';   // data running in along the lane lines
-    f.rows(.31, (r) => { for (let i = 0; i <= 4; i++) { const p = f.at(i, r), q = f.at(i, r + .035); g.lineWidth = 2.5 * f.d * p[2]; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); } });
+    f.rows(.31, (r) => { for (const i of [0, ...f.cuts, 4]) { const p = f.at(i, r), q = f.at(i, r + .035); g.lineWidth = 2.5 * f.d * p[2]; g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(q[0], q[1]); g.stroke(); } });
   },
   block(g, S, [light, mid, dark], wide) {   // a chip: a neon hexagon with its traces showing
     const w = wide ? S * 2 : S, cx = w / 2, cy = S / 2, a = S * .4, b = wide ? S * .88 : S * .36;
@@ -462,7 +463,7 @@ const ray = {
     g.strokeStyle = '#211f1c'; g.lineCap = 'butt';   // sleepers
     f.rows(.085, (r) => { const a = f.at(-.22, r), b = f.at(4.22, r); g.lineWidth = Math.max(1, 9 * f.d * a[2] * f.lie * (.4 + .6 * f.tilt)); g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); });
     for (const u of [0, 4]) { f.line(u); g.strokeStyle = '#1a1917'; g.lineWidth = 5 * f.d; g.stroke(); g.strokeStyle = '#f1ece0'; g.lineWidth = 1.5 * f.d; g.stroke(); }   // rails, and the light along their tops
-    for (let i = 1; i < 4; i++) { f.line(i); g.strokeStyle = 'rgba(244,236,216,.3)'; g.lineWidth = f.d; g.stroke(); }
+    for (const i of f.cuts) { f.line(i); g.strokeStyle = 'rgba(244,236,216,.3)'; g.lineWidth = f.d; g.stroke(); }
   },
   block(g, S, [light, mid, dark], wide, v) {
     const ink = dark === '#000000' ? '#f4ecd8' : '#161513';
@@ -525,7 +526,7 @@ const metro = {
   road(g, f) {
     f.quad(0, 4); g.fillStyle = 'rgba(16,18,22,.8)'; g.fill();
     g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineCap = 'butt';   // lane markings passing underneath
-    f.rows(.15, (r) => { for (let i = 1; i < 4; i++) { const a = f.at(i, r), b = f.at(i, Math.max(f.stop, r - .066)); g.lineWidth = 2.5 * f.d * a[2]; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } });
+    f.rows(.15, (r) => { for (const i of f.cuts) { const a = f.at(i, r), b = f.at(i, Math.max(f.stop, r - .066)); g.lineWidth = 2.5 * f.d * a[2]; g.beginPath(); g.moveTo(a[0], a[1]); g.lineTo(b[0], b[1]); g.stroke(); } });
     for (const u of [0, 4]) { f.line(u); g.strokeStyle = '#f7b500'; g.lineWidth = 3 * f.d; g.stroke(); }
     g.fillStyle = 'rgba(255,255,255,.5)'; for (let i = 0; i < 12; i++) { f.quad(i / 3 + .06, i / 3 + .27, -.035, -.085); g.fill(); }   // a crosswalk at the line
   },
@@ -549,6 +550,8 @@ const metro = {
 };
 
 export const WORLDS = { aero, vapor, baroque, ghost, ray, metro };
+// The drawing tools, for KITTY_RUN.EXE's obstacles (js/run.js), so each OS's things are drawn the way its world is.
+export const paint = { TAU, lin, rad, round, poly, blob, gel, column, chandelier, bat, rose, ogive };
 
 // A block's picture, drawn once and kept: by OS, by hand (left or right), by kind (a block, or a sweep twice as wide).
 const SIZE = 160, kept = {};
