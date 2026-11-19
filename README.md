@@ -2,7 +2,7 @@
 
 **© 2026 Tahsin Anan. All rights reserved.** This repository is proprietary and is not open source. No copying, reuse, cloning, reverse engineering or AI training without written permission; see [LICENSE](LICENSE) and [AGENTS.md](AGENTS.md). Unauthorised use will be pursued through DMCA takedowns and other legal remedies.
 
-Static site on GitHub Pages: https://tahsinanan15.github.io/ . Pushing to `main` publishes it. There is no build step.
+Static site on GitHub Pages at https://tahsinanan.com/ (tahsinanan15.github.io redirects there; the `CNAME` file holds the domain, so keep it). Pushing to `main` publishes it. There is no build step.
 
 - `index.html`: all the words and windows
 - `css/site.css`: the look

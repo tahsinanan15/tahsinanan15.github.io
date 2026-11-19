@@ -11,7 +11,7 @@ const store = {
 // Tahsin opens the site once with ?me on each device, so her own visits and test clicks stay out of the numbers.
 if (new URLSearchParams(location.search).has('me')) store.set('localStorage', 'tahsin.me', 1);
 // Reading the totals is fine from any browser on the live site, Tahsin's included; only counting is switched off for her.
-const ONLINE = location.hostname.endsWith('github.io');
+const ONLINE = /^(tahsinanan\.com|tahsinanan15\.github\.io)$/.test(location.hostname);   // her own domain since 18 Nov 2026; github.io redirects there
 const LIVE = ONLINE && !navigator.webdriver && !store.get('localStorage', 'tahsin.me');
 const timed = (url) => fetch(url, { keepalive: true, signal: AbortSignal.timeout?.(6000) });
 

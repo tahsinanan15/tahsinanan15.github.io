@@ -1,7 +1,7 @@
 // Tahsin's site counter. GET /hit/<key> adds one and returns { value }; GET /get returns every total in one reply.
 // Only the keys the site uses can be counted, and only her site (plus localhost, for testing) can call it from a browser.
 const KEYS = new Set(['visit', 'visitor', 'case', 'resume', 'contact', 'a_seen', 'b_seen', 'a_conv', 'b_conv']);
-const ORIGINS = /^https:\/\/tahsinanan15\.github\.io$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
+const ORIGINS = /^https:\/\/(tahsinanan\.com|tahsinanan15\.github\.io)$|^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/;
 
 export default {
   async fetch(request, env) {

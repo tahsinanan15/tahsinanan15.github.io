@@ -78,7 +78,7 @@ const SLIDES = {
       <li><span><b>Check currency before trusting any share chart.</b> Most of the forecasting edge here was the euro.</span></li>
       <li><span><b>Line up the next franchise before the retro wave peaks.</b> Nike's classics faded with its search share.</span></li>
     </ul>
-    <p class="url">TAHSINANAN15.GITHUB.IO</p>
+    <p class="url">TAHSINANAN.COM</p>
     <p class="small">Open BRING_BACK.EXE for the live chart. Study by Tahsin Anan, with research and build support.</p>`),
 };
 document.getElementById('root').innerHTML = `<div class="slide${[1, 2, 4, 7].includes(S) ? ' roomy' : ''}">${SLIDES[S]()}</div>`;
