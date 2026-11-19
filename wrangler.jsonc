@@ -6,6 +6,7 @@
   "name": "tahsin-site",
   "main": "_serve.js",
   "compatibility_date": "2026-11-18",
+  "routes": [{ "pattern": "tahsinanan.com", "custom_domain": true }],   // www.tahsinanan.com redirects here (_dev/www)
   "assets": {
     "directory": ".",
     "binding": "ASSETS",
