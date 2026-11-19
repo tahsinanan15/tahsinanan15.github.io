@@ -480,7 +480,7 @@ function streaks(g, f) {   // zoomies: the world rushes past
 /* ---------- Her ---------- */
 // From behind, from her own sheet per coat (<coat>-run.webp, described by kitty.json's run). Until a new OS's coat is in,
 // the coat she had stays on; before her first is in she isn't drawn at all, and the countdown waits on READY.
-let coatOn = '', strideAt = 99;
+let coatOn = '', strideAt = 99, gait = 0;   // gait: how far through her strides, in frames
 const coatFor = (id) => (meta.coats.includes(id) ? id : meta.coats[0]);
 const sheetIn = () => !!(meta?.run && world && kittySheet('run', coatFor(world)).ok);   // her back-view sheet is in: the countdown can go
 function kitty(g, f) {
@@ -505,8 +505,10 @@ function kitty(g, f) {
   else if (nowAt - hitAt < 600) { name = 'stumble'; i = along(name, (nowAt - hitAt) / 600); }
   else if (slideTo > nowAt) { name = 'duck'; i = along(name, 1 - (slideTo - nowAt) / (SLIDE * 1000)); }
   else if (nowAt - laneAt < HOP) { name = 'hop'; i = along(name, (nowAt - laneAt) / HOP); flip = lane > fromX ? 1 : -1; }   // the clip hops right: mirrored for left
-  else if (active('zoom')) { name = 'sprint'; i = cycle(A.sprint.frames, 32); }
-  else i = cycle(A.run.frames, 22 * Math.sqrt(Math.max(.7, speed / V0)));   // a gallop: two to three strides a second
+  // Her gallop moves on by the time that has passed, not as a product of the clock and a rate that keeps rising: that raced
+  // her legs at about twice the rate while she sped up. About 1.6 strides a second when she sets off, 2.3 at full speed.
+  else if (active('zoom')) { name = 'sprint'; gait += dt * 26; i = Math.floor(gait) % A.sprint.frames; }
+  else { gait += dt * 16 * Math.sqrt(Math.max(.7, speed / V0)); i = Math.floor(gait) % A.run.frames; }
   if (calm && !caughtAt && (name === 'run' || name === 'sprint')) i = 0;
   if ((name === 'run' || name === 'sprint') && i < strideAt && !y) spark('puff', U(x), dist);   // a new stride: the hind paws strike
   strideAt = name === 'run' || name === 'sprint' ? i : 99;
