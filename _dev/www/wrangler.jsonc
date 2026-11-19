@@ -1,0 +1,8 @@
+// The www redirect for Tahsin's site. Deploy from this folder: npx wrangler deploy
+{
+  "name": "tahsin-www",
+  "main": "worker.js",
+  "compatibility_date": "2026-11-18",
+  "workers_dev": false,
+  "routes": [{ "pattern": "www.tahsinanan.com", "custom_domain": true }]
+}
