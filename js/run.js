@@ -82,7 +82,7 @@ export function start(h) {
   dist = sec = speed = 0; last = 0; next = 2.6; open = 1; giftAt = 8; bag = [];
   lane = 1; x = fromX = 1; laneAt = -1e9; y = 0; air = null; slideTo = 0; swipe = null;
   things = []; pops = []; gifts = []; fx = []; toasts = []; sparks.length = 0;
-  hitAt = -1e9; safeTo = 0; cleanFrom = 0; near = 0; eyeX = 0; caughtAt = 0; shownAt = 0;
+  hitAt = -1e9; safeTo = 0; cleanFrom = 0; near = 0; eyeX = 0; eyeFrom = null; eyeY = 0; caughtAt = 0; shownAt = 0;
   powers = {}; bubbles = score = worlds = 0; world = '';
   tally = { pop: 0, run: 0, jump: 0, slide: 0, power: 0, clean: 0, ride: 0, score: 0 };
   runBase = save.base; runSet = save.set; wantJump = -1e9;
@@ -335,10 +335,10 @@ function update(f) {
   things = things.filter((t) => t.r > -.45); pops = pops.filter((b) => b.r > -.3 && !(b.got && nowAt - b.got > 300)); gifts = gifts.filter((p) => p.r > -.3 && !p.got);
 
   // The eye: out of sight while she runs clean, up at her heels after a stumble and falling back, over her when it has her.
-  const chase = caughtAt ? 2.2 : active('zoom') ? 0 : clamp(1 - (nowAt - hitAt) / AGAIN);
+  const chase = caughtAt ? 1 : active('zoom') ? 0 : clamp(1 - (nowAt - hitAt) / AGAIN);
   near += (chase - near) * Math.min(1, dt * (caughtAt ? 2.5 : 3));
-  if (caughtAt && !lid && nowAt - caughtAt > (calm ? 0 : 1150)) lid = { open: false, at: nowAt };   // it turns to face you and shuts, then the screen's lids close
-  if (caughtAt && !shownAt && nowAt - caughtAt > (calm ? 300 : 1900)) {
+  if (caughtAt && !lid && nowAt - caughtAt > STARE + CLOSE * .4) lid = { open: false, at: nowAt };   // it stares at you and shuts, then the screen's lids close
+  if (caughtAt && !shownAt && nowAt - caughtAt > STARE + (calm ? 300 : 900)) {
     shownAt = nowAt; card.hidden = false;
     $('run-again').focus({ preventScroll: true });
   }
@@ -385,6 +385,7 @@ export function draw(g, f) {
   drawSparks(g, f, true);
   if (active('zoom') && !calm) streaks(g, f);
   eye(g, f);
+  stare(g, f);
   for (let i = fx.length - 1; i >= 0; i--) {   // a shield popping
     const e = fx[i], a = (nowAt - e.at) / e.life;
     if (a >= 1) { fx.splice(i, 1); continue; }
@@ -578,9 +579,11 @@ function carpet(g, f, h, slide, alpha) {   // tilted up toward the far end, as a
 }
 
 /* ---------- The eye: a 3D eyeball in each OS's skin (_dev/kitty/blender/eyeball.py), seen from behind, from assets/run ---------- */
-// chase: a wobbling loop as it flies after her; look: turned toward her lane; turn: it spins round to face the visitor when
-// it has her; shut: its lids close. It is out of sight until she stumbles.
-let EYE = null, eyeSkin = '';
+// chase: a wobbling loop as it flies after her; look: turned toward her lane. It is out of sight until she stumbles.
+// When it has her it surfaces straight up the middle of the screen, turning as it comes (turn), and stares at the visitor
+// dead on, the world dimmed behind it (stare), the desktop looking back through the fourth wall; then it shuts (shut).
+const SURFACE = 550, STARE = 2100, CLOSE = 250;   // ms after the catch: up and round, staring, its lids closing
+let EYE = null, eyeSkin = '', eyeY = 0, eyeS = 0, eyeFrom = null;
 const eyeSheets = {};
 fetch('assets/run/eye.json').then((r) => r.json()).then((m) => { EYE = m; }).catch(() => {});
 function eyeOf(id) {
@@ -591,19 +594,28 @@ function eyeOf(id) {
   return eyeSheets[eyeSkin]?.img || null;   // until a new OS's skin is in, the one it had
 }
 function eye(g, f) {
+  if (!caughtAt) eyeY = 0;   // out of sight unless drawn below: then a catch brings it up from under the bottom edge
   const img = eyeOf(f.id);
-  if (!img || near < .01) return;
+  if (!img || (near < .01 && !caughtAt)) return;
   const s = Math.min(f.W * .38, f.H * .42) * (1 + .04 * beat.pulse), ball = s * .65, [kx] = f.at(U(x), 0), A = EYE.actions;   // the ball is 0.65 of its cell: room for the cord
   eyeX = eyeX ? eyeX + (kx - eyeX) * Math.min(1, dt * 2.5) : kx;   // it follows her lane, a beat behind
   const rest = f.H + ball * 1.1, cy = rest - (f.H - f.yHit + ball * .05) * near + (calm ? 0 : Math.sin(nowAt / 420) * ball * .04);   // hidden at 0, its top at her heels at 1, over her when it has her
-  if (cy - ball > f.H) return;
-  const age = nowAt - caughtAt, lean = clamp((kx - eyeX) / (f.lane * 1.2), -1, 1);
-  let n;
-  if (caughtAt && age > 400) n = age < 900 ? A.turn.first + Math.min(A.turn.frames - 1, Math.floor((age - 400) / 72)) : A.shut.first + Math.min(A.shut.frames - 1, Math.floor((age - 900) / 60));
-  else if (Math.abs(lean) > .3) n = A.look.first + Math.round(2 + 2 * lean);
-  else n = A.chase.first + (calm ? 0 : Math.floor(nowAt / 100) % A.chase.frames);
-  const [cw, ch] = EYE.cell;
-  g.drawImage(img, (n % EYE.cols) * cw, Math.floor(n / EYE.cols) * ch, cw, ch, eyeX - s, cy - s, s * 2, s * 2);
+  if (cy - ball > f.H && !caughtAt) return;
+  const lean = clamp((kx - eyeX) / (f.lane * 1.2), -1, 1), [cw, ch] = EYE.cell, frame = (n, x0, y0, s0) => g.drawImage(img, (n % EYE.cols) * cw, Math.floor(n / EYE.cols) * ch, cw, ch, x0 - s0, y0 - s0, s0 * 2, s0 * 2);
+  if (!caughtAt) { eyeFrom = null; eyeY = cy; eyeS = s; frame(Math.abs(lean) > .3 ? A.look.first + Math.round(2 + 2 * lean) : A.chase.first + (calm ? 0 : Math.floor(nowAt / 100) % A.chase.frames), eyeX, cy, s); }
+}
+// It has her: up from wherever it was (or from under the bottom edge) to the middle of the screen, big, facing the visitor.
+function stare(g, f) {
+  const img = eyeOf(f.id);
+  if (!img || !caughtAt) return;
+  const A = EYE.actions, [cw, ch] = EYE.cell, age = nowAt - caughtAt, big = Math.min(f.W * .5, f.H * .62);
+  eyeFrom ||= { x: eyeX || f.cx, y: Math.min(eyeY || Infinity, f.H + big * .7), s: eyeS || big * .6 };
+  const k = calm ? 1 : 1 - (1 - clamp(age / SURFACE)) ** 3, x0 = eyeFrom.x + (f.cx - eyeFrom.x) * k, y0 = eyeFrom.y + (f.H * .5 - eyeFrom.y) * k, s0 = eyeFrom.s + (big - eyeFrom.s) * k;
+  g.save(); g.globalAlpha = .55 * clamp(age / SURFACE); g.fillStyle = '#040b1c'; g.fillRect(0, 0, f.W, f.H); g.restore();   // the world falls back behind it, in the lids' own dark
+  const n = age < SURFACE && !calm ? A.turn.first + Math.min(A.turn.frames - 1, Math.floor(age / SURFACE * A.turn.frames))
+    : age < STARE ? A.stare.first + Math.min(A.stare.frames - 1, Math.floor((age - SURFACE) / 80))
+    : A.shut.first + Math.min(A.shut.frames - 1, Math.floor((age - STARE) / (CLOSE / A.shut.frames)));
+  g.drawImage(img, (n % EYE.cols) * cw, Math.floor(n / EYE.cols) * ch, cw, ch, x0 - s0, y0 - s0, s0 * 2, s0 * 2);
 }
 const wands = {};
 function wandOf(id) {

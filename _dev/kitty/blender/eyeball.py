@@ -9,8 +9,9 @@ It chases her, so the camera sees it from behind, as it sees her: the back of th
 running back to the stub where the nerve leaves it, and the lids (the boot screen's) wrapping round its front. Frames:
   chase  8   a loop: it wobbles as it flies
   look   5   turned from her far left to her far right, so the page can keep it on her lane
-  turn   7   it spins round to face the camera: when it has her, the visitor meets its gaze (the desktop looks back)
-  shut   4   facing the camera, the lids close
+  turn   7   when it has her: it spins round and lifts its gaze as it surfaces, until it looks straight down the camera
+  stare  4   at the visitor, dead on, its pupil tightening as it locks on: the desktop looks back, through the fourth wall
+  shut   4   still facing the camera, the lids close
 The iris, pupil, highlight and lines are painted on the ball by its material, as the cat's face is. The eye makes no sound.
 """
 import bpy, bmesh, math, os, sys, json
@@ -31,16 +32,21 @@ SKINS = {   # each OS's OBSERVE icon, as an eyeball: white, its shadow, the iris
     'metro':   dict(vein='#c27a0a', white='#f6f2ea', shade='#cbbfae', rim='#0039a6', iris='#1f6fd8', light='#8fdcff', pupil='#0e0f12', lid='#2a2a2e', lid_shade='#16171a', line='#16171a'),
 }
 OPEN, SHUT = (-30, 28), (14, -12)    # (upper, lower) lid turns in degrees: open, and meeting a little below the middle
-ACTIONS = [('chase', 8), ('look', 5), ('turn', 7), ('shut', 4)]
+ACTIONS = [('chase', 8), ('look', 5), ('turn', 7), ('stare', 4), ('shut', 4)]
 NERVE = (0.07, 0.3)                  # the cord at the back, trailing down and back: radius, length
 
 
+GAZE, CAM = -10, ELEVATION            # degrees above level: where it looks while it chases her (a little down), and the camera
+
 def frames():
-    """(turn of the whole eye about its up axis in degrees, its tilt, lids shut 0..1) for every frame, in ACTIONS order."""
-    out = [(7 * math.sin(i * math.tau / 8), 4 * math.cos(i * math.tau / 8), 0.0) for i in range(8)]   # chase
-    out += [(-30 + 15 * i, 0, 0.0) for i in range(5)]                                                 # look
-    out += [(180 * (1 - math.cos(math.pi * i / 6)) / 2, 0, 0.0) for i in range(7)]                    # turn
-    out += [(180, 0, k) for k in (0.4, 0.75, 0.95, 1.0)]                                              # shut
+    """(where it looks: turn about the up axis and elevation, in degrees; lids shut 0..1; the pupil's edge) for every frame,
+    in ACTIONS order. The gaze turns half round and lifts to the camera's height to look straight at it."""
+    ease = lambda i, n: (1 - math.cos(math.pi * i / n)) / 2
+    out = [(7 * math.sin(i * math.tau / 8), GAZE + 4 * math.cos(i * math.tau / 8), 0.0, PUPIL) for i in range(8)]   # chase
+    out += [(-30 + 15 * i, GAZE, 0.0, PUPIL) for i in range(5)]                                                     # look
+    out += [(180 * ease(i, 6), GAZE + (CAM - GAZE) * ease(i, 6), 0.0, PUPIL) for i in range(7)]                    # turn
+    out += [(180, CAM, 0.0, p) for p in (0.962, 0.968, 0.975, 0.98)]                                                # stare
+    out += [(180, CAM, k, 0.98) for k in (0.4, 0.75, 0.95, 1.0)]                                                    # shut
     return out
 
 
@@ -59,7 +65,7 @@ def ball_mat(hl):
     white = cat.mix(nt, cat.lit_factor(nt), cat.rgb(nt, 'eye_shade'), cat.rgb(nt, 'eye_white'))
     iris = cat.mix(nt, cat.m(nt, 'GREATER_THAN', c, IRIS + 0.02), cat.rgb(nt, 'eye_rim'), cat.rgb(nt, 'eye_iris'))
     iris = cat.mix(nt, cat.m(nt, 'GREATER_THAN', c, RING), iris, cat.rgb(nt, 'eye_light'))
-    iris = cat.mix(nt, cat.m(nt, 'GREATER_THAN', c, PUPIL), iris, cat.rgb(nt, 'eye_pupil'))
+    iris = cat.mix(nt, cat.m(nt, 'GREATER_THAN', c, cat.value(nt, 'eye_pupil_at')), iris, cat.rgb(nt, 'eye_pupil'))   # its edge set per frame
     col = cat.mix(nt, cat.m(nt, 'GREATER_THAN', c, IRIS), white, iris)
     # the back: lines running from the nerve forward round the ball, finer and fading toward its middle
     sep = nt.nodes.new('ShaderNodeSeparateXYZ'); nt.links.new(nrm.outputs['Vector'], sep.inputs[0])
@@ -113,7 +119,6 @@ def main():
     sc = bpy.context.scene
     el = math.radians(ELEVATION)
     view = Vector((-math.cos(el), 0, math.sin(el)))                        # from the eye to the camera, behind and above
-    gaze = Vector((math.cos(math.radians(-10)), 0, math.sin(math.radians(-10))))   # ahead, and a little down: at her
     cam = bpy.data.objects.new('cam_back', bpy.data.cameras.new('cam_back')); sc.collection.objects.link(cam)
     cam.data.type, cam.data.clip_start, cam.data.clip_end = 'ORTHO', 0.1, 20
     cam.location = view * 8
@@ -133,7 +138,6 @@ def main():
     nerve = mesh('nerve', bm, [bpy.data.materials['lid'], line])
     rig = bpy.data.objects.new('eye', None); sc.collection.objects.link(rig)
     for ob in (ball, *lids, nerve): ob.parent = rig
-    base = gaze.to_track_quat('X', 'Z')                                     # the ball's +X along the gaze, its top kept up
 
     sc.render.resolution_x = sc.render.resolution_y = px
     sc.render.dither_intensity = 0
@@ -147,9 +151,12 @@ def main():
     for skin in (opt('--skins') or ','.join(SKINS)).split(','):
         apply_skin(skin)
         d = os.path.join(out, skin); os.makedirs(d, exist_ok=True)
-        for i, (yaw, tilt, k) in enumerate(frames()):
-            rig.rotation_euler = (base @ Euler((0, math.radians(tilt), math.radians(yaw))).to_quaternion()).to_euler()
+        pupil = bpy.data.materials['eyeball'].node_tree.nodes['eye_pupil_at'].outputs[0]
+        for i, (yaw, el, k, edge) in enumerate(frames()):
+            y, e = math.radians(yaw), math.radians(el)
+            rig.rotation_euler = Vector((math.cos(y) * math.cos(e), math.sin(y) * math.cos(e), math.sin(e))).to_track_quat('X', 'Z').to_euler()   # the ball's +X along the gaze, its top kept up
             nerve.hide_render = abs(yaw) > 40   # turning to face the camera, the cord would only cut across the eye
+            pupil.default_value = edge
             lids[0].rotation_euler = (0, math.radians(OPEN[0] + (SHUT[0] - OPEN[0]) * k), 0)
             lids[1].rotation_euler = (0, math.radians(OPEN[1] + (SHUT[1] - OPEN[1]) * k), 0)
             bpy.context.view_layer.update()
