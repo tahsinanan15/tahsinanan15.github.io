@@ -22,7 +22,8 @@ const clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const U = (lane) => (lane + .5) * 4 / 3;            // a lane's middle on the road, which runs 0 to 4
 const V0 = 1.2, VMAX = 2.4, RAMP = 100;                // r a second at the start, at most, and seconds to get most of the way there
-const SPAWN = 2.6, METRES = 12, INTRO = 1.5;          // where things appear (r), metres to an r, seconds before she bolts
+const SPAWN = 2.6, METRES = 12, INTRO = 1.6;          // where things appear (r), metres to an r, seconds before she bolts (on GO)
+const BEAT = .8, COUNT = ['READY', 'SET', 'GO!'];    // the countdown: a word every BEAT seconds, and GO! as she bolts
 const AGAIN = 8000, SAFE = 1200;                      // ms: a second hit inside AGAIN is caught; after a hit nothing hurts for SAFE
 const HOP = 220;                                      // ms from one lane to the next
 const TALL = 1.3, SLIDE = .7, RIDE = 2.25;            // her height, how long a slide lasts (s), how high a window carries her: over every wall
@@ -70,7 +71,7 @@ let host = null, on = false, last = 0, sec = 0, speed = 0, dt = 0, nowAt = 0, ca
 export let dist = 0;   // r run so far: js/beats.js moves the road's rows with it
 let wantJump = -1e9, landAt = -1e9, lane = 1, x = 1, fromX = 1, laneAt = -1e9, y = 0, air = null, slideTo = 0, swipe = null;
 let things = [], pops = [], gifts = [], fx = [], toasts = [], next = 0, open = 1, giftAt = 8, bag = [];
-let hitAt = -1e9, safeTo = 0, cleanFrom = 0, near = 1, eyeX = 0, caughtAt = 0, shownAt = 0, lid = null, meta = null;
+let hitAt = -1e9, safeTo = 0, cleanFrom = 0, near = 1, eyeX = 0, caughtAt = 0, shownAt = 0, lid = null, meta = null, said = -1;
 let warpAt = -1e9, powers = {}, bubbles = 0, score = 0, worlds = 0, world = '', tally = {}, notes = null, rideName = '', endedAt = -1e9;
 deck.audio.addEventListener('ended', () => { endedAt = performance.now(); });   // a song played out: only that earns the next OS its +1
 const card = $('run-result'), coarse = matchMedia('(pointer: coarse)');
@@ -86,7 +87,7 @@ export function start(h) {
   hitAt = -1e9; safeTo = 0; cleanFrom = 0; near = 0; eyeX = 0; eyeFrom = null; eyeY = 0; caughtAt = 0; shownAt = 0;
   powers = {}; bubbles = score = worlds = 0; warpAt = -1e9; world = '';
   tally = { pop: 0, run: 0, jump: 0, slide: 0, power: 0, clean: 0, ride: 0, score: 0 };
-  runBase = save.base; runSet = save.set; wantJump = -1e9;
+  runBase = save.base; runSet = save.set; wantJump = -1e9; said = -1;
   card.hidden = true;
   deck.audio.currentTime = 0; play().catch(() => {});   // every run starts its song from the top, so none starts near a song's end
   if (lid) lid = { open: true, at: performance.now() };   // after a catch, the eye opens on the new run
@@ -134,7 +135,7 @@ export function key(e) {
     arrowup: jump, w: jump, ' ': jump, arrowdown: duck, s: duck }[k];
   if (!act) return false;
   if (e.type !== 'keydown' || e.repeat || !nowAt) return true;
-  if (sec < INTRO && !calm) sec = INTRO;   // a key in the intro and she bolts
+  if (sec < INTRO) { if (!sec) return true; sec = INTRO; }   // a key in the countdown and she's off (not before it starts)
   act();
   return true;
 }
@@ -304,8 +305,12 @@ function update(f) {
     const css = getComputedStyle(document.documentElement), v = (n) => css.getPropertyValue(n).trim();
     lcd = { bg: v('--lcd-bg'), fg: v('--lcd-fg'), glow: v('--lcd-glow') };
   }
-  if (!caughtAt) sec += dt;
-  const run = sec - INTRO * !calm;
+  // The countdown waits on READY until her back-view sheet is in, however long that takes: she is never drawn any other
+  // way, and a run never starts without her on the road.
+  if (!caughtAt && (sec || sheetIn())) sec += dt;
+  const run = sec - INTRO;
+  const word = sec ? Math.min(2, Math.floor(sec / BEAT)) : -1;
+  if (word > said && run < .6) { said = word; sfx(word < 2 ? 'lane' : 'power', 0); }   // a tick on READY and SET, and GO!
   const want = run < 0 ? 0 : (V0 + (VMAX - V0) * (1 - Math.exp(-run / RAMP))) * (active('zoom') ? 1.7 : 1);
   speed += ((caughtAt ? 0 : want) - speed) * Math.min(1, dt * (caughtAt ? 6 : 3));
   dist += speed * dt;
@@ -473,25 +478,24 @@ function streaks(g, f) {   // zoomies: the world rushes past
 }
 
 /* ---------- Her ---------- */
-// From behind, from her own sheet per coat (<coat>-run.webp, described by kitty.json's run). Until it is in, the coat
-// she had stays on, and before any is in she is drawn from the desktop's run, which is already loaded.
+// From behind, from her own sheet per coat (<coat>-run.webp, described by kitty.json's run). Until a new OS's coat is in,
+// the coat she had stays on; before her first is in she isn't drawn at all, and the countdown waits on READY.
 let coatOn = '', strideAt = 99;
+const coatFor = (id) => (meta.coats.includes(id) ? id : meta.coats[0]);
+const sheetIn = () => !!(meta?.run && world && kittySheet('run', coatFor(world)).ok);   // her back-view sheet is in: the countdown can go
 function kitty(g, f) {
   const M = meta;
-  if (!M) return;
-  const B = M.run, want = B && M.coats.includes(f.id) ? f.id : M.coats[0];
-  if (B && kittySheet('run', want).ok) coatOn = want;
-  const back = B && coatOn && kittySheet('run', coatOn).ok;
-  const S = back ? B : { cell: M.cell, cx: M.cx, floor: M.floor, cols: M.cols, tall: 150, actions: M.actions };
-  const sheetOf = (a) => (back ? kittySheet('run', coatOn) : kittySheet(a.sheet, M.coats.includes(f.id) ? f.id : M.coats[0]));
-  const run = sec - INTRO * !calm, ages = (nowAt - caughtAt) / 1000, A = S.actions, last = (k) => A[k].frames - 1;
+  if (!M?.run) return;
+  const want = coatFor(f.id);
+  if (kittySheet('run', want).ok) coatOn = want;
+  if (!coatOn || !kittySheet('run', coatOn).ok) return;
+  const S = M.run;
+  const run = sec - INTRO, ages = (nowAt - caughtAt) / 1000, A = S.actions, last = (k) => A[k].frames - 1;
   const cycle = (n, fps) => Math.floor(nowAt / 1000 * fps) % n, along = (k, p) => Math.min(last(k), Math.floor(clamp(p) * A[k].frames));
   let name = 'run', i = 0, flip = 1;
   if (caughtAt) { name = 'look_around'; i = along(name, ages / 1.1); }
-  else if (!back) i = cycle(A.run.frames, 12);
-  else if (run < 0) {   // she sits, looks back at the eye, and bolts
-    const p = sec / INTRO;
-    if (p < .3) { name = 'sit'; i = cycle(A.sit.frames, 8); } else if (p < .78) { name = 'look_around'; i = along(name, (p - .3) / .48); } else { name = 'stand_up'; i = along(name, (p - .78) / .22); }
+  else if (run < 0) {   // READY: she sits, facing down the road; SET: she gets up; GO!: she's off
+    if (sec < BEAT) { name = 'sit'; i = cycle(A.sit.frames, 8); } else { name = 'stand_up'; i = along(name, (sec - BEAT) / (INTRO - BEAT)); }
   } else if (active('ride')) {   // up onto the window as it arrives, sitting on it as it flies, down as it goes
     const kin = clamp((nowAt - (powers.ride - LAST.ride * 1000)) / 450), kout = clamp((powers.ride - nowAt) / 450);
     if (kin < 1) { name = 'leap'; i = 3; } else if (kout < 1) { name = 'leap'; i = 6; } else { name = 'sit'; i = cycle(A.sit.frames, 8); }
@@ -506,7 +510,7 @@ function kitty(g, f) {
   if (calm && !caughtAt && (name === 'run' || name === 'sprint')) i = 0;
   if ((name === 'run' || name === 'sprint') && i < strideAt && !y) spark('puff', U(x), dist);   // a new stride: the hind paws strike
   strideAt = name === 'run' || name === 'sprint' ? i : 99;
-  const a = S.actions[name], img = sheetOf(a);
+  const a = S.actions[name], img = kittySheet('run', coatOn);
   if (!img?.ok) return;
   const [px, py] = f.at(U(x), 0), sc = f.lane * TALL / S.tall, n = a.first + i, [cw, ch] = S.cell;
   if (!f.lite) { g.fillStyle = 'rgba(0,0,0,.28)'; g.beginPath(); g.ellipse(px, py, f.lane * .42 / (1 + y * .4), f.lane * .1 / (1 + y * .4), 0, 0, TAU); g.fill(); }
@@ -597,10 +601,11 @@ function carpet(g, f, h, slide, alpha) {   // tilted up toward the far end, as a
 }
 
 /* ---------- The eye: a 3D eyeball in each OS's skin (_dev/kitty/blender/eyeball.py), seen from behind, from assets/run ---------- */
-// chase: a wobbling loop as it flies after her; look: turned toward her lane. It is out of sight until she stumbles.
-// When it has her it surfaces straight up the middle of the screen, turning as it comes (turn), and stares at the visitor
-// dead on, the world dimmed behind it (stare), the desktop looking back through the fourth wall; then it shuts (shut).
-const SURFACE = 550, STARE = 2100, CLOSE = 250;   // ms after the catch: up and round, staring, its lids closing
+// A bare eyeball, no lids, with nerve tendrils trailing under it. chase: a wobbling loop as it flies after her; look: turned
+// toward her lane. It is out of sight until she stumbles. When it has her it surfaces straight up the middle of the screen,
+// turning as it comes (turn), its tendrils swinging round behind it, and stares at the visitor dead on, the world dimmed
+// behind it (stare), the desktop looking back through the fourth wall; then its pupil floods the iris (dilate).
+const SURFACE = 550, STARE = 2100, CLOSE = 250;   // ms after the catch: up and round, staring, its pupil flooding
 let EYE = null, eyeSkin = '', eyeY = 0, eyeS = 0, eyeFrom = null;
 const eyeSheets = {};
 fetch('assets/run/eye.json').then((r) => r.json()).then((m) => { EYE = m; }).catch(() => {});
@@ -638,7 +643,7 @@ function stare(g, f) {
   g.save(); g.globalAlpha = .55 * clamp(age / SURFACE); g.fillStyle = '#040b1c'; g.fillRect(0, 0, f.W, f.H); g.restore();   // the world falls back behind it, in the lids' own dark
   const n = age < SURFACE && !calm ? A.turn.first + Math.min(A.turn.frames - 1, Math.floor(age / SURFACE * A.turn.frames))
     : age < STARE ? A.stare.first + Math.min(A.stare.frames - 1, Math.floor((age - SURFACE) / 80))
-    : A.shut.first + Math.min(A.shut.frames - 1, Math.floor((age - STARE) / (CLOSE / A.shut.frames)));
+    : A.dilate.first + Math.min(A.dilate.frames - 1, Math.floor((age - STARE) / (CLOSE / A.dilate.frames)));
   g.drawImage(cells[n], x0 - s0, y0 - s0, s0 * 2, s0 * 2);
 }
 const wands = {};
@@ -654,7 +659,7 @@ function wandOf(id) {
 /* ---------- On top: the score, what she has on, the help, and the lids ---------- */
 export function hud(g, f, font) {
   if (!on) return;
-  const { W, H, d, type, top, ink, glow } = f, run = sec - INTRO * !calm;
+  const { W, H, d, type, top, ink, glow } = f, run = sec - INTRO;
   g.setTransform(1, 0, 0, 1, 0, 0); g.globalAlpha = 1; g.globalCompositeOperation = 'source-over';
   font(g, `${type}px ${f.font}`); g.fillStyle = ink; g.textBaseline = 'top'; g.shadowColor = glow; g.shadowBlur = 6 * d;
   g.lineJoin = 'round'; g.lineWidth = 3 * d; g.strokeStyle = glow;   // a stroke of its glow under the type, so it reads over a white cloud
@@ -683,8 +688,18 @@ export function hud(g, f, font) {
     g.fillText('POP THE BUBBLES', f.cx, mid + type * .7, wide);
     g.globalAlpha = 1;
   }
+  if (run < .6 && !caughtAt) {   // READY, SET, GO!: each word pops in on its beat, and GO! fades as she gets going
+    const k = sec ? Math.min(2, Math.floor(sec / BEAT)) : 0, age = sec ? (k < 2 ? sec - k * BEAT : run) : 0, big = Math.round(type * (k < 2 ? 2.4 : 3));
+    const pop = calm ? 1 : 1 + .3 * (1 - clamp(age / .16)) ** 2;
+    font(g, `${big}px ${f.font}`); g.lineWidth = 4 * d;
+    g.globalAlpha = k < 2 ? 1 : clamp((.6 - run) / .3);
+    g.save(); g.translate(f.cx, mid - type * 2.7); g.scale(pop, pop);
+    g.strokeText(COUNT[k], 0, 0, wide); g.fillText(COUNT[k], 0, 0, wide);
+    g.restore();
+    font(g, `${type}px ${f.font}`); g.lineWidth = 3 * d; g.globalAlpha = 1;
+  }
   while (toasts.length && nowAt - toasts[0].at > toasts[0].life) { toasts.shift(); if (toasts[0]) toasts[0].at = nowAt; }   // one at a time
-  const t = toasts[0];
+  const t = !caughtAt && toasts[0];   // none over the eye once it has her: the result lists the goals
   if (t) {
     const age = (nowAt - t.at) / t.life, [px, py] = f.at(U(x), 0), y0 = t.her ? py - (y + TALL + .5) * f.lane : mid - (run < 2.5 ? type * 2.4 : 0);
     g.globalAlpha = age < .8 ? 1 : (1 - age) / .2;
