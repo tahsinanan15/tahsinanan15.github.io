@@ -9,8 +9,8 @@
 // Heights are in lanes of the play-along's road (f.lane): she is about 1.3 tall and a jump clears 1.5.
 // Loaded by js/beats.js on the first click of the kitty glyph. It runs on beats' frame: draw() after the road, hud() last.
 import { track } from './analytics.js';
-import { deck, beat, play } from './audio.js';
-import { THEMES } from './themes.js';
+import { deck, beat, play, playSong, currentSong } from './audio.js';
+import { THEMES, SONGS } from './themes.js';
 import { WORLDS, bomb, paint } from './beatworlds.js';
 import { soap } from './bubbles.js';
 import { spritesFor } from './fx.js';
@@ -31,7 +31,7 @@ const LOW = .62, BAR = 1.6, WALL = 2.1;               // a low thing blocks belo
 const SHAPE = { low: .5, bomb: .5, high: 1.12, wall: 1.7, mover: 1.6 };   // each kind's height over its width (1.23 lanes)
 const DEPTH = { low: .07, bomb: .07, high: .05, wall: .12, mover: .3 };   // and how much road it covers, in r
 const LAST = { shield: 20, magnet: 10, ride: 8, pounce: 10, star: 15, zoom: 5 };   // seconds; the shield goes sooner if something hits her
-const NAMES = { shield: 'BUBBLE SHIELD', magnet: 'BUBBLE WAND', ride: 'WINDOW RIDE', pounce: 'POUNCE', star: 'BUBBLES X2', zoom: 'ZOOMIES' };
+const NAMES = { shield: 'BUBBLE SHIELD', magnet: 'BUBBLE WAND', ride: 'WINDOW RIDE', pounce: 'POUNCE', star: 'BUBBLES X2', zoom: 'ZOOMIES', warp: 'NEXT OS' };
 const GLYPH = {   // 11 by 11 pixels, like the LCD's glyphs
   shield: 'M3 0h5v1h-5zM2 1h1v1h-1zM8 1h1v1h-1zM1 2h1v1h-1zM4 2h2v1h-2zM9 2h1v1h-1zM0 3h1v1h-1zM3 3h1v1h-1zM10 3h1v1h-1zM0 4h1v1h-1zM10 4h1v1h-1zM0 5h1v1h-1zM10 5h1v1h-1zM0 6h1v1h-1zM10 6h1v1h-1zM0 7h1v1h-1zM10 7h1v1h-1zM1 8h1v1h-1zM9 8h1v1h-1zM2 9h1v1h-1zM8 9h1v1h-1zM3 10h5v1h-5z',
   magnet: 'M6 0h3v1h-3zM5 1h1v1h-1zM9 1h1v1h-1zM4 2h1v1h-1zM10 2h1v1h-1zM4 3h1v1h-1zM10 3h1v1h-1zM4 4h1v1h-1zM10 4h1v1h-1zM5 5h1v1h-1zM9 5h1v1h-1zM4 6h1v1h-1zM6 6h3v1h-3zM3 7h1v1h-1zM2 8h1v1h-1zM1 9h1v1h-1zM0 10h1v1h-1z',
@@ -39,6 +39,7 @@ const GLYPH = {   // 11 by 11 pixels, like the LCD's glyphs
   pounce: 'M2 0h2v1h-2zM7 0h2v1h-2zM2 1h2v1h-2zM7 1h2v1h-2zM0 3h2v1h-2zM9 3h2v1h-2zM0 4h2v1h-2zM4 4h3v1h-3zM9 4h2v1h-2zM3 5h5v1h-5zM2 6h7v1h-7zM2 7h7v1h-7zM2 8h7v1h-7zM3 9h2v1h-2zM6 9h2v1h-2z',
   star: 'M0 3h1v1h-1zM4 3h1v1h-1zM6 3h3v1h-3zM1 4h1v1h-1zM3 4h1v1h-1zM9 4h1v1h-1zM2 5h1v1h-1zM7 5h2v1h-2zM1 6h1v1h-1zM3 6h1v1h-1zM6 6h1v1h-1zM0 7h1v1h-1zM4 7h1v1h-1zM6 7h4v1h-4z',   // x2
   zoom: 'M7 2h1v1h-1zM0 3h3v1h-3zM7 3h2v1h-2zM7 4h3v1h-3zM1 5h4v1h-4zM7 5h4v1h-4zM7 6h3v1h-3zM0 7h3v1h-3zM7 7h2v1h-2zM7 8h1v1h-1z',   // speed lines
+  warp: 'M9 1h1v9H9zM7 5h1v1H7zM6 4h1v3H6zM5 3h1v5H5zM4 2h1v7H4zM2 1h2v9H2z',   // the LCD's next-track glyph
 };
 const glyphs = {};
 const glyph = (k) => (glyphs[k] ||= new Path2D(GLYPH[k]));
@@ -70,7 +71,7 @@ export let dist = 0;   // r run so far: js/beats.js moves the road's rows with i
 let wantJump = -1e9, landAt = -1e9, lane = 1, x = 1, fromX = 1, laneAt = -1e9, y = 0, air = null, slideTo = 0, swipe = null;
 let things = [], pops = [], gifts = [], fx = [], toasts = [], next = 0, open = 1, giftAt = 8, bag = [];
 let hitAt = -1e9, safeTo = 0, cleanFrom = 0, near = 1, eyeX = 0, caughtAt = 0, shownAt = 0, lid = null, meta = null;
-let powers = {}, bubbles = 0, score = 0, worlds = 0, world = '', tally = {}, notes = null, rideName = '', endedAt = -1e9;
+let warpAt = -1e9, powers = {}, bubbles = 0, score = 0, worlds = 0, world = '', tally = {}, notes = null, rideName = '', endedAt = -1e9;
 deck.audio.addEventListener('ended', () => { endedAt = performance.now(); });   // a song played out: only that earns the next OS its +1
 const card = $('run-result'), coarse = matchMedia('(pointer: coarse)');
 let runBase = 1, runSet = 0;   // fixed for a run: a finished set raises the multiplier from the next run
@@ -81,9 +82,9 @@ export function start(h) {
   host = h; on = true; calm = host.still.matches;
   dist = sec = speed = 0; last = 0; next = 2.6; open = 1; giftAt = 8; bag = [];
   lane = 1; x = fromX = 1; laneAt = -1e9; y = 0; air = null; slideTo = 0; swipe = null;
-  things = []; pops = []; gifts = []; fx = []; toasts = []; sparks.length = 0;
+  things = []; pops = []; gifts = []; fx = []; toasts = []; sparks.length = 0; rows = [];
   hitAt = -1e9; safeTo = 0; cleanFrom = 0; near = 0; eyeX = 0; eyeFrom = null; eyeY = 0; caughtAt = 0; shownAt = 0;
-  powers = {}; bubbles = score = worlds = 0; world = '';
+  powers = {}; bubbles = score = worlds = 0; warpAt = -1e9; world = '';
   tally = { pop: 0, run: 0, jump: 0, slide: 0, power: 0, clean: 0, ride: 0, score: 0 };
   runBase = save.base; runSet = save.set; wantJump = -1e9;
   card.hidden = true;
@@ -150,32 +151,34 @@ export function pointer(e) {
 }
 
 /* ---------- What comes down the road ---------- */
-// A row at a time, each in a lane next to the one left open by the row before, so there is always a way through.
-// It gets harder: rows come closer, more lanes are shut, then bars and low things together, then things that come at her.
+// A row at a time. Every row leaves one lane completely clear, next to the clear lane of the row before, so one hop always
+// reaches it: no row ever shuts all three. Something coming at her only comes down a lane no row ahead of it leaves clear,
+// and while it is still coming no new row clears that lane, so it never crosses her way out either.
+// It gets harder: rows come closer, then two lanes are shut, then more of them walls, then things that come at her.
+let rows = [];
 function row(z) {
   const tier = Math.min(4, Math.floor(sec / 18)), lanes = [0, 1, 2];
-  open = clamp(open + pick(tier ? [-1, 0, 1] : [-1, 1]), 0, 2);
+  rows = rows.filter((w) => w.z > dist - .5);
+  const coming = new Set(things.filter((t) => t.v && t.z > z - .2).map((t) => t.lane));   // still farther back than this row: it will pass through it
+  const ways = [open - 1, open, open + 1].filter((l) => l >= 0 && l <= 2 && !coming.has(l) && (tier || l !== open));
+  if (!ways.length) return;   // nowhere safe to leave clear: this row stays empty
+  open = pick(ways);
+  rows.push({ z, open });
   const shut = lanes.filter((l) => l !== open), put = (l, kind, at = z) => things.push({ lane: l, kind, z: at, dep: DEPTH[kind], v: kind === 'mover' ? .9 + Math.random() * .5 : 0, r: SPAWN });
-  const kinds = tier < 2 ? ['low', 'high', 'wall', 'bomb'] : ['low', 'high', 'wall', 'wall', 'bomb'];
-  const roll = Math.random();
-  if (tier >= 3 && roll < .22) {   // something coming at her, in a lane she isn't left with
-    put(pick(shut), 'mover', z + 1.2);
-    line(z, open, 6, 0);
-  } else if (tier >= 2 && roll < .5) {   // all three: low ones to jump and bars to slide, never two walls and nothing else
-    for (const l of lanes) put(l, l === open ? pick(['low', 'high', 'bomb']) : pick(kinds));
-    const k = things[things.length - 3 + open].kind;
-    if (k !== 'high') arc(z, open); else line(z - .35, open, 4, 0);
-  } else if (tier >= 1 && roll < .8) {   // two lanes shut
-    for (const l of shut) put(l, pick(kinds));
-    line(z - .3, open, 6, 0);
-  } else {   // one
-    put(pick(shut), pick(kinds));
-    line(z - .2, open, 5, 0);
+  const kinds = tier < 2 ? ['low', 'high', 'wall', 'bomb'] : ['low', 'high', 'wall', 'wall', 'bomb'], roll = Math.random();
+  const safe = shut.filter((l) => !rows.some((w) => w.open === l && w.z < z + 1.25));   // a lane no row between her and it leaves clear
+  if (tier >= 3 && roll < .22 && safe.length) {   // something coming at her
+    put(pick(safe), 'mover', z + 1.2);
+  } else for (const l of tier >= 1 && roll < .75 ? shut : [pick(shut)]) {   // two lanes shut, or one
+    const kind = pick(kinds);
+    put(l, kind);
+    if ((kind === 'low' || kind === 'bomb') && Math.random() < .35) arc(z, l);   // bubbles over a low thing: worth the jump
   }
+  line(z - .25, open, 5, 0);
   const aloft = (powers.ride || 0) - nowAt > (z - dist) / Math.max(.5, speed) * 1000 + 300;   // still riding when this row reaches her
   if (aloft) for (const l of lanes) line(z - .2, l, 5, RIDE + .6);   // up there, the sky has bubbles too
   if (sec >= giftAt) {   // a power-up, in rotation, so one is always coming
-    if (!bag.length) bag = ['shield', 'magnet', 'ride', 'pounce', 'star', 'zoom'].sort(() => Math.random() - .5);
+    if (!bag.length) bag = ['shield', 'magnet', 'ride', 'pounce', 'star', 'zoom', 'warp'].sort(() => Math.random() - .5);
     gifts.push({ lane: open, z: z - .6, kind: bag.pop(), h: aloft ? RIDE + .7 : .7, r: SPAWN });
     giftAt = sec + 11 + Math.random() * 6;
   }
@@ -262,6 +265,16 @@ function fxSheet(id) {
   if (!e.p) e.p = fetch(`assets/run/${FX.file.replace('{os}', id)}`).then((r) => (r.ok ? r.blob() : Promise.reject())).then((b) => createImageBitmap(b)).then((b) => { e.img = b; }, () => { e.p = null; });
   return e.img;
 }
+// Her sheet and the sparks are drawn a cell at a time, from small canvases cut on first use. Drawn straight from a 3200 px sheet, the
+// browser re-uploads the whole sheet whenever its texture cache fills (two coats and the eye in one run did it): 12 ms a frame.
+// Each slot keeps only its current sheet's cells, so a long run through every OS doesn't pile them up.
+const cuts = {};
+function cell(slot, img, sx, sy, w, h) {
+  const s = cuts[slot]?.img === img ? cuts[slot] : (cuts[slot] = { img, m: new Map() }), k = sy * 1e5 + sx;
+  let c = s.m.get(k);
+  if (!c) { c = document.createElement('canvas'); c.width = w; c.height = h; c.getContext('2d').drawImage(img, sx, sy, w, h, 0, 0, w, h); s.m.set(k, c); }
+  return c;
+}
 function spark(kind, u, z, h = 0, size = 1) { if (FX?.effects[kind] && !calm && sparks.length < 40) sparks.push({ kind, u, z, h, size, at: nowAt }); }
 function drawSparks(g, f, front) {
   const img = fxSheet(f.id);
@@ -274,7 +287,7 @@ function drawSparks(g, f, front) {
     const r = s.z - dist, [px, py, k] = f.at(s.u, Math.max(r, f.stop)), unit = Math.max(1, Math.round(f.lane * k / 40 * s.size));   // one effect pixel: a whole number of canvas pixels
     g.globalAlpha = clamp(1 + r / .12);   // gone a third of the way back to the camera
     if (!g.globalAlpha) continue;
-    g.drawImage(img, (n % e.cols) * e.w, e.y + Math.floor(n / e.cols) * e.h, e.w, e.h, px - e.pivot[0] * unit, py - s.h * f.lane * k - e.pivot[1] * unit, e.w * unit, e.h * unit);
+    g.drawImage(cell('fx', img, (n % e.cols) * e.w, e.y + Math.floor(n / e.cols) * e.h, e.w, e.h), px - e.pivot[0] * unit, py - s.h * f.lane * k - e.pivot[1] * unit, e.w * unit, e.h * unit);
   }
   g.restore();
 }
@@ -284,7 +297,8 @@ function update(f) {
   nowAt = f.now; calm = f.calm;
   dt = last ? Math.min(.05, (nowAt - last) / 1000) : 0; last = nowAt;
   if (f.id !== world) {   // the song changed, and the OS with it
-    if (world && nowAt - endedAt < 4000) { worlds++; endedAt = -1e9; toast(`X${mult()}  ${THEMES[f.id].name.toUpperCase()}`, 2400); }   // the arrows change the world, and add nothing
+    // a song played out, or the NEXT OS perk, adds 1; the arrows change the world and add nothing
+    if (world && (nowAt - endedAt < 4000 || nowAt - warpAt < 6000)) { worlds++; endedAt = warpAt = -1e9; toast(`X${mult()}  ${THEMES[f.id].name.toUpperCase()}`, 2400); }
     world = f.id;
     eyeOf(world); kittySheet('run', world); sprite(world); fxSheet(world);
     const css = getComputedStyle(document.documentElement), v = (n) => css.getPropertyValue(n).trim();
@@ -360,6 +374,10 @@ function near0(t) {   // the song's note nearest this moment, so the pops play a
 function power(p) {
   p.got = nowAt; tally.power++;
   spark('burst', U(p.lane), p.z, p.h - .2, .6);   // within the chip's own size
+  if (p.kind === 'warp') {   // the next OS and its song, now: the desktop changes over and rings that OS's chime, as it does when a song is picked
+    warpAt = nowAt; toast(NAMES.warp, 1100, true);
+    return playSong((SONGS.indexOf(currentSong()) + 1) % SONGS.length);
+  }
   powers[p.kind] = nowAt + LAST[p.kind] * 1000;
   if (p.kind === 'ride') { tally.ride++; rideName = pick(WINDOWS); air = null; slideTo = 0; }
   if (p.kind === 'zoom') safeTo = Math.max(safeTo, powers.zoom + 600);
@@ -502,7 +520,7 @@ function kitty(g, f) {
   g.translate(px, py - y * f.lane);
   g.rotate((lane - x) * -.08);
   g.scale(sc * flip, sc);
-  g.drawImage(img.img, (n % S.cols) * cw, Math.floor(n / S.cols) * ch, cw, ch, -S.cx, -S.floor, cw, ch);
+  g.drawImage(cell('kitty', img.img, (n % S.cols) * cw, Math.floor(n / S.cols) * ch, cw, ch), -S.cx, -S.floor);
   g.restore();
   if (active('shield')) {   // in Aero she runs inside one of the site's bubbles; elsewhere inside a ring of that world's light
     const s = f.lane * TALL * .78 * (calm ? 1 : 1 + .03 * Math.sin(nowAt / 150)), cy = py - y * f.lane - f.lane * TALL * .5, fade = Math.min(1, (powers.shield - nowAt) / 1500);
@@ -588,34 +606,40 @@ const eyeSheets = {};
 fetch('assets/run/eye.json').then((r) => r.json()).then((m) => { EYE = m; }).catch(() => {});
 function eyeOf(id) {
   if (!EYE) return null;
-  const skin = EYE.skins.includes(id) ? id : EYE.skins[0], e = eyeSheets[skin] ||= { img: null };
-  if (!e.p) e.p = fetch(`assets/run/${EYE.file.replace('{skin}', skin)}`).then((r) => (r.ok ? r.blob() : Promise.reject())).then((b) => createImageBitmap(b)).then((b) => { e.img = b; }, () => { e.p = null; });
-  if (e.img) eyeSkin = skin;
-  return eyeSheets[eyeSkin]?.img || null;   // until a new OS's skin is in, the one it had
+  const skin = EYE.skins.includes(id) ? id : EYE.skins[0], e = eyeSheets[skin] ||= { cells: null };
+  // Cut into its cells as soon as it loads, not on the frame it first shows: cutting a 520 px cell from the 4160 px sheet
+  // mid-run cost 30 ms each, so the first stumble stuttered.
+  if (!e.p) e.p = fetch(`assets/run/${EYE.file.replace('{skin}', skin)}`).then((r) => (r.ok ? r.blob() : Promise.reject())).then((b) => createImageBitmap(b)).then(async (big) => {
+    const [cw, ch] = EYE.cell, n = EYE.cols * Math.floor(big.height / ch);
+    e.cells = await Promise.all(Array.from({ length: n }, (_, i) => createImageBitmap(big, (i % EYE.cols) * cw, Math.floor(i / EYE.cols) * ch, cw, ch)));
+    big.close();
+  }).catch(() => { e.p = null; });
+  if (e.cells && eyeSkin !== skin) { eyeSheets[eyeSkin]?.cells?.forEach((c) => c.close()); delete eyeSheets[eyeSkin]; eyeSkin = skin; }   // 34 MB a skin: only the current one is kept
+  return eyeSheets[eyeSkin]?.cells || null;   // until a new OS's skin is in, the one it had
 }
 function eye(g, f) {
   if (!caughtAt) eyeY = 0;   // out of sight unless drawn below: then a catch brings it up from under the bottom edge
-  const img = eyeOf(f.id);
-  if (!img || (near < .01 && !caughtAt)) return;
+  const cells = eyeOf(f.id);
+  if (!cells || (near < .01 && !caughtAt)) return;
   const s = Math.min(f.W * .38, f.H * .42) * (1 + .04 * beat.pulse), ball = s * .65, [kx] = f.at(U(x), 0), A = EYE.actions;   // the ball is 0.65 of its cell: room for the cord
   eyeX = eyeX ? eyeX + (kx - eyeX) * Math.min(1, dt * 2.5) : kx;   // it follows her lane, a beat behind
   const rest = f.H + ball * 1.1, cy = rest - (f.H - f.yHit + ball * .05) * near + (calm ? 0 : Math.sin(nowAt / 420) * ball * .04);   // hidden at 0, its top at her heels at 1, over her when it has her
   if (cy - ball > f.H && !caughtAt) return;
-  const lean = clamp((kx - eyeX) / (f.lane * 1.2), -1, 1), [cw, ch] = EYE.cell, frame = (n, x0, y0, s0) => g.drawImage(img, (n % EYE.cols) * cw, Math.floor(n / EYE.cols) * ch, cw, ch, x0 - s0, y0 - s0, s0 * 2, s0 * 2);
+  const lean = clamp((kx - eyeX) / (f.lane * 1.2), -1, 1), frame = (n, x0, y0, s0) => g.drawImage(cells[n], x0 - s0, y0 - s0, s0 * 2, s0 * 2);
   if (!caughtAt) { eyeFrom = null; eyeY = cy; eyeS = s; frame(Math.abs(lean) > .3 ? A.look.first + Math.round(2 + 2 * lean) : A.chase.first + (calm ? 0 : Math.floor(nowAt / 100) % A.chase.frames), eyeX, cy, s); }
 }
 // It has her: up from wherever it was (or from under the bottom edge) to the middle of the screen, big, facing the visitor.
 function stare(g, f) {
-  const img = eyeOf(f.id);
-  if (!img || !caughtAt) return;
-  const A = EYE.actions, [cw, ch] = EYE.cell, age = nowAt - caughtAt, big = Math.min(f.W * .5, f.H * .62);
+  const cells = eyeOf(f.id);
+  if (!cells || !caughtAt) return;
+  const A = EYE.actions, age = nowAt - caughtAt, big = Math.min(f.W * .5, f.H * .62);
   eyeFrom ||= { x: eyeX || f.cx, y: Math.min(eyeY || Infinity, f.H + big * .7), s: eyeS || big * .6 };
   const k = calm ? 1 : 1 - (1 - clamp(age / SURFACE)) ** 3, x0 = eyeFrom.x + (f.cx - eyeFrom.x) * k, y0 = eyeFrom.y + (f.H * .5 - eyeFrom.y) * k, s0 = eyeFrom.s + (big - eyeFrom.s) * k;
   g.save(); g.globalAlpha = .55 * clamp(age / SURFACE); g.fillStyle = '#040b1c'; g.fillRect(0, 0, f.W, f.H); g.restore();   // the world falls back behind it, in the lids' own dark
   const n = age < SURFACE && !calm ? A.turn.first + Math.min(A.turn.frames - 1, Math.floor(age / SURFACE * A.turn.frames))
     : age < STARE ? A.stare.first + Math.min(A.stare.frames - 1, Math.floor((age - SURFACE) / 80))
     : A.shut.first + Math.min(A.shut.frames - 1, Math.floor((age - STARE) / (CLOSE / A.shut.frames)));
-  g.drawImage(img, (n % EYE.cols) * cw, Math.floor(n / EYE.cols) * ch, cw, ch, x0 - s0, y0 - s0, s0 * 2, s0 * 2);
+  g.drawImage(cells[n], x0 - s0, y0 - s0, s0 * 2, s0 * 2);
 }
 const wands = {};
 function wandOf(id) {

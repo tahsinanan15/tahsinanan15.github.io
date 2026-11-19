@@ -276,7 +276,7 @@ function scenery(name, w, f) {
     l = layers[name] = { id: f.id, full: f.full, c: l?.c || document.createElement('canvas') };
     l.c.width = f.W; l.c.height = f.H;
     w[name](l.c.getContext('2d'), f);
-    canvas.style.filter = w.mono ? 'grayscale(1)' : '';   // Ray OS is black and white film, bars and all
+    canvas.style.filter = w.mono && on ? 'grayscale(1)' : '';   // Ray OS is black and white film, bars and all; only while the game is on, since the screen keeps drawing as it shrinks back
   }
   return l.c;
 }
