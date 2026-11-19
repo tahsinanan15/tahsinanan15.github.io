@@ -55,7 +55,7 @@ All effects are synthesized in `js/audio.js`, except KITTY_RUN.EXE's, which are 
 Every OS has its own set of 17 drawings. Aero's are hand-authored gel symbols in `index.html`. The other five live in `assets/icons/<os>.svg` as symbols named `<os>-person`, `<os>-chart` and so on, fetched the first time that OS appears, and `swapIcons` in `js/main.js` points every `<use>` at the current set. If a set can't load, the Aero icons stay up. A new set must change the object, not just the color: the resume is a floppy in Vaporwave OS and a scroll in Baroque Keep. No shared tile or frame behind them.
 
 ## Six songs, six operating systems
-Same files and same words in every OS. Everything else changes: wallpaper (one of her paintings), palette, type, window chrome, cursor, icons, bubbles, start chime, and what the screen does on the beat. A theme lives in three places: `js/themes.js` (name, wallpaper, visualizer colors), a block in `css/site.css` under `[data-theme=<id>]`, and a world in `js/fx.js`.
+Same files and same words in every OS. Everything else changes: wallpaper (one of her paintings), palette, type, window chrome, cursor, icons, bubbles, start chime, and what the screen does on the beat. A theme lives in three places: `js/themes.js` (name, wallpaper, visualizer colors), a block in `css/site.css` under `[data-theme=<id>]`, and a world in `js/fx.js`. Each OS's start chime can also be heard on its own: the player's playlist ends with Startup chimes, one button per OS, which pause the song and play that chime by itself, without changing the OS.
 
 | Song | OS | Reference | On the beat |
 | --- | --- | --- | --- |

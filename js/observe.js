@@ -37,6 +37,7 @@ const RULES = [
   ['Player', (e) => e.name === 'game_score' && e.params.stars > 0, 2, 'cleared a song level'],
   ['Player', (e) => e.name === 'game_full', 1, 'took a level full screen'],
   ['Listener', (e) => e.name === 'track_play' && !e.params.auto, 2, 'picked a song'],
+  ['Listener', (e) => e.name === 'chime', 1, 'played an OS chime on its own'],
   ['Listener', (e) => e.name === 'window_open' && e.params.window === 'player', 1, 'went back to the player'],
 ];
 const SEGMENTS = ['Hiring', 'Art lover', 'Player', 'Listener'];

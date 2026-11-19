@@ -285,6 +285,9 @@ html, body { transition: none; }
 .mp__list button:hover { background: var(--tint); }
 .mp__list button[aria-current=true] { color: var(--bar-text); background: linear-gradient(180deg, var(--glass-a), var(--glass-b)); }
 .mp__list button[aria-current=true] i { color: inherit; opacity: .85; }
+.mp__chimes { margin-top: 2px; padding-top: 4px; border-top: 1px solid var(--mp-edge); }   /* each OS's chime on its own, the song paused */
+.mp__chimes span { display: block; padding: 2px 8px; color: var(--ink-2); font-size: 13px; }
+.mp__chimes div { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; }
 
 /* ------- Games ------- */
 .game, .paint { display: flex; flex-direction: column; gap: 8px; padding: 9px; background: linear-gradient(180deg, var(--putty-1), var(--putty-2)); }

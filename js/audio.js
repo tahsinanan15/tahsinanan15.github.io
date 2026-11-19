@@ -349,6 +349,18 @@ export function osChime(id) {
   c.play().catch(() => {});
 }
 
+// The chimes on their own, from the playlist: the song pauses and the chime plays by itself, one at a time. Asked for by
+// name, it plays even with the music muted; it doesn't change the OS.
+let solo = null;
+function chimeAlone(id) {
+  pause();
+  solo?.pause();
+  solo = new Audio(`assets/sfx/${id}-chime.mp3`);
+  solo.volume = Math.min(1, volume * .85);
+  solo.play().catch(() => {});
+  track('chime', { os: id });
+}
+
 // Pressing Start.
 export function startSoundNow() {
   disarm();
@@ -403,7 +415,11 @@ export function initAudio() {
     dispatchEvent(new Event('tahsin:player-resize'));
     if (open) list.querySelector('[aria-current=true]')?.scrollIntoView({ block: 'nearest' });
   });
-  $('mp-list').addEventListener('click', (e) => { const b = e.target.closest('[data-track]'); if (b) go(+b.dataset.track); });
+  $('mp-list').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-track]'), c = e.target.closest('[data-chime]');
+    if (b) go(+b.dataset.track); else if (c) chimeAlone(c.dataset.chime);
+  });
+  audio.addEventListener('play', () => solo?.pause());   // the music back on: a chime still ringing stops
   if ('mediaSession' in navigator) {
     navigator.mediaSession.setActionHandler('play', () => play().catch(() => {}));
     navigator.mediaSession.setActionHandler('pause', pause);
