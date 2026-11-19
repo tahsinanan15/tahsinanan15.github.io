@@ -1,0 +1,14 @@
+// Tahsin's site on Cloudflare (moved from GitHub Pages in Nov 2026). No build step: the files are served as they are.
+// .assetsignore keeps off the site what GitHub's Jekyll step kept off (dot and underscore files, _dev, the notes).
+// Audio and video go through _serve.js first, for byte ranges; everything else is a plain static asset.
+// Deploy from a clean checkout of main: npx wrangler deploy
+{
+  "name": "tahsin-site",
+  "main": "_serve.js",
+  "compatibility_date": "2026-11-18",
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "run_worker_first": ["/assets/audio/*", "/assets/sfx/*", "/assets/sting/*", "/assets/run/sfx-*", "/assets/graphics/dnrcast-app-preview.mp4"]
+  }
+}

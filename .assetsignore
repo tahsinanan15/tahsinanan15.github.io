@@ -1,0 +1,10 @@
+# Off the site, as GitHub's Jekyll step kept them off: dot and underscore files and folders (.git, _dev, _config.yml),
+# the notes, and the hosting files themselves.
+.*
+_*
+README.md
+PRODUCT.md
+DESIGN.md
+CNAME
+wrangler.jsonc
+node_modules

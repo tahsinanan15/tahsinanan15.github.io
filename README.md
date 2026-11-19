@@ -2,7 +2,7 @@
 
 **© 2026 Tahsin Anan. All rights reserved.** This repository is proprietary and is not open source. No copying, reuse, cloning, reverse engineering or AI training without written permission; see [LICENSE](LICENSE) and [AGENTS.md](AGENTS.md). Unauthorised use will be pursued through DMCA takedowns and other legal remedies.
 
-Static site on GitHub Pages at https://tahsinanan.com/ (tahsinanan15.github.io redirects there; the `CNAME` file holds the domain, so keep it). Pushing to `main` publishes it. There is no build step.
+Static site at https://tahsinanan.com/, served by Cloudflare as the Worker `tahsin-site` (`wrangler.jsonc`; it moved from GitHub Pages in November 2026). Pushing to `main` deploys it. There is no build step: the files are served as they are. `.assetsignore` keeps dev files and notes off the site, and `_serve.js` gives audio and video the byte ranges Safari needs.
 
 - `index.html`: all the words and windows
 - `css/site.css`: the look
